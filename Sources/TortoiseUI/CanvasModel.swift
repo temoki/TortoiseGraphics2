@@ -23,6 +23,10 @@ final class CanvasModel {
     /// Used by the renderer to interpolate tortoise position and partial strokes.
     private(set) var animationProgress: Double = 0.0
 
+    /// Axis-aligned bounding box of all drawing output across all frames, in tortoise coordinates.
+    /// `nil` when the command stream produces no visible output.
+    let drawingBounds: DrawingBounds?
+
     private var lastTickDate: Date?
     // Strokes/dots produced while isFillActive are held here until endFill,
     // then flushed after the fill polygon so the polygon renders below its outlines.
@@ -49,6 +53,7 @@ final class CanvasModel {
         if let first = frames.first {
             self.backgroundColor = first.backgroundColor
         }
+        self.drawingBounds = Self.computeDrawingBounds(frames: self.frames)
         // Eagerly flush all frames when the program is in instant mode (speed=0
         // is established before the first visible drawing command). This makes
         // instant-mode programs visible in static Xcode Previews where
@@ -155,6 +160,32 @@ final class CanvasModel {
         }
         return false
     }
+
+    /// Computes the bounding box of all visible output across all frames.
+    private static func computeDrawingBounds(frames: [PlaybackFrame]) -> DrawingBounds? {
+        var builder = DrawingBounds.Builder()
+        for frame in frames {
+            if frame.didClear { builder = DrawingBounds.Builder() }
+            if let s = frame.newStroke {
+                builder.expand(to: s.from)
+                builder.expand(to: s.to)
+            }
+            if let a = frame.newArcStroke {
+                // Use full-circle bbox (center ± radius) — conservative but always correct.
+                builder.expand(to: Point(x: a.center.x - a.radius, y: a.center.y - a.radius))
+                builder.expand(to: Point(x: a.center.x + a.radius, y: a.center.y + a.radius))
+            }
+            if let f = frame.completedFill {
+                for pt in f.points { builder.expand(to: pt) }
+            }
+            if let d = frame.newDot {
+                let r = d.size / 2
+                builder.expand(to: Point(x: d.center.x - r, y: d.center.y - r))
+                builder.expand(to: Point(x: d.center.x + r, y: d.center.y + r))
+            }
+        }
+        return builder.build()
+    }
 }
 
 // MARK: - DrawElement
@@ -164,4 +195,35 @@ enum DrawElement {
     case arcStroke(ArcStroke)
     case fill(Fill)
     case dot(Dot)
+}
+
+// MARK: - DrawingBounds
+
+/// Axis-aligned bounding box of drawing output in tortoise coordinate space.
+struct DrawingBounds {
+    let minX, minY, maxX, maxY: Double
+
+    var width: Double { maxX - minX }
+    var height: Double { maxY - minY }
+    var centerX: Double { (minX + maxX) / 2 }
+    var centerY: Double { (minY + maxY) / 2 }
+
+    struct Builder {
+        private var minX = Double.infinity
+        private var minY = Double.infinity
+        private var maxX = -Double.infinity
+        private var maxY = -Double.infinity
+
+        mutating func expand(to point: Point) {
+            minX = min(minX, point.x)
+            minY = min(minY, point.y)
+            maxX = max(maxX, point.x)
+            maxY = max(maxY, point.y)
+        }
+
+        func build() -> DrawingBounds? {
+            guard minX <= maxX && minY <= maxY else { return nil }
+            return DrawingBounds(minX: minX, minY: minY, maxX: maxX, maxY: maxY)
+        }
+    }
 }

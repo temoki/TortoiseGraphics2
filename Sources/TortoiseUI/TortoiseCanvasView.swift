@@ -42,7 +42,9 @@ public struct TortoiseCanvasView: View {
         TimelineView(.animation) { timeline in
             Canvas { ctx, size in
                 // Compute the viewport transform and scale factor once per frame.
-                let t = viewportMode.transform(canvasSize: model.canvasSize, viewSize: size)
+                let t = viewportMode.transform(
+                    canvasSize: model.canvasSize, viewSize: size,
+                    drawingBounds: model.drawingBounds)
                 let s = (t.a * t.a + t.b * t.b).squareRoot()
                 drawBackground(&ctx, size: size)
                 drawElements(&ctx, transform: t, scale: s)
