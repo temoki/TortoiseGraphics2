@@ -36,4 +36,4 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.0.app
 
       - name: Lint
-        run: swift-format lint --recursive --strict Sources Tests
+        run: xcrun swift-format lint --recursive --strict Sources Tests
