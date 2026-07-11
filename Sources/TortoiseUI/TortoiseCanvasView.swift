@@ -90,48 +90,88 @@ public struct TortoiseCanvasView: View {
         }
 
         for arc in model.arcStrokes {
-            // Approximate the arc with line segments (1 segment per 3°).
-            // Points are computed in turtle space then projected via viewTransform,
-            // so the Y-flip is handled automatically.
-            let steps = max(12, Int(abs(arc.sweep) / 3.0))
-            let stepAngle = arc.sweep / Double(steps)
-            var path = Path()
-            for i in 0...steps {
-                let angleDeg = arc.startAngle + Double(i) * stepAngle
-                let angleRad = angleDeg * (.pi / 180)
-                // turtle space: east = 0°, north = 90°, CCW positive
-                let pt = CGPoint(
-                    x: arc.center.x + arc.radius * cos(angleRad),
-                    y: arc.center.y + arc.radius * sin(angleRad)
+            ctx.stroke(arcPath(arc, sweep: arc.sweep, transform: t),
+                       with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+        }
+
+        // Partial stroke/arc for the frame currently being animated.
+        if let next = model.inProgressFrame, model.animationProgress > 0 {
+            let p = model.animationProgress
+            if let stroke = next.newStroke {
+                var path = Path()
+                let from = CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t)
+                let partialTo = CGPoint(
+                    x: stroke.from.x + p * (stroke.to.x - stroke.from.x),
+                    y: stroke.from.y + p * (stroke.to.y - stroke.from.y)
                 ).applying(t)
-                if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+                path.move(to: from)
+                path.addLine(to: partialTo)
+                ctx.stroke(path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
             }
-            ctx.stroke(path, with: .color(SwiftUI.Color(arc.color)),
-                       lineWidth: arc.width * s)
+            if let arc = next.newArcStroke {
+                ctx.stroke(arcPath(arc, sweep: arc.sweep * p, transform: t),
+                           with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+            }
         }
     }
 
+    /// Builds a polyline approximating an arc (1 segment per 3°).
+    private func arcPath(_ arc: ArcStroke, sweep: Double, transform t: CGAffineTransform) -> Path {
+        guard abs(sweep) > 0 else { return Path() }
+        let steps = max(1, Int(abs(sweep) / 3.0))
+        let stepAngle = sweep / Double(steps)
+        var path = Path()
+        for i in 0...steps {
+            let angleRad = (arc.startAngle + Double(i) * stepAngle) * (.pi / 180)
+            let pt = CGPoint(
+                x: arc.center.x + arc.radius * cos(angleRad),
+                y: arc.center.y + arc.radius * sin(angleRad)
+            ).applying(t)
+            if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+        }
+        return path
+    }
+
     private func drawTurtle(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double) {
-        guard model.turtleState.isVisible, model.currentFrameIndex >= 0 else { return }
+        guard model.turtleState.isVisible else { return }
+
+        // Interpolate position and heading toward the in-progress frame.
+        let pos: Vec2D
+        let heading: Double
+        if let next = model.inProgressFrame, model.animationProgress > 0 {
+            let p = model.animationProgress
+            let from = model.turtleState
+            let to = next.turtleState
+            pos = Vec2D(
+                x: from.position.x + p * (to.position.x - from.position.x),
+                y: from.position.y + p * (to.position.y - from.position.y)
+            )
+            // Normalize heading delta to [-180, 180] so rotation takes the short arc.
+            var delta = to.heading - from.heading
+            while delta >  180 { delta -= 360 }
+            while delta < -180 { delta += 360 }
+            heading = from.heading + p * delta
+        } else {
+            pos = model.turtleState.position
+            heading = model.turtleState.heading
+        }
 
         let s = min(max(rawScale, 0.5), 2.0)
         let turtleSize = 10.0 * s
 
-        // Triangle pointing north (tip at -Y in screen space = up on screen)
+        // Triangle pointing north (tip at -Y in screen space = up on screen).
         var path = Path()
         path.move(to: CGPoint(x: 0, y: -turtleSize))
         path.addLine(to: CGPoint(x: -turtleSize * 0.6, y: turtleSize * 0.5))
         path.addLine(to: CGPoint(x: turtleSize * 0.6, y: turtleSize * 0.5))
         path.closeSubpath()
 
-        let pos = model.turtleState.position
         let position = CGPoint(x: pos.x, y: pos.y).applying(t)
         var turtleCtx = ctx
-        // Translate to turtle's screen position, then rotate by heading.
         // heading 0 = north (tip already points up), heading 90 = east (CW 90°).
         // SwiftUI rotate(by:) is CW-positive in Y-down space, matching turtle heading.
         turtleCtx.translateBy(x: position.x, y: position.y)
-        turtleCtx.rotate(by: .degrees(model.turtleState.heading))
+        turtleCtx.rotate(by: .degrees(heading))
         turtleCtx.fill(path, with: .color(.green.opacity(0.7)))
         turtleCtx.stroke(path, with: .color(.green), lineWidth: 1.5)
     }

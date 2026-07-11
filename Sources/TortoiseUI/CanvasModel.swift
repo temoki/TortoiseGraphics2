@@ -19,10 +19,25 @@ final class CanvasModel {
     private(set) var backgroundColor: TortoiseCore.Color = .white
     private(set) var turtleState: TurtleState = .default
 
+    /// Progress (0 → 1) through the animation of the next frame.
+    /// Used by the renderer to interpolate turtle position and partial strokes.
+    private(set) var animationProgress: Double = 0.0
+
     private var lastTickDate: Date?
-    private var timeUntilNextFrame: TimeInterval = 0
 
     var isFinished: Bool { frames.isEmpty || currentFrameIndex >= frames.count - 1 }
+
+    /// The frame currently being animated toward; nil when playback is finished.
+    var inProgressFrame: PlaybackFrame? {
+        guard !isFinished else { return nil }
+        return frames[currentFrameIndex + 1]
+    }
+
+    /// Playback speed of the last committed frame (governs animation timing).
+    private var committedSpeed: Double {
+        currentFrameIndex >= 0 ? frames[currentFrameIndex].turtleState.speed
+                               : TurtleState.default.speed
+    }
 
     init(commands: [TurtleCommand], canvasSize: Size2D) {
         self.frames = CommandPlayer.play(commands: commands)
@@ -43,26 +58,32 @@ final class CanvasModel {
         guard !isFinished else { return }
         guard let last = lastTickDate else {
             lastTickDate = date
-            advanceWhileReady()
             return
         }
         let elapsed = date.timeIntervalSince(last)
         lastTickDate = date
-        timeUntilNextFrame -= elapsed
-        if timeUntilNextFrame <= 0 {
-            advanceWhileReady()
+
+        // Instant mode: flush all consecutive instant frames and bail out.
+        if committedSpeed <= 0 {
+            while !isFinished && committedSpeed <= 0 { advance() }
+            animationProgress = 0
+            return
         }
+
+        let stepDur = Self.stepDuration(speed: committedSpeed)
+        animationProgress += elapsed / stepDur
+
+        while animationProgress >= 1.0 && !isFinished {
+            animationProgress -= 1.0
+            advance()
+            // After committing, flush any trailing instant frames.
+            while !isFinished && committedSpeed <= 0 { advance() }
+            if isFinished { animationProgress = 0; break }
+        }
+        animationProgress = min(animationProgress, 1.0)
     }
 
     // MARK: - Private helpers
-
-    private func advanceWhileReady() {
-        repeat {
-            advance()
-        } while !isFinished && turtleState.speed <= 0
-
-        timeUntilNextFrame = isFinished ? 0 : Self.stepDuration(speed: turtleState.speed)
-    }
 
     private func advance() {
         let nextIndex = currentFrameIndex + 1
@@ -86,8 +107,6 @@ final class CanvasModel {
     }
 
     /// Returns true if speed reaches 0 before the first frame that produces visible output.
-    /// Scans frames in order: if turtleState.speed ≤ 0 appears before any stroke/arc/fill,
-    /// the program is instant-mode and the full drawing can be flushed eagerly.
     private static func isInstantMode(frames: [PlaybackFrame]) -> Bool {
         for frame in frames {
             if frame.turtleState.speed <= 0 { return true }
