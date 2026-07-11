@@ -30,6 +30,12 @@ final class CanvasModel {
         if let first = frames.first {
             self.backgroundColor = first.backgroundColor
         }
+        // If the first frame sets speed to 0, flush all frames now so the
+        // final drawing is visible even in static-snapshot previews (where
+        // TimelineView never fires and tick() is never called).
+        if let firstFrame = frames.first, firstFrame.turtleState.speed <= 0 {
+            while !isFinished { advance() }
+        }
     }
 
     func tick(date: Date) {

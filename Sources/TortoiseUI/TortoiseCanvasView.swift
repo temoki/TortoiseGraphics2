@@ -20,11 +20,22 @@ public struct TortoiseCanvasView: View {
     private let tortoise: Tortoise
     private let viewportMode: ViewportMode
 
-    @State private var model = CanvasModel(commands: [], canvasSize: .defaultCanvas)
+    @State private var model: CanvasModel
 
+    /// Creates a canvas view for the given tortoise.
+    ///
+    /// The view immediately reflects all commands already in the tortoise at
+    /// construction time. If those commands begin with `speed(0)`, the full
+    /// drawing is visible even in static (non-animated) Xcode Previews.
+    /// Commands added to the tortoise after the view appears are picked up
+    /// automatically via a `task(id:)` observer.
+    @MainActor
     public init(_ tortoise: Tortoise, viewport viewportMode: ViewportMode = .scaleToFit) {
         self.tortoise = tortoise
         self.viewportMode = viewportMode
+        self._model = State(
+            wrappedValue: CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        )
     }
 
     public var body: some View {
@@ -40,6 +51,9 @@ public struct TortoiseCanvasView: View {
             }
         }
         .task(id: tortoise.commands.count) {
+            // Guard: init already created a model with the current commands;
+            // only recreate when new commands have been appended after appear.
+            guard tortoise.commands.count != model.frames.count else { return }
             model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
         }
     }
