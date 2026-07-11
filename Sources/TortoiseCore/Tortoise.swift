@@ -20,10 +20,21 @@ public final class Tortoise {
     /// The command stream produced so far.
     public private(set) var commands: [TurtleCommand] = []
 
+    /// The logical canvas size in turtle coordinate units.
+    ///
+    /// This value is independent of the view's pixel dimensions.
+    /// The canvas spans from `(-canvasSize.width/2, -canvasSize.height/2)`
+    /// to `(canvasSize.width/2, canvasSize.height/2)`.
+    /// Renderers use this as the reference frame (e.g., SVG `viewBox`,
+    /// `TortoiseCanvasView` scale-to-fit mode).
+    public let canvasSize: Size2D
+
     private var state: TurtleState = .default
     private var _backgroundColor: Color = .white
 
-    public init() {}
+    public init(canvasSize: Size2D = .defaultCanvas) {
+        self.canvasSize = canvasSize
+    }
 
     // MARK: - Read-only positional state
 

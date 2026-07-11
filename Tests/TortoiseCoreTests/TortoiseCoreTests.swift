@@ -131,6 +131,18 @@ struct TortoiseAPITests {
         #expect(isClose(t.position, Vec2D(x: 0, y: 100)))
     }
 
+    @Test("default canvasSize is 400×400")
+    func defaultCanvasSize() {
+        let t = Tortoise()
+        #expect(t.canvasSize == Size2D(width: 400, height: 400))
+    }
+
+    @Test("custom canvasSize is preserved")
+    func customCanvasSize() {
+        let t = Tortoise(canvasSize: Size2D(width: 800, height: 600))
+        #expect(t.canvasSize == Size2D(width: 800, height: 600))
+    }
+
     @Test("Python aliases produce same commands as primary API")
     func pythonAliases() {
         let t1 = Tortoise()

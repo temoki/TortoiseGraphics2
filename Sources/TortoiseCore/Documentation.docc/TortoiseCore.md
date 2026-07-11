@@ -27,4 +27,5 @@ making it trivial to test and extend.
 
 - ``Color``
 - ``Vec2D``
+- ``Size2D``
 - ``Angle``
