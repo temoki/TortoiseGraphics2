@@ -33,6 +33,6 @@ extension Color {
     public static let clear = Color(red: 0, green: 0, blue: 0, alpha: 0)
 }
 
-private extension Double {
-    var clamped01: Double { Swift.min(Swift.max(self, 0), 1) }
+extension Double {
+    fileprivate var clamped01: Double { Swift.min(Swift.max(self, 0), 1) }
 }

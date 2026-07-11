@@ -1,12 +1,13 @@
 import Testing
+
 @testable import TortoiseCore
 
 // MARK: - Helpers
 
-private let ε = 1e-10
+private let epsilon = 1e-10
 
 private func isClose(_ a: Double, _ b: Double) -> Bool {
-    abs(a - b) < ε
+    abs(a - b) < epsilon
 }
 
 private func isClose(_ a: Point, _ b: Point) -> Bool {

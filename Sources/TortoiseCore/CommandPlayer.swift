@@ -108,7 +108,8 @@ public struct CommandPlayer {
                 newDot = Dot(center: tortoise.position, size: size, color: tortoise.penColor)
 
             case .arc(let radius, let extent):
-                let center = Tortoise.arcCenter(position: tortoise.position, heading: tortoise.heading, radius: radius)
+                let center = Tortoise.arcCenter(
+                    position: tortoise.position, heading: tortoise.heading, radius: radius)
                 let dx = tortoise.position.x - center.x
                 let dy = tortoise.position.y - center.y
                 let startAngleDeg = atan2(dy, dx) * (180 / .pi)
@@ -133,17 +134,18 @@ public struct CommandPlayer {
                 tortoise.heading = (tortoise.heading - extent).truncatingRemainder(dividingBy: 360)
             }
 
-            frames.append(PlaybackFrame(
-                commandIndex: index,
-                tortoiseState: tortoise,
-                backgroundColor: bgColor,
-                newStroke: newStroke,
-                newArcStroke: newArcStroke,
-                completedFill: completedFill,
-                newDot: newDot,
-                didClear: didClear,
-                isFillActive: isFillActive
-            ))
+            frames.append(
+                PlaybackFrame(
+                    commandIndex: index,
+                    tortoiseState: tortoise,
+                    backgroundColor: bgColor,
+                    newStroke: newStroke,
+                    newArcStroke: newArcStroke,
+                    completedFill: completedFill,
+                    newDot: newDot,
+                    didClear: didClear,
+                    isFillActive: isFillActive
+                ))
         }
 
         return frames

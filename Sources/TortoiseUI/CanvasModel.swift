@@ -38,8 +38,9 @@ final class CanvasModel {
 
     /// Playback speed of the last committed frame (governs animation timing).
     private var committedSpeed: Double {
-        currentFrameIndex >= 0 ? frames[currentFrameIndex].tortoiseState.speed
-                               : TortoiseState.default.speed
+        currentFrameIndex >= 0
+            ? frames[currentFrameIndex].tortoiseState.speed
+            : TortoiseState.default.speed
     }
 
     init(commands: [TortoiseCommand], canvasSize: Size) {
@@ -81,7 +82,10 @@ final class CanvasModel {
             advance()
             // After committing, flush any trailing instant frames.
             while !isFinished && committedSpeed <= 0 { advance() }
-            if isFinished { animationProgress = 0; break }
+            if isFinished {
+                animationProgress = 0
+                break
+            }
         }
         animationProgress = min(animationProgress, 1.0)
     }
@@ -106,16 +110,28 @@ final class CanvasModel {
         }
 
         if let s = frame.newStroke {
-            if frame.isFillActive { pendingFillElements.append(.stroke(s)) }
-            else                  { elements.append(.stroke(s)) }
+            if frame.isFillActive {
+                pendingFillElements.append(.stroke(s))
+            }
+            else {
+                elements.append(.stroke(s))
+            }
         }
         if let a = frame.newArcStroke {
-            if frame.isFillActive { pendingFillElements.append(.arcStroke(a)) }
-            else                  { elements.append(.arcStroke(a)) }
+            if frame.isFillActive {
+                pendingFillElements.append(.arcStroke(a))
+            }
+            else {
+                elements.append(.arcStroke(a))
+            }
         }
         if let d = frame.newDot {
-            if frame.isFillActive { pendingFillElements.append(.dot(d)) }
-            else                  { elements.append(.dot(d)) }
+            if frame.isFillActive {
+                pendingFillElements.append(.dot(d))
+            }
+            else {
+                elements.append(.dot(d))
+            }
         }
 
         backgroundColor = frame.backgroundColor
@@ -131,7 +147,9 @@ final class CanvasModel {
     private static func isInstantMode(frames: [PlaybackFrame]) -> Bool {
         for frame in frames {
             if frame.tortoiseState.speed <= 0 { return true }
-            if frame.newStroke != nil || frame.newArcStroke != nil || frame.completedFill != nil || frame.newDot != nil {
+            if frame.newStroke != nil || frame.newArcStroke != nil || frame.completedFill != nil
+                || frame.newDot != nil
+            {
                 return false
             }
         }

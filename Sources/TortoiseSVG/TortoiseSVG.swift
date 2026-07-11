@@ -70,16 +70,28 @@ private struct SVGBuilder {
                 pendingFillStrokes.removeAll()
             }
             if let s = frame.newStroke {
-                if frame.isFillActive { pendingFillStrokes.append(.stroke(s)) }
-                else                  { elements.append(.stroke(s)) }
+                if frame.isFillActive {
+                    pendingFillStrokes.append(.stroke(s))
+                }
+                else {
+                    elements.append(.stroke(s))
+                }
             }
             if let a = frame.newArcStroke {
-                if frame.isFillActive { pendingFillStrokes.append(.arcStroke(a)) }
-                else                  { elements.append(.arcStroke(a)) }
+                if frame.isFillActive {
+                    pendingFillStrokes.append(.arcStroke(a))
+                }
+                else {
+                    elements.append(.arcStroke(a))
+                }
             }
             if let d = frame.newDot {
-                if frame.isFillActive { pendingFillStrokes.append(.dot(d)) }
-                else                  { elements.append(.dot(d)) }
+                if frame.isFillActive {
+                    pendingFillStrokes.append(.dot(d))
+                }
+                else {
+                    elements.append(.dot(d))
+                }
             }
         }
         // Flush any unclosed fill (endFill missing)
@@ -87,15 +99,17 @@ private struct SVGBuilder {
 
         var lines: [String] = []
         lines.append(#"<?xml version="1.0" encoding="UTF-8"?>"#)
-        lines.append(#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \#(n(w)) \#(n(h))" width="\#(n(w))" height="\#(n(h))">"#)
+        lines.append(
+            #"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \#(n(w)) \#(n(h))" width="\#(n(w))" height="\#(n(h))">"#
+        )
         lines.append(#"  <rect width="\#(n(w))" height="\#(n(h))" fill="\#(color(bgColor))"/>"#)
 
         for element in elements {
             switch element {
-            case .fill(let fill):       lines.append(svgFill(fill))
-            case .stroke(let stroke):   lines.append(svgStroke(stroke))
-            case .arcStroke(let arc):   lines.append(svgArc(arc))
-            case .dot(let dot):         lines.append(svgDot(dot))
+            case .fill(let fill): lines.append(svgFill(fill))
+            case .stroke(let stroke): lines.append(svgStroke(stroke))
+            case .arcStroke(let arc): lines.append(svgArc(arc))
+            case .dot(let dot): lines.append(svgDot(dot))
             }
         }
 
@@ -115,14 +129,17 @@ private struct SVGBuilder {
     private func svgDot(_ dot: Dot) -> String {
         let cx = n(x(dot.center.x))
         let cy = n(y(dot.center.y))
-        let r  = n(dot.size / 2)
+        let r = n(dot.size / 2)
         return #"  <circle cx="\#(cx)" cy="\#(cy)" r="\#(r)" fill="\#(color(dot.color))"/>"#
     }
 
     private func svgStroke(_ stroke: Stroke) -> String {
-        let x1 = n(x(stroke.from.x)), y1 = n(y(stroke.from.y))
-        let x2 = n(x(stroke.to.x)),   y2 = n(y(stroke.to.y))
-        return #"  <line x1="\#(x1)" y1="\#(y1)" x2="\#(x2)" y2="\#(y2)" stroke="\#(color(stroke.color))" stroke-width="\#(n(stroke.width))" stroke-linecap="round"/>"#
+        let x1 = n(x(stroke.from.x))
+        let y1 = n(y(stroke.from.y))
+        let x2 = n(x(stroke.to.x))
+        let y2 = n(y(stroke.to.y))
+        return
+            #"  <line x1="\#(x1)" y1="\#(y1)" x2="\#(x2)" y2="\#(y2)" stroke="\#(color(stroke.color))" stroke-width="\#(n(stroke.width))" stroke-linecap="round"/>"#
     }
 
     private func svgArc(_ arc: ArcStroke) -> String {
@@ -131,23 +148,29 @@ private struct SVGBuilder {
 
         let cx = x(arc.center.x)
         let cy = y(arc.center.y)
-        let r  = arc.radius
-        let strokeAttrs = #"stroke="\#(color(arc.color))" stroke-width="\#(n(arc.width))" fill="none" stroke-linecap="round""#
+        let r = arc.radius
+        let strokeAttrs =
+            #"stroke="\#(color(arc.color))" stroke-width="\#(n(arc.width))" fill="none" stroke-linecap="round""#
 
         let startRad = arc.startAngle * .pi / 180
 
         if absSwep >= 360 {
             // Full circle: split into two 180° arcs because SVG A can't share start==end
-            let sx = cx + r * cos(startRad);  let sy = cy - r * sin(startRad)
-            let mx = cx - r * cos(startRad);  let my = cy + r * sin(startRad)
+            let sx = cx + r * cos(startRad)
+            let sy = cy - r * sin(startRad)
+            let mx = cx - r * cos(startRad)
+            let my = cy + r * sin(startRad)
             let sf = arc.sweep >= 0 ? 1 : 0
-            let d = "M \(n(sx)),\(n(sy)) A \(n(r)),\(n(r)) 0 0,\(sf) \(n(mx)),\(n(my)) A \(n(r)),\(n(r)) 0 0,\(sf) \(n(sx)),\(n(sy))"
+            let d =
+                "M \(n(sx)),\(n(sy)) A \(n(r)),\(n(r)) 0 0,\(sf) \(n(mx)),\(n(my)) A \(n(r)),\(n(r)) 0 0,\(sf) \(n(sx)),\(n(sy))"
             return #"  <path d="\#(d)" \#(strokeAttrs)/>"#
         }
 
         let endRad = (arc.startAngle + arc.sweep) * .pi / 180
-        let sx = cx + r * cos(startRad);  let sy = cy - r * sin(startRad)
-        let ex = cx + r * cos(endRad);    let ey = cy - r * sin(endRad)
+        let sx = cx + r * cos(startRad)
+        let sy = cy - r * sin(startRad)
+        let ex = cx + r * cos(endRad)
+        let ey = cy - r * sin(endRad)
         let largeArc = absSwep > 180 ? 1 : 0
         let sf = arc.sweep >= 0 ? 1 : 0
         let d = "M \(n(sx)),\(n(sy)) A \(n(r)),\(n(r)) 0 \(largeArc),\(sf) \(n(ex)),\(n(ey))"
@@ -163,9 +186,9 @@ private struct SVGBuilder {
     // MARK: - Formatting helpers
 
     private func color(_ c: Color) -> String {
-        let r = Int((c.red   * 255).rounded())
+        let r = Int((c.red * 255).rounded())
         let g = Int((c.green * 255).rounded())
-        let b = Int((c.blue  * 255).rounded())
+        let b = Int((c.blue * 255).rounded())
         if c.alpha >= 1 {
             return String(format: "#%02x%02x%02x", r, g, b)
         }

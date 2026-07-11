@@ -63,13 +63,16 @@ public struct TortoiseCanvasView: View {
     // MARK: - Drawing
 
     private func drawBackground(_ ctx: inout GraphicsContext, size: CGSize) {
-        ctx.fill(Path(CGRect(origin: .zero, size: size)),
-                 with: .color(SwiftUI.Color(model.backgroundColor)))
+        ctx.fill(
+            Path(CGRect(origin: .zero, size: size)),
+            with: .color(SwiftUI.Color(model.backgroundColor)))
     }
 
     /// Renders committed elements in command-execution order, then draws the partial
     /// stroke/arc for the frame currently being animated.
-    private func drawElements(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double) {
+    private func drawElements(
+        _ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double
+    ) {
         for element in model.elements {
             switch element {
             case .fill(let fill):
@@ -86,11 +89,13 @@ public struct TortoiseCanvasView: View {
                 var path = Path()
                 path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
                 path.addLine(to: CGPoint(x: stroke.to.x, y: stroke.to.y).applying(t))
-                ctx.stroke(path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
+                ctx.stroke(
+                    path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
 
             case .arcStroke(let arc):
-                ctx.stroke(arcPath(arc, sweep: arc.sweep, transform: t),
-                           with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+                ctx.stroke(
+                    arcPath(arc, sweep: arc.sweep, transform: t),
+                    with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
 
             case .dot(let dot):
                 let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
@@ -112,11 +117,13 @@ public struct TortoiseCanvasView: View {
                 ).applying(t)
                 path.move(to: from)
                 path.addLine(to: partialTo)
-                ctx.stroke(path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
+                ctx.stroke(
+                    path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
             }
             if let arc = next.newArcStroke {
-                ctx.stroke(arcPath(arc, sweep: arc.sweep * p, transform: t),
-                           with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+                ctx.stroke(
+                    arcPath(arc, sweep: arc.sweep * p, transform: t),
+                    with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
             }
         }
     }
@@ -133,12 +140,19 @@ public struct TortoiseCanvasView: View {
                 x: arc.center.x + arc.radius * cos(angleRad),
                 y: arc.center.y + arc.radius * sin(angleRad)
             ).applying(t)
-            if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
+            if i == 0 {
+                path.move(to: pt)
+            }
+            else {
+                path.addLine(to: pt)
+            }
         }
         return path
     }
 
-    private func drawTortoise(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double) {
+    private func drawTortoise(
+        _ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double
+    ) {
         guard model.tortoiseState.isVisible else { return }
 
         // Interpolate position and heading toward the in-progress frame.
@@ -154,10 +168,11 @@ public struct TortoiseCanvasView: View {
             )
             // Normalize heading delta to [-180, 180] so rotation takes the short arc.
             var delta = to.heading - from.heading
-            while delta >  180 { delta -= 360 }
+            while delta > 180 { delta -= 360 }
             while delta < -180 { delta += 360 }
             heading = from.heading + p * delta
-        } else {
+        }
+        else {
             pos = model.tortoiseState.position
             heading = model.tortoiseState.heading
         }
@@ -188,14 +203,14 @@ public struct TortoiseCanvasView: View {
 #Preview("Tortoise Star") {
     @MainActor
     func tortoiseStar() -> TortoiseCanvasView {
-        let 🐢 = Tortoise()
-        🐢.speed = 0  // draw instantly
-        🐢.backward(100)
+        let t = Tortoise()
+        t.speed = 0  // draw instantly
+        t.backward(100)
         for _ in 1...36 {
-            🐢.forward(200)
-            🐢.right(170)
+            t.forward(200)
+            t.right(170)
         }
-        return TortoiseCanvasView(🐢)
+        return TortoiseCanvasView(t)
     }
     return tortoiseStar()
         .frame(width: 400, height: 400)

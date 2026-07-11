@@ -49,7 +49,10 @@ public final class Tortoise {
 
     public var penColor: Color {
         get { state.penColor }
-        set { state.penColor = newValue; commands.append(.penColor(newValue)) }
+        set {
+            state.penColor = newValue
+            commands.append(.penColor(newValue))
+        }
     }
 
     public var penWidth: Double {
@@ -62,7 +65,10 @@ public final class Tortoise {
 
     public var fillColor: Color {
         get { state.fillColor }
-        set { state.fillColor = newValue; commands.append(.fillColor(newValue)) }
+        set {
+            state.fillColor = newValue
+            commands.append(.fillColor(newValue))
+        }
     }
 
     /// Heading in degrees (0 = north, clockwise positive).
@@ -77,12 +83,18 @@ public final class Tortoise {
     /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
     public var speed: Double {
         get { state.speed }
-        set { state.speed = max(0, newValue); commands.append(.speed(state.speed)) }
+        set {
+            state.speed = max(0, newValue)
+            commands.append(.speed(state.speed))
+        }
     }
 
     public var backgroundColor: Color {
         get { _backgroundColor }
-        set { _backgroundColor = newValue; commands.append(.backgroundColor(newValue)) }
+        set {
+            _backgroundColor = newValue
+            commands.append(.backgroundColor(newValue))
+        }
     }
 
     // MARK: - Movement

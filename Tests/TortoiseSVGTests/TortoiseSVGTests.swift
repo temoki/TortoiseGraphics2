@@ -1,5 +1,6 @@
 import Testing
 import TortoiseCore
+
 @testable import TortoiseSVG
 
 // MARK: - Helpers
@@ -174,7 +175,7 @@ struct TortoiseSVGTests {
         ]
         let out = TortoiseSVG.render(commands: commands, canvasSize: canvas400)
         let polygonIdx = out.range(of: "<polygon")?.lowerBound
-        let lineIdx    = out.range(of: "<line")?.lowerBound
+        let lineIdx = out.range(of: "<line")?.lowerBound
         #expect(polygonIdx != nil)
         #expect(lineIdx != nil)
         if let p = polygonIdx, let l = lineIdx { #expect(p < l) }
