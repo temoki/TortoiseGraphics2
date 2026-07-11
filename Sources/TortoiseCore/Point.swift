@@ -1,6 +1,6 @@
 import Foundation
 
-/// A 2D point or vector in turtle-graphics coordinate space
+/// A 2D point or vector in tortoise-graphics coordinate space
 /// (center origin, Y axis points up).
 public struct Point: Sendable, Hashable {
     public var x: Double
