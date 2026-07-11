@@ -1,0 +1,41 @@
+/// A single instruction produced by the ``Tortoise`` API.
+///
+/// Commands are `Sendable` value types — the same stream is consumed
+/// by SwiftUI canvas rendering, SVG export, and tests.
+///
+/// Heading convention throughout: 0 = north (up), clockwise positive.
+public enum TurtleCommand: Sendable, Equatable {
+    // MARK: Movement
+    /// Move forward (positive) or backward (negative) by `distance` pixels.
+    case forward(Double)
+    /// Rotate clockwise (positive) or counterclockwise (negative) by `degrees`.
+    case rotate(Double)
+    /// Move to the origin (0, 0) and reset heading to 0 (north).
+    case home
+    /// Teleport to the given position without changing heading.
+    case setPosition(Vec2D)
+    /// Set heading in degrees (0 = north, clockwise).
+    case setHeading(Double)
+
+    // MARK: Pen
+    case penDown
+    case penUp
+    case penColor(Color)
+    case penWidth(Double)
+
+    // MARK: Fill
+    case fillColor(Color)
+    case beginFill
+    case endFill
+
+    // MARK: Appearance
+    case showTurtle
+    case hideTurtle
+    /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
+    case speed(Double)
+
+    // MARK: Canvas
+    case backgroundColor(Color)
+    /// Clear all drawings; turtle position and pen state are preserved.
+    case clear
+}
