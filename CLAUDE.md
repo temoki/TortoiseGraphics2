@@ -37,6 +37,10 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **`isFillActive` on `PlaybackFrame`.** Added so SVG and other renderers can defer stroke emission until after `endFill`, placing the fill polygon below its outline strokes. `CommandPlayer` snapshots `fillPoints != nil` at the start of each command iteration to set this flag.
 
+**`[DrawElement]` + `pendingFillElements` in `CanvasModel`.** Drawing elements are stored as a single ordered `[DrawElement]` list (not separate arrays per type) to preserve command-execution order. Strokes/dots emitted while `isFillActive` are buffered in `pendingFillElements`; on `endFill` the fill polygon is appended first, then the buffered elements are flushed on top — so the fill polygon always renders below its outline strokes regardless of command order.
+
+**`DrawingBounds` computed at init.** `CanvasModel.drawingBounds` is an axis-aligned bounding box of all visible output across all frames, computed once in `init` (not per-tick). Arcs use the full-circle bounding box (center ± radius) — conservative but always correct, and avoids trigonometry over partial arc segments. `ViewportMode.autoFit(padding:)` consumes this to scale and center the view; it falls back to `.scaleToFit` when `drawingBounds` is `nil` (no visible output). The `transform()` method signature takes `drawingBounds: DrawingBounds?` as a parameter so `TortoiseCanvasView` passes the model's precomputed value.
+
 ## Coordinate System
 
 - **Tortoise space**: center origin, Y-up, heading 0 = north, clockwise positive. Arc angles: 0 = east, CCW positive (standard math).
