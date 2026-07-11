@@ -1,7 +1,7 @@
 import SwiftUI
 import TortoiseCore
 
-/// A SwiftUI view that renders and animates turtle-graphics commands.
+/// A SwiftUI view that renders and animates tortoise-graphics commands.
 ///
 /// Pass a ``Tortoise`` instance and the view plays back its command stream
 /// using `TimelineView` and `Canvas`. The animation respects each command's
@@ -46,7 +46,7 @@ public struct TortoiseCanvasView: View {
                 let s = (t.a * t.a + t.b * t.b).squareRoot()
                 drawBackground(&ctx, size: size)
                 drawElements(&ctx, transform: t, scale: s)
-                drawTurtle(&ctx, transform: t, scale: s)
+                drawTortoise(&ctx, transform: t, scale: s)
             }
             .onChange(of: timeline.date) { _, date in
                 model.tick(date: date)
@@ -138,16 +138,16 @@ public struct TortoiseCanvasView: View {
         return path
     }
 
-    private func drawTurtle(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double) {
-        guard model.turtleState.isVisible else { return }
+    private func drawTortoise(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double) {
+        guard model.tortoiseState.isVisible else { return }
 
         // Interpolate position and heading toward the in-progress frame.
         let pos: Point
         let heading: Double
         if let next = model.inProgressFrame, model.animationProgress > 0 {
             let p = model.animationProgress
-            let from = model.turtleState
-            let to = next.turtleState
+            let from = model.tortoiseState
+            let to = next.tortoiseState
             pos = Point(
                 x: from.position.x + p * (to.position.x - from.position.x),
                 y: from.position.y + p * (to.position.y - from.position.y)
@@ -158,36 +158,36 @@ public struct TortoiseCanvasView: View {
             while delta < -180 { delta += 360 }
             heading = from.heading + p * delta
         } else {
-            pos = model.turtleState.position
-            heading = model.turtleState.heading
+            pos = model.tortoiseState.position
+            heading = model.tortoiseState.heading
         }
 
         let s = min(max(rawScale, 0.5), 2.0)
-        let turtleSize = 10.0 * s
+        let tortoiseSize = 10.0 * s
 
         // Triangle pointing north (tip at -Y in screen space = up on screen).
         var path = Path()
-        path.move(to: CGPoint(x: 0, y: -turtleSize))
-        path.addLine(to: CGPoint(x: -turtleSize * 0.6, y: turtleSize * 0.5))
-        path.addLine(to: CGPoint(x: turtleSize * 0.6, y: turtleSize * 0.5))
+        path.move(to: CGPoint(x: 0, y: -tortoiseSize))
+        path.addLine(to: CGPoint(x: -tortoiseSize * 0.6, y: tortoiseSize * 0.5))
+        path.addLine(to: CGPoint(x: tortoiseSize * 0.6, y: tortoiseSize * 0.5))
         path.closeSubpath()
 
         let position = CGPoint(x: pos.x, y: pos.y).applying(t)
-        var turtleCtx = ctx
+        var tortoiseCtx = ctx
         // heading 0 = north (tip already points up), heading 90 = east (CW 90°).
-        // SwiftUI rotate(by:) is CW-positive in Y-down space, matching turtle heading.
-        turtleCtx.translateBy(x: position.x, y: position.y)
-        turtleCtx.rotate(by: .degrees(heading))
-        turtleCtx.fill(path, with: .color(.green.opacity(0.7)))
-        turtleCtx.stroke(path, with: .color(.green), lineWidth: 1.5)
+        // SwiftUI rotate(by:) is CW-positive in Y-down space, matching tortoise heading.
+        tortoiseCtx.translateBy(x: position.x, y: position.y)
+        tortoiseCtx.rotate(by: .degrees(heading))
+        tortoiseCtx.fill(path, with: .color(.green.opacity(0.7)))
+        tortoiseCtx.stroke(path, with: .color(.green), lineWidth: 1.5)
     }
 }
 
 // MARK: - Preview
 
-#Preview("Turtle Star") {
+#Preview("Tortoise Star") {
     @MainActor
-    func turtleStar() -> TortoiseCanvasView {
+    func tortoiseStar() -> TortoiseCanvasView {
         let 🐢 = Tortoise()
         🐢.speed = 0  // draw instantly
         🐢.backward(100)
@@ -197,6 +197,6 @@ public struct TortoiseCanvasView: View {
         }
         return TortoiseCanvasView(🐢)
     }
-    return turtleStar()
+    return tortoiseStar()
         .frame(width: 400, height: 400)
 }

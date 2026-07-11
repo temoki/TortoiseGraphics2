@@ -1,6 +1,6 @@
-/// The complete state of the turtle at a point in time.
-public struct TurtleState: Sendable, Equatable {
-    /// Current position in turtle coordinate space (center origin, Y up).
+/// The complete state of the tortoise at a point in time.
+public struct TortoiseState: Sendable, Equatable {
+    /// Current position in tortoise coordinate space (center origin, Y up).
     public var position: Point
     /// Current heading in degrees (0 = north, clockwise positive).
     public var heading: Double
@@ -12,7 +12,7 @@ public struct TurtleState: Sendable, Equatable {
     /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
     public var speed: Double
 
-    public static let `default` = TurtleState(
+    public static let `default` = TortoiseState(
         position: .zero,
         heading: 0,
         isPenDown: true,

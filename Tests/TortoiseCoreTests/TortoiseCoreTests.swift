@@ -157,14 +157,14 @@ struct TortoiseAPITests {
         #expect(t.commands == [.arc(radius: 50, extent: 90)])
     }
 
-    @Test("full circle returns turtle to start position")
+    @Test("full circle returns tortoise to start position")
     func fullCircleReturnsHome() {
         let t = Tortoise()
         t.circle(radius: 100)
         #expect(isClose(t.position, Point.zero))
     }
 
-    @Test("quarter circle moves turtle to correct position")
+    @Test("quarter circle moves tortoise to correct position")
     func quarterCirclePosition() {
         let t = Tortoise()
         t.circle(radius: 100, extent: 90)
@@ -183,25 +183,25 @@ struct CommandPlayerTests {
     func forwardNorth() {
         let frames = CommandPlayer.play(commands: [.forward(100)])
         #expect(frames.count == 1)
-        #expect(isClose(frames[0].turtleState.position, Point(x: 0, y: 100)))
+        #expect(isClose(frames[0].tortoiseState.position, Point(x: 0, y: 100)))
     }
 
     @Test("rotate 90 then forward moves east")
     func forwardEastAfterRightTurn() {
         let frames = CommandPlayer.play(commands: [.rotate(90), .forward(100)])
-        #expect(isClose(frames.last!.turtleState.position, Point(x: 100, y: 0)))
+        #expect(isClose(frames.last!.tortoiseState.position, Point(x: 100, y: 0)))
     }
 
     @Test("rotate -90 then forward moves west")
     func forwardWestAfterLeftTurn() {
         let frames = CommandPlayer.play(commands: [.rotate(-90), .forward(100)])
-        #expect(isClose(frames.last!.turtleState.position, Point(x: -100, y: 0)))
+        #expect(isClose(frames.last!.tortoiseState.position, Point(x: -100, y: 0)))
     }
 
     @Test("rotate 180 then forward moves south")
     func forwardSouth() {
         let frames = CommandPlayer.play(commands: [.rotate(180), .forward(100)])
-        #expect(isClose(frames.last!.turtleState.position, Point(x: 0, y: -100)))
+        #expect(isClose(frames.last!.tortoiseState.position, Point(x: 0, y: -100)))
     }
 
     @Test("penDown forward produces a stroke")
@@ -234,7 +234,7 @@ struct CommandPlayerTests {
     @Test("home moves to origin and resets heading")
     func homeResetsPositionAndHeading() {
         let frames = CommandPlayer.play(commands: [.forward(100), .rotate(45), .home])
-        let state = frames.last!.turtleState
+        let state = frames.last!.tortoiseState
         #expect(isClose(state.position, Point.zero))
         #expect(isClose(state.heading, 0))
     }
@@ -245,24 +245,24 @@ struct CommandPlayerTests {
         #expect(isClose(frames[1].newStroke!.to, Point.zero))
     }
 
-    @Test("setPosition teleports turtle")
-    func setPositionMovesTurtle() {
+    @Test("setPosition teleports tortoise")
+    func setPositionMovesTortoise() {
         let target = Point(x: 30, y: -40)
         let frames = CommandPlayer.play(commands: [.setPosition(target)])
-        #expect(frames[0].turtleState.position == target)
+        #expect(frames[0].tortoiseState.position == target)
     }
 
     @Test("setHeading changes heading without moving")
     func setHeadingChangesHeading() {
         let frames = CommandPlayer.play(commands: [.setHeading(90)])
-        let state = frames[0].turtleState
+        let state = frames[0].tortoiseState
         #expect(isClose(state.heading, 90))
         #expect(state.position == Point.zero)
     }
 
     @Test("beginFill / forward / endFill produces a Fill with 3 points")
     func fillTriangle() {
-        let cmds: [TurtleCommand] = [
+        let cmds: [TortoiseCommand] = [
             .beginFill,
             .forward(100),
             .rotate(120),
@@ -276,7 +276,7 @@ struct CommandPlayerTests {
 
     @Test("fill color is taken from fillColor command")
     func fillColorApplied() {
-        let cmds: [TurtleCommand] = [
+        let cmds: [TortoiseCommand] = [
             .fillColor(.blue),
             .beginFill,
             .forward(100),
@@ -304,36 +304,36 @@ struct CommandPlayerTests {
     @Test("speed clamped to non-negative")
     func speedClamped() {
         let frames = CommandPlayer.play(commands: [.speed(-1)])
-        #expect(frames[0].turtleState.speed == 0)
+        #expect(frames[0].tortoiseState.speed == 0)
     }
 
     @Test("penWidth clamped to non-negative")
     func penWidthClamped() {
         let frames = CommandPlayer.play(commands: [.penWidth(-5)])
-        #expect(frames[0].turtleState.penWidth == 0)
+        #expect(frames[0].tortoiseState.penWidth == 0)
     }
 
     @Test("square: 4 forward+rotate produces correct final position")
     func squareEndsAtOrigin() {
-        var cmds: [TurtleCommand] = []
+        var cmds: [TortoiseCommand] = []
         for _ in 1...4 {
             cmds.append(.forward(100))
             cmds.append(.rotate(90))
         }
         let frames = CommandPlayer.play(commands: cmds)
-        #expect(isClose(frames.last!.turtleState.position, Point.zero))
+        #expect(isClose(frames.last!.tortoiseState.position, Point.zero))
     }
 
-    @Test("full circle arc returns turtle to start position")
+    @Test("full circle arc returns tortoise to start position")
     func fullArcReturnsToStart() {
         let frames = CommandPlayer.play(commands: [.arc(radius: 100, extent: 360)])
-        #expect(isClose(frames.last!.turtleState.position, Point.zero))
+        #expect(isClose(frames.last!.tortoiseState.position, Point.zero))
     }
 
-    @Test("quarter circle arc moves turtle to correct position and heading")
+    @Test("quarter circle arc moves tortoise to correct position and heading")
     func quarterArcPosition() {
         let frames = CommandPlayer.play(commands: [.arc(radius: 100, extent: 90)])
-        let state = frames.last!.turtleState
+        let state = frames.last!.tortoiseState
         #expect(isClose(state.position, Point(x: -100, y: 100)))
         #expect(isClose(state.heading, -90))
     }

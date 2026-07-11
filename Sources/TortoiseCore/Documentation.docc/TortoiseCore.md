@@ -1,6 +1,6 @@
 # ``TortoiseCore``
 
-Turtle-graphics engine — platform-independent API and command stream.
+Tortoise-graphics engine — platform-independent API and command stream.
 
 ## Overview
 
@@ -14,16 +14,16 @@ for _ in 1...4 {
     🐢.forward(100)
     🐢.right(90)
 }
-// 🐢.commands is a [TurtleCommand] ready for TortoiseUI, TortoiseSVG, or your own renderer.
+// 🐢.commands is a [TortoiseCommand] ready for TortoiseUI, TortoiseSVG, or your own renderer.
 ```
 
-The design follows an **event-sourcing pattern**: the turtle accumulates
-``TurtleCommand`` values; rendering is handled by separate consumers
+The design follows an **event-sourcing pattern**: the tortoise accumulates
+``TortoiseCommand`` values; rendering is handled by separate consumers
 (`TortoiseUI`, `TortoiseSVG`) that replay the same stream as a pure function.
 This means animation, SVG export, and unit tests all share a single source of truth.
 
 ``CommandPlayer`` converts a command stream into ``PlaybackFrame`` values —
-a snapshot of turtle state after each command — which renderers step through
+a snapshot of tortoise state after each command — which renderers step through
 to produce output.
 
 ### Coordinate system
@@ -35,13 +35,13 @@ to produce output.
 
 ## Topics
 
-### Turtle API
+### Tortoise API
 
 - ``Tortoise``
 
 ### Commands
 
-- ``TurtleCommand``
+- ``TortoiseCommand``
 
 ### Playback
 
@@ -61,4 +61,4 @@ to produce output.
 - ``Point``
 - ``Size``
 - ``Angle``
-- ``TurtleState``
+- ``TortoiseState``

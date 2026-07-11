@@ -4,10 +4,10 @@ SwiftUI rendering and animation for TortoiseGraphics.
 
 ## Overview
 
-`TortoiseUI` animates a ``TurtleCommand`` stream as a SwiftUI view using
-`TimelineView` and `Canvas`. The turtle walks to each destination in real
+`TortoiseUI` animates a ``TortoiseCommand`` stream as a SwiftUI view using
+`TimelineView` and `Canvas`. The tortoise walks to each destination in real
 time — `forward()` draws the line progressively and `circle()` traces the
-arc, matching the classic turtle-graphics feel.
+arc, matching the classic tortoise-graphics feel.
 
 ```swift
 TortoiseCanvasView(🐢)
@@ -17,7 +17,7 @@ TortoiseCanvasView(🐢)
 ### Speed
 
 Playback speed is set per-program via `Tortoise.speed` (or the
-``TurtleCommand/speed(_:)`` command):
+``TortoiseCommand/speed(_:)`` command):
 
 | Value | Effect |
 |-------|--------|

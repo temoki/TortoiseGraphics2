@@ -7,7 +7,7 @@ import TortoiseCore
 private let canvas400 = Size(width: 400, height: 400)
 
 /// Returns the rendered SVG for the given command array on a 400×400 canvas.
-private func svg(_ commands: TurtleCommand...) -> String {
+private func svg(_ commands: TortoiseCommand...) -> String {
     TortoiseSVG.render(commands: commands, canvasSize: canvas400)
 }
 
@@ -133,7 +133,7 @@ struct TortoiseSVGTests {
     @Test("beginFill / endFill with polygon produces polygon element")
     func fillPolygon() {
         // Equilateral triangle
-        let commands: [TurtleCommand] = [
+        let commands: [TortoiseCommand] = [
             .beginFill,
             .forward(100), .rotate(120),
             .forward(100), .rotate(120),
@@ -147,7 +147,7 @@ struct TortoiseSVGTests {
 
     @Test("fill polygon carries fill color")
     func fillColor() {
-        let commands: [TurtleCommand] = [
+        let commands: [TortoiseCommand] = [
             .fillColor(.blue),
             .beginFill,
             .forward(100), .rotate(90),
@@ -165,7 +165,7 @@ struct TortoiseSVGTests {
     @Test("fill is emitted before subsequent strokes in SVG output")
     func fillBeforeStroke() {
         // Draw a fill polygon, then a line on top
-        let commands: [TurtleCommand] = [
+        let commands: [TortoiseCommand] = [
             .beginFill,
             .forward(50), .rotate(90), .forward(50), .rotate(90),
             .forward(50), .rotate(90), .forward(50),

@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import TortoiseCore
 
-/// Drives incremental playback of a ``TurtleCommand`` stream for animation.
+/// Drives incremental playback of a ``TortoiseCommand`` stream for animation.
 ///
 /// Call ``tick(date:)`` on every `TimelineView` update. The model advances
 /// one frame per tick (or multiple frames for speed 0 / instant mode).
@@ -17,10 +17,10 @@ final class CanvasModel {
     /// Fill polygons are inserted before their outline strokes so they render below them.
     private(set) var elements: [DrawElement] = []
     private(set) var backgroundColor: TortoiseCore.Color = .white
-    private(set) var turtleState: TurtleState = .default
+    private(set) var tortoiseState: TortoiseState = .default
 
     /// Progress (0 → 1) through the animation of the next frame.
-    /// Used by the renderer to interpolate turtle position and partial strokes.
+    /// Used by the renderer to interpolate tortoise position and partial strokes.
     private(set) var animationProgress: Double = 0.0
 
     private var lastTickDate: Date?
@@ -38,11 +38,11 @@ final class CanvasModel {
 
     /// Playback speed of the last committed frame (governs animation timing).
     private var committedSpeed: Double {
-        currentFrameIndex >= 0 ? frames[currentFrameIndex].turtleState.speed
-                               : TurtleState.default.speed
+        currentFrameIndex >= 0 ? frames[currentFrameIndex].tortoiseState.speed
+                               : TortoiseState.default.speed
     }
 
-    init(commands: [TurtleCommand], canvasSize: Size) {
+    init(commands: [TortoiseCommand], canvasSize: Size) {
         self.frames = CommandPlayer.play(commands: commands)
         self.canvasSize = canvasSize
         if let first = frames.first {
@@ -119,7 +119,7 @@ final class CanvasModel {
         }
 
         backgroundColor = frame.backgroundColor
-        turtleState = frame.turtleState
+        tortoiseState = frame.tortoiseState
         currentFrameIndex = nextIndex
     }
 
@@ -130,7 +130,7 @@ final class CanvasModel {
     /// Returns true if speed reaches 0 before the first frame that produces visible output.
     private static func isInstantMode(frames: [PlaybackFrame]) -> Bool {
         for frame in frames {
-            if frame.turtleState.speed <= 0 { return true }
+            if frame.tortoiseState.speed <= 0 { return true }
             if frame.newStroke != nil || frame.newArcStroke != nil || frame.completedFill != nil || frame.newDot != nil {
                 return false
             }

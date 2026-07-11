@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// The main turtle-graphics API.
+/// The main tortoise-graphics API.
 ///
 /// Create a `Tortoise`, call drawing methods on it,
 /// then pass ``commands`` to a renderer or ``CommandPlayer``.
@@ -18,9 +18,9 @@ import Observation
 @MainActor
 public final class Tortoise {
     /// The command stream produced so far.
-    public private(set) var commands: [TurtleCommand] = []
+    public private(set) var commands: [TortoiseCommand] = []
 
-    /// The logical canvas size in turtle coordinate units.
+    /// The logical canvas size in tortoise coordinate units.
     ///
     /// This value is independent of the view's pixel dimensions.
     /// The canvas spans from `(-canvasSize.width/2, -canvasSize.height/2)`
@@ -29,7 +29,7 @@ public final class Tortoise {
     /// `TortoiseCanvasView` scale-to-fit mode).
     public let canvasSize: Size
 
-    private var state: TurtleState = .default
+    private var state: TortoiseState = .default
     private var _backgroundColor: Color = .white
     private var _isFilling: Bool = false
 
@@ -166,7 +166,7 @@ public final class Tortoise {
         distance(x: position.x, y: position.y)
     }
 
-    /// Draw a filled circle at the current position without moving the turtle.
+    /// Draw a filled circle at the current position without moving the tortoise.
     ///
     /// - Parameter size: Diameter in logical units. Defaults to `max(penWidth + 4, 2 * penWidth)`.
     public func dot(size: Double? = nil) {
@@ -176,7 +176,7 @@ public final class Tortoise {
 
     /// Draw an arc counterclockwise.
     ///
-    /// The center is placed to the left of the turtle at distance `radius`.
+    /// The center is placed to the left of the tortoise at distance `radius`.
     /// `extent` controls how many degrees of the circle are drawn (360 = full circle).
     /// Positive `extent` draws counterclockwise; negative `extent` draws clockwise.
     public func circle(radius: Double, extent: Double = 360) {
@@ -217,19 +217,19 @@ public final class Tortoise {
 
     // MARK: - Appearance
 
-    public func showTurtle() {
+    public func showTortoise() {
         state.isVisible = true
-        commands.append(.showTurtle)
+        commands.append(.showTortoise)
     }
 
-    public func hideTurtle() {
+    public func hideTortoise() {
         state.isVisible = false
-        commands.append(.hideTurtle)
+        commands.append(.hideTortoise)
     }
 
     // MARK: - Canvas
 
-    /// Clear all drawings; turtle position and pen state are preserved.
+    /// Clear all drawings; tortoise position and pen state are preserved.
     public func clear() {
         commands.append(.clear)
     }

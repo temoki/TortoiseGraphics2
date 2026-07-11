@@ -1,7 +1,7 @@
 /// A 2D size in logical (world) coordinate space.
 ///
 /// The logical canvas spans from `(-width/2, -height/2)` to `(width/2, height/2)`
-/// in turtle coordinate space (center origin, Y axis up).
+/// in tortoise coordinate space (center origin, Y axis up).
 public struct Size: Sendable, Hashable {
     public var width: Double
     public var height: Double

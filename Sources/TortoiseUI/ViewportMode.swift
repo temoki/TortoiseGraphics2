@@ -1,16 +1,16 @@
 import CoreGraphics
 import TortoiseCore
 
-/// Controls how the turtle coordinate space maps onto the view.
+/// Controls how the tortoise coordinate space maps onto the view.
 public enum ViewportMode {
     /// Scale the logical canvas to fill the view, preserving aspect ratio (letterboxed). Default.
     case scaleToFit
-    /// 1 turtle unit = 1 point, origin at view center. Wider views show more canvas.
+    /// 1 tortoise unit = 1 point, origin at view center. Wider views show more canvas.
     case original
 }
 
 extension ViewportMode {
-    /// Returns a transform mapping turtle coordinates (center origin, Y up)
+    /// Returns a transform mapping tortoise coordinates (center origin, Y up)
     /// to SwiftUI Canvas coordinates (top-left origin, Y down).
     func transform(canvasSize: Size, viewSize: CGSize) -> CGAffineTransform {
         let tx = viewSize.width / 2

@@ -3,7 +3,7 @@ import TortoiseCore
 
 /// SVG export for TortoiseGraphics.
 ///
-/// Converts a ``TurtleCommand`` stream into a static SVG document.
+/// Converts a ``TortoiseCommand`` stream into a static SVG document.
 /// Pure function; no platform-specific dependencies.
 ///
 /// ```swift
@@ -16,12 +16,12 @@ import TortoiseCore
 /// let svg = TortoiseSVG.render(commands: 🐢.commands, canvasSize: 🐢.canvasSize)
 /// ```
 public enum TortoiseSVG {
-    /// Renders a turtle-graphics command stream as a static SVG string.
+    /// Renders a tortoise-graphics command stream as a static SVG string.
     ///
     /// The SVG `viewBox` matches the logical canvas size, so it scales cleanly
     /// in any browser or vector editor without loss of quality.
     public static func render(
-        commands: [TurtleCommand],
+        commands: [TortoiseCommand],
         canvasSize: Size = .defaultCanvas
     ) -> String {
         let frames = CommandPlayer.play(commands: commands)
@@ -32,7 +32,7 @@ public enum TortoiseSVG {
     ///
     /// Convenience wrapper around ``render(commands:canvasSize:)``.
     public static func write(
-        commands: [TurtleCommand],
+        commands: [TortoiseCommand],
         canvasSize: Size = .defaultCanvas,
         to url: URL
     ) throws {
@@ -154,11 +154,11 @@ private struct SVGBuilder {
         return #"  <path d="\#(d)" \#(strokeAttrs)/>"#
     }
 
-    // MARK: - Coordinate transform (turtle → SVG)
-    // Turtle: center origin, Y-up. SVG: top-left origin, Y-down.
+    // MARK: - Coordinate transform (tortoise → SVG)
+    // Tortoise: center origin, Y-up. SVG: top-left origin, Y-down.
 
-    private func x(_ turtle: Double) -> Double { w / 2 + turtle }
-    private func y(_ turtle: Double) -> Double { h / 2 - turtle }
+    private func x(_ tortoise: Double) -> Double { w / 2 + tortoise }
+    private func y(_ tortoise: Double) -> Double { h / 2 - tortoise }
 
     // MARK: - Formatting helpers
 

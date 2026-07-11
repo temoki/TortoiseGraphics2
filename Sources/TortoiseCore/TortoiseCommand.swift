@@ -4,7 +4,7 @@
 /// by SwiftUI canvas rendering, SVG export, and tests.
 ///
 /// Heading convention throughout: 0 = north (up), clockwise positive.
-public enum TurtleCommand: Sendable, Equatable {
+public enum TortoiseCommand: Sendable, Equatable {
     // MARK: Movement
     /// Move forward (positive) or backward (negative) by `distance` pixels.
     case forward(Double)
@@ -29,25 +29,25 @@ public enum TurtleCommand: Sendable, Equatable {
     case endFill
 
     // MARK: Appearance
-    case showTurtle
-    case hideTurtle
+    case showTortoise
+    case hideTortoise
     /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
     case speed(Double)
 
     // MARK: Canvas
     case backgroundColor(Color)
-    /// Clear all drawings; turtle position and pen state are preserved.
+    /// Clear all drawings; tortoise position and pen state are preserved.
     case clear
 
     // MARK: Arc
     /// Draw a circular arc counterclockwise.
     ///
-    /// The arc center is placed to the turtle's left at distance `|radius|`.
+    /// The arc center is placed to the tortoise's left at distance `|radius|`.
     /// `extent` is in degrees: 360 = full circle, positive = counterclockwise.
     case arc(radius: Double, extent: Double)
 
     // MARK: Dot
-    /// Draw a filled circle at the current position without moving the turtle.
+    /// Draw a filled circle at the current position without moving the tortoise.
     ///
     /// `size` is the diameter in logical units.
     case dot(Double)

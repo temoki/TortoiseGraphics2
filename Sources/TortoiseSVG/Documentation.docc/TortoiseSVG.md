@@ -4,7 +4,7 @@ SVG export for TortoiseGraphics.
 
 ## Overview
 
-`TortoiseSVG` converts a ``TurtleCommand`` stream into a self-contained,
+`TortoiseSVG` converts a ``TortoiseCommand`` stream into a self-contained,
 static SVG document. It is a **pure function** — no platform APIs, no side
 effects, no Foundation URL types required for the core `render` path.
 

@@ -1,6 +1,6 @@
 # TortoiseGraphics
 
-Swift turtle-graphics library for iOS, macOS, and visionOS.
+Swift tortoise-graphics library for iOS, macOS, and visionOS.
 
 ```swift
 let 🐢 = Tortoise()
@@ -16,12 +16,12 @@ TortoiseCanvasView(🐢)
 
 | Module | Description |
 |--------|-------------|
-| **TortoiseCore** | Turtle API + command stream. Foundation-only; no platform dependencies. |
+| **TortoiseCore** | Tortoise API + command stream. Foundation-only; no platform dependencies. |
 | **TortoiseUI** | SwiftUI animated canvas view (`TimelineView` + `Canvas`). |
 | **TortoiseSVG** | Command stream → static SVG string or file. No platform dependencies. |
 
 The design follows an event-sourcing pattern: `Tortoise` accumulates
-`[TurtleCommand]`; rendering is handled by separate, pure-function
+`[TortoiseCommand]`; rendering is handled by separate, pure-function
 consumers that replay the same stream. This makes SVG export, animation,
 and testing all share a single source of truth.
 
@@ -146,7 +146,7 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 
 | Method / Property | Description |
 |---|---|
-| `position: Point` | Current position in turtle coordinates (read-only) |
+| `position: Point` | Current position in tortoise coordinates (read-only) |
 | `heading: Double` | Current heading in degrees (0 = north, CW+); settable |
 | `towards(x:y:)` / `towards(_:)` | Heading toward a point from current position |
 | `distance(x:y:)` / `distance(_:)` | Distance to a point from current position |
@@ -155,16 +155,16 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 
 | Method / Property | Description |
 |---|---|
-| `showTurtle()` | Make the turtle visible |
-| `hideTurtle()` | Hide the turtle |
-| `isVisible: Bool` | Whether the turtle is visible (read-only) |
+| `showTortoise()` | Make the tortoise visible |
+| `hideTortoise()` | Hide the tortoise |
+| `isVisible: Bool` | Whether the tortoise is visible (read-only) |
 
 #### Canvas
 
 | Method / Property | Description |
 |---|---|
 | `backgroundColor: Color` | Canvas background color |
-| `clear()` | Erase all drawings (turtle state is preserved) |
+| `clear()` | Erase all drawings (tortoise state is preserved) |
 | `speed: Double` | Animation speed: 1 (slowest) … 10 (fastest), 0 = instant |
 | `canvasSize: Size` | Logical canvas dimensions |
 
@@ -174,13 +174,13 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 Tortoise API calls
       │  produces
       ▼
-[TurtleCommand]  ── pure value stream ──▶  TortoiseUI  (SwiftUI animation)
+[TortoiseCommand]  ── pure value stream ──▶  TortoiseUI  (SwiftUI animation)
   (Sendable)                           ──▶  TortoiseSVG (static SVG export)
                                        ──▶  your own renderer
 ```
 
-`CommandPlayer.play(commands:)` converts `[TurtleCommand]` into
-`[PlaybackFrame]` — a snapshot of turtle state after each command. Both
+`CommandPlayer.play(commands:)` converts `[TortoiseCommand]` into
+`[PlaybackFrame]` — a snapshot of tortoise state after each command. Both
 `TortoiseUI` and `TortoiseSVG` build on top of this pure function.
 
 ## License
