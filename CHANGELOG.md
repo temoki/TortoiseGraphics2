@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0-beta2
+
+### Fixed
+- CI: use `xcrun swift-format` instead of `swift-format` to resolve command not found error
+- README: fix link text "tortoise graphics" → "turtle graphics"
+
 ## 2.0.0-beta1
 
 Version 2 of [TortoiseGraphics](https://github.com/temoki/TortoiseGraphics), rewritten from scratch for Swift 6 strict concurrency and SwiftUI.
