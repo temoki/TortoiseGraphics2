@@ -30,10 +30,11 @@ final class CanvasModel {
         if let first = frames.first {
             self.backgroundColor = first.backgroundColor
         }
-        // If the first frame sets speed to 0, flush all frames now so the
-        // final drawing is visible even in static-snapshot previews (where
-        // TimelineView never fires and tick() is never called).
-        if let firstFrame = frames.first, firstFrame.turtleState.speed <= 0 {
+        // Eagerly flush all frames when the program is in instant mode (speed=0
+        // is established before the first visible drawing command). This makes
+        // instant-mode programs visible in static Xcode Previews where
+        // TimelineView never fires and tick() is never called.
+        if Self.isInstantMode(frames: frames) {
             while !isFinished { advance() }
         }
     }
@@ -82,5 +83,18 @@ final class CanvasModel {
 
     private static func stepDuration(speed: Double) -> TimeInterval {
         0.5 / max(1, speed)  // speed 1 = 0.5 s/step, speed 10 = 0.05 s/step
+    }
+
+    /// Returns true if speed reaches 0 before the first frame that produces visible output.
+    /// Scans frames in order: if turtleState.speed ≤ 0 appears before any stroke/arc/fill,
+    /// the program is instant-mode and the full drawing can be flushed eagerly.
+    private static func isInstantMode(frames: [PlaybackFrame]) -> Bool {
+        for frame in frames {
+            if frame.turtleState.speed <= 0 { return true }
+            if frame.newStroke != nil || frame.newArcStroke != nil || frame.completedFill != nil {
+                return false
+            }
+        }
+        return false
     }
 }

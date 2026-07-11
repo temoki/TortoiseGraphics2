@@ -103,7 +103,7 @@ public struct CommandPlayer {
                 didClear = true
 
             case .arc(let radius, let extent):
-                let center = arcCenter(position: turtle.position, heading: turtle.heading, radius: radius)
+                let center = Tortoise.arcCenter(position: turtle.position, heading: turtle.heading, radius: radius)
                 let dx = turtle.position.x - center.x
                 let dy = turtle.position.y - center.y
                 let startAngleDeg = atan2(dy, dx) * (180 / .pi)
@@ -142,11 +142,4 @@ public struct CommandPlayer {
         return frames
     }
 
-    private static func arcCenter(position: Vec2D, heading: Double, radius: Double) -> Vec2D {
-        let leftRad = (heading - 90) * (.pi / 180)
-        return Vec2D(
-            x: position.x + radius * sin(leftRad),
-            y: position.y + radius * cos(leftRad)
-        )
-    }
 }

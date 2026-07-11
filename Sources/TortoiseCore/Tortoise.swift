@@ -212,7 +212,7 @@ public final class Tortoise {
 // MARK: - Arc geometry helper (shared with CommandPlayer)
 
 extension Tortoise {
-    static func arcEndState(
+    nonisolated static func arcEndState(
         position: Vec2D,
         heading: Double,
         radius: Double,
@@ -231,7 +231,7 @@ extension Tortoise {
         return (newPos, newHeading)
     }
 
-    static func arcCenter(position: Vec2D, heading: Double, radius: Double) -> Vec2D {
+    nonisolated static func arcCenter(position: Vec2D, heading: Double, radius: Double) -> Vec2D {
         let leftRad = (heading - 90) * (.pi / 180)
         return Vec2D(
             x: position.x + radius * sin(leftRad),
