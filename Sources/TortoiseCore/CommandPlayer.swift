@@ -18,6 +18,7 @@ public struct CommandPlayer {
         var fillPoints: [Vec2D]? = nil
 
         for (index, command) in commands.enumerated() {
+            let isFillActive = fillPoints != nil
             var newStroke: Stroke? = nil
             var newArcStroke: ArcStroke? = nil
             var completedFill: Fill? = nil
@@ -135,7 +136,8 @@ public struct CommandPlayer {
                 newStroke: newStroke,
                 newArcStroke: newArcStroke,
                 completedFill: completedFill,
-                didClear: didClear
+                didClear: didClear,
+                isFillActive: isFillActive
             ))
         }
 

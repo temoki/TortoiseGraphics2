@@ -17,4 +17,11 @@ public struct PlaybackFrame: Sendable {
     public let completedFill: Fill?
     /// `true` when this command cleared all previous drawing.
     public let didClear: Bool
+    /// `true` when this frame was produced while a fill region was active
+    /// (i.e., between `beginFill` and `endFill`).
+    ///
+    /// Renderers that need to place fill polygons below their outline strokes
+    /// (SVG, PDF, etc.) can use this to defer stroke emission until after the
+    /// corresponding ``completedFill`` is known.
+    public let isFillActive: Bool
 }
