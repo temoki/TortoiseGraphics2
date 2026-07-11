@@ -45,9 +45,7 @@ public struct TortoiseCanvasView: View {
                 let t = viewportMode.transform(canvasSize: model.canvasSize, viewSize: size)
                 let s = (t.a * t.a + t.b * t.b).squareRoot()
                 drawBackground(&ctx, size: size)
-                drawFills(&ctx, transform: t)
-                drawStrokes(&ctx, transform: t, scale: s)
-                drawDots(&ctx, transform: t, scale: s)
+                drawElements(&ctx, transform: t, scale: s)
                 drawTurtle(&ctx, transform: t, scale: s)
             }
             .onChange(of: timeline.date) { _, date in
@@ -69,30 +67,37 @@ public struct TortoiseCanvasView: View {
                  with: .color(SwiftUI.Color(model.backgroundColor)))
     }
 
-    private func drawFills(_ ctx: inout GraphicsContext, transform t: CGAffineTransform) {
-        for fill in model.fills {
-            guard fill.points.count >= 3, let first = fill.points.first else { continue }
-            var path = Path()
-            path.move(to: CGPoint(x: first.x, y: first.y).applying(t))
-            for pt in fill.points.dropFirst() {
-                path.addLine(to: CGPoint(x: pt.x, y: pt.y).applying(t))
+    /// Renders committed elements in command-execution order, then draws the partial
+    /// stroke/arc for the frame currently being animated.
+    private func drawElements(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double) {
+        for element in model.elements {
+            switch element {
+            case .fill(let fill):
+                guard fill.points.count >= 3, let first = fill.points.first else { continue }
+                var path = Path()
+                path.move(to: CGPoint(x: first.x, y: first.y).applying(t))
+                for pt in fill.points.dropFirst() {
+                    path.addLine(to: CGPoint(x: pt.x, y: pt.y).applying(t))
+                }
+                path.closeSubpath()
+                ctx.fill(path, with: .color(SwiftUI.Color(fill.color)))
+
+            case .stroke(let stroke):
+                var path = Path()
+                path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
+                path.addLine(to: CGPoint(x: stroke.to.x, y: stroke.to.y).applying(t))
+                ctx.stroke(path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
+
+            case .arcStroke(let arc):
+                ctx.stroke(arcPath(arc, sweep: arc.sweep, transform: t),
+                           with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+
+            case .dot(let dot):
+                let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
+                let r = dot.size / 2 * s
+                let rect = CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2)
+                ctx.fill(Path(ellipseIn: rect), with: .color(SwiftUI.Color(dot.color)))
             }
-            path.closeSubpath()
-            ctx.fill(path, with: .color(SwiftUI.Color(fill.color)))
-        }
-    }
-
-    private func drawStrokes(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double) {
-        for stroke in model.strokes {
-            var path = Path()
-            path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
-            path.addLine(to: CGPoint(x: stroke.to.x, y: stroke.to.y).applying(t))
-            ctx.stroke(path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
-        }
-
-        for arc in model.arcStrokes {
-            ctx.stroke(arcPath(arc, sweep: arc.sweep, transform: t),
-                       with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
         }
 
         // Partial stroke/arc for the frame currently being animated.
@@ -131,15 +136,6 @@ public struct TortoiseCanvasView: View {
             if i == 0 { path.move(to: pt) } else { path.addLine(to: pt) }
         }
         return path
-    }
-
-    private func drawDots(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double) {
-        for dot in model.dots {
-            let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
-            let r = dot.size / 2 * s
-            let rect = CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2)
-            ctx.fill(Path(ellipseIn: rect), with: .color(SwiftUI.Color(dot.color)))
-        }
     }
 
     private func drawTurtle(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double) {

@@ -13,10 +13,9 @@ final class CanvasModel {
     let canvasSize: Size
 
     private(set) var currentFrameIndex: Int = -1
-    private(set) var strokes: [Stroke] = []
-    private(set) var arcStrokes: [ArcStroke] = []
-    private(set) var fills: [Fill] = []
-    private(set) var dots: [Dot] = []
+    /// Drawing elements in command-execution order.
+    /// Fill polygons are inserted before their outline strokes so they render below them.
+    private(set) var elements: [DrawElement] = []
     private(set) var backgroundColor: TortoiseCore.Color = .white
     private(set) var turtleState: TurtleState = .default
 
@@ -25,6 +24,9 @@ final class CanvasModel {
     private(set) var animationProgress: Double = 0.0
 
     private var lastTickDate: Date?
+    // Strokes/dots produced while isFillActive are held here until endFill,
+    // then flushed after the fill polygon so the polygon renders below its outlines.
+    private var pendingFillElements: [DrawElement] = []
 
     var isFinished: Bool { frames.isEmpty || currentFrameIndex >= frames.count - 1 }
 
@@ -90,16 +92,32 @@ final class CanvasModel {
         let nextIndex = currentFrameIndex + 1
         guard nextIndex < frames.count else { return }
         let frame = frames[nextIndex]
+
         if frame.didClear {
-            strokes.removeAll()
-            arcStrokes.removeAll()
-            fills.removeAll()
-            dots.removeAll()
+            elements.removeAll()
+            pendingFillElements.removeAll()
         }
-        if let s = frame.newStroke { strokes.append(s) }
-        if let a = frame.newArcStroke { arcStrokes.append(a) }
-        if let f = frame.completedFill { fills.append(f) }
-        if let d = frame.newDot { dots.append(d) }
+
+        // endFill: insert the polygon first, then flush pending strokes/dots above it.
+        if let f = frame.completedFill {
+            elements.append(.fill(f))
+            elements.append(contentsOf: pendingFillElements)
+            pendingFillElements.removeAll()
+        }
+
+        if let s = frame.newStroke {
+            if frame.isFillActive { pendingFillElements.append(.stroke(s)) }
+            else                  { elements.append(.stroke(s)) }
+        }
+        if let a = frame.newArcStroke {
+            if frame.isFillActive { pendingFillElements.append(.arcStroke(a)) }
+            else                  { elements.append(.arcStroke(a)) }
+        }
+        if let d = frame.newDot {
+            if frame.isFillActive { pendingFillElements.append(.dot(d)) }
+            else                  { elements.append(.dot(d)) }
+        }
+
         backgroundColor = frame.backgroundColor
         turtleState = frame.turtleState
         currentFrameIndex = nextIndex
@@ -119,4 +137,13 @@ final class CanvasModel {
         }
         return false
     }
+}
+
+// MARK: - DrawElement
+
+enum DrawElement {
+    case stroke(Stroke)
+    case arcStroke(ArcStroke)
+    case fill(Fill)
+    case dot(Dot)
 }
