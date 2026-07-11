@@ -126,9 +126,6 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 🐢.backgroundColor = .black
 ```
 
-Python-style shorthand aliases (`fd`, `bk`, `rt`, `lt`, `pu`, `pd`, `ht`,
-`st`, `goto`, `seth`) are also available.
-
 ## Architecture
 
 ```

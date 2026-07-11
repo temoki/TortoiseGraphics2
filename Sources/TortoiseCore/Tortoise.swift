@@ -234,30 +234,6 @@ public final class Tortoise {
         commands.append(.clear)
     }
 
-    // MARK: - Python-style aliases
-
-    /// `fd` — alias for ``forward(_:)``.
-    public func fd(_ distance: Double) { forward(distance) }
-    /// `bk` — alias for ``backward(_:)``.
-    public func bk(_ distance: Double) { backward(distance) }
-    /// `rt` — alias for ``right(_:)``.
-    public func rt(_ degrees: Double) { right(degrees) }
-    /// `lt` — alias for ``left(_:)``.
-    public func lt(_ degrees: Double) { left(degrees) }
-    /// `pu` — alias for ``penUp()``.
-    public func pu() { penUp() }
-    /// `pd` — alias for ``penDown()``.
-    public func pd() { penDown() }
-    /// `ht` — alias for ``hideTurtle()``.
-    public func ht() { hideTurtle() }
-    /// `st` — alias for ``showTurtle()``.
-    public func st() { showTurtle() }
-    /// `goto` — alias for ``setPosition(_:)``.
-    public func goto(_ position: Vec2D) { setPosition(position) }
-    /// `goto` — alias for ``setPosition(x:y:)``.
-    public func goto(x: Double, y: Double) { setPosition(x: x, y: y) }
-    /// `seth` — alias for ``heading`` setter.
-    public func seth(_ degrees: Double) { heading = degrees }
 }
 
 // MARK: - Arc geometry helper (shared with CommandPlayer)

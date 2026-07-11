@@ -143,49 +143,6 @@ struct TortoiseAPITests {
         #expect(t.canvasSize == Size2D(width: 800, height: 600))
     }
 
-    @Test("Python aliases produce same commands as primary API")
-    func pythonAliases() {
-        let t1 = Tortoise()
-        t1.forward(100)
-        t1.backward(50)
-        t1.right(90)
-        t1.left(45)
-        t1.penUp()
-        t1.penDown()
-        t1.hideTurtle()
-        t1.showTurtle()
-
-        let t2 = Tortoise()
-        t2.fd(100)
-        t2.bk(50)
-        t2.rt(90)
-        t2.lt(45)
-        t2.pu()
-        t2.pd()
-        t2.ht()
-        t2.st()
-
-        #expect(t1.commands == t2.commands)
-    }
-
-    @Test("goto(x:y:) is alias for setPosition(x:y:)")
-    func gotoAlias() {
-        let t1 = Tortoise()
-        t1.setPosition(x: 5, y: -3)
-        let t2 = Tortoise()
-        t2.goto(x: 5, y: -3)
-        #expect(t1.commands == t2.commands)
-    }
-
-    @Test("seth is alias for heading setter")
-    func sethAlias() {
-        let t1 = Tortoise()
-        t1.heading = 180
-        let t2 = Tortoise()
-        t2.seth(180)
-        #expect(t1.commands == t2.commands)
-    }
-
     @Test("circle() appends .arc(radius:extent:360)")
     func circleFullCommand() {
         let t = Tortoise()
