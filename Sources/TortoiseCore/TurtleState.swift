@@ -1,7 +1,7 @@
 /// The complete state of the turtle at a point in time.
 public struct TurtleState: Sendable, Equatable {
     /// Current position in turtle coordinate space (center origin, Y up).
-    public var position: Vec2D
+    public var position: Point
     /// Current heading in degrees (0 = north, clockwise positive).
     public var heading: Double
     public var isPenDown: Bool

@@ -4,7 +4,7 @@
 /// Renderers must convert to their own coordinate system (SVG / Core Graphics have Y flipped).
 public struct ArcStroke: Sendable, Equatable {
     /// Center of the circle in turtle coordinate space.
-    public let center: Vec2D
+    public let center: Point
     public let radius: Double
     /// Angle from center to the start point (0 = east, CCW positive in turtle space).
     public let startAngle: Double

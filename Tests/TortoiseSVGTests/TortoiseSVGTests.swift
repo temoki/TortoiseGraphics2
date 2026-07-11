@@ -4,7 +4,7 @@ import TortoiseCore
 
 // MARK: - Helpers
 
-private let canvas400 = Size2D(width: 400, height: 400)
+private let canvas400 = Size(width: 400, height: 400)
 
 /// Returns the rendered SVG for the given command array on a 400×400 canvas.
 private func svg(_ commands: TurtleCommand...) -> String {
@@ -26,7 +26,7 @@ struct TortoiseSVGTests {
 
     @Test("SVG element reflects canvas size in viewBox and dimensions")
     func svgDimensions() {
-        let out = TortoiseSVG.render(commands: [], canvasSize: Size2D(width: 300, height: 200))
+        let out = TortoiseSVG.render(commands: [], canvasSize: Size(width: 300, height: 200))
         #expect(out.contains("viewBox=\"0 0 300 200\""))
         #expect(out.contains("width=\"300\""))
         #expect(out.contains("height=\"200\""))

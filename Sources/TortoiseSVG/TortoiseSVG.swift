@@ -22,7 +22,7 @@ public enum TortoiseSVG {
     /// in any browser or vector editor without loss of quality.
     public static func render(
         commands: [TurtleCommand],
-        canvasSize: Size2D = .defaultCanvas
+        canvasSize: Size = .defaultCanvas
     ) -> String {
         let frames = CommandPlayer.play(commands: commands)
         return SVGBuilder(frames: frames, canvasSize: canvasSize).build()
@@ -33,7 +33,7 @@ public enum TortoiseSVG {
     /// Convenience wrapper around ``render(commands:canvasSize:)``.
     public static func write(
         commands: [TurtleCommand],
-        canvasSize: Size2D = .defaultCanvas,
+        canvasSize: Size = .defaultCanvas,
         to url: URL
     ) throws {
         let svg = render(commands: commands, canvasSize: canvasSize)
@@ -45,7 +45,7 @@ public enum TortoiseSVG {
 
 private struct SVGBuilder {
     let frames: [PlaybackFrame]
-    let canvasSize: Size2D
+    let canvasSize: Size
 
     private var w: Double { canvasSize.width }
     private var h: Double { canvasSize.height }

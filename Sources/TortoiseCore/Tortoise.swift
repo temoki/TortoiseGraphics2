@@ -27,19 +27,19 @@ public final class Tortoise {
     /// to `(canvasSize.width/2, canvasSize.height/2)`.
     /// Renderers use this as the reference frame (e.g., SVG `viewBox`,
     /// `TortoiseCanvasView` scale-to-fit mode).
-    public let canvasSize: Size2D
+    public let canvasSize: Size
 
     private var state: TurtleState = .default
     private var _backgroundColor: Color = .white
     private var _isFilling: Bool = false
 
-    public init(canvasSize: Size2D = .defaultCanvas) {
+    public init(canvasSize: Size = .defaultCanvas) {
         self.canvasSize = canvasSize
     }
 
     // MARK: - Read-only state
 
-    public var position: Vec2D { state.position }
+    public var position: Point { state.position }
     public var isPenDown: Bool { state.isPenDown }
     public var isVisible: Bool { state.isVisible }
     /// `true` when between a ``beginFill()`` and ``endFill()`` call.
@@ -118,12 +118,12 @@ public final class Tortoise {
 
     /// Teleport to the given position without changing heading.
     public func setPosition(x: Double, y: Double) {
-        state.position = Vec2D(x: x, y: y)
+        state.position = Point(x: x, y: y)
         commands.append(.setPosition(state.position))
     }
 
     /// Teleport to the given position without changing heading.
-    public func setPosition(_ position: Vec2D) {
+    public func setPosition(_ position: Point) {
         state.position = position
         commands.append(.setPosition(position))
     }
@@ -150,7 +150,7 @@ public final class Tortoise {
     }
 
     /// Returns the heading (in degrees) toward `position` from the current position.
-    public func towards(_ position: Vec2D) -> Double {
+    public func towards(_ position: Point) -> Double {
         towards(x: position.x, y: position.y)
     }
 
@@ -162,7 +162,7 @@ public final class Tortoise {
     }
 
     /// Returns the Euclidean distance from the current position to `position`.
-    public func distance(_ position: Vec2D) -> Double {
+    public func distance(_ position: Point) -> Double {
         distance(x: position.x, y: position.y)
     }
 
@@ -240,17 +240,17 @@ public final class Tortoise {
 
 extension Tortoise {
     nonisolated static func arcEndState(
-        position: Vec2D,
+        position: Point,
         heading: Double,
         radius: Double,
         extent: Double
-    ) -> (position: Vec2D, heading: Double) {
+    ) -> (position: Point, heading: Double) {
         let center = arcCenter(position: position, heading: heading, radius: radius)
         let dx = position.x - center.x
         let dy = position.y - center.y
         let startAngle = atan2(dy, dx)
         let endAngleRad = startAngle + extent * (.pi / 180)
-        let newPos = Vec2D(
+        let newPos = Point(
             x: center.x + radius * cos(endAngleRad),
             y: center.y + radius * sin(endAngleRad)
         )
@@ -258,9 +258,9 @@ extension Tortoise {
         return (newPos, newHeading)
     }
 
-    nonisolated static func arcCenter(position: Vec2D, heading: Double, radius: Double) -> Vec2D {
+    nonisolated static func arcCenter(position: Point, heading: Double, radius: Double) -> Point {
         let leftRad = (heading - 90) * (.pi / 180)
-        return Vec2D(
+        return Point(
             x: position.x + radius * sin(leftRad),
             y: position.y + radius * cos(leftRad)
         )

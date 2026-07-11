@@ -13,7 +13,7 @@ public enum TurtleCommand: Sendable, Equatable {
     /// Move to the origin (0, 0) and reset heading to 0 (north).
     case home
     /// Teleport to the given position without changing heading.
-    case setPosition(Vec2D)
+    case setPosition(Point)
     /// Set heading in degrees (0 = north, clockwise).
     case setHeading(Double)
 

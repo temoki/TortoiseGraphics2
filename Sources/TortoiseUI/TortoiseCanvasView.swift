@@ -146,13 +146,13 @@ public struct TortoiseCanvasView: View {
         guard model.turtleState.isVisible else { return }
 
         // Interpolate position and heading toward the in-progress frame.
-        let pos: Vec2D
+        let pos: Point
         let heading: Double
         if let next = model.inProgressFrame, model.animationProgress > 0 {
             let p = model.animationProgress
             let from = model.turtleState
             let to = next.turtleState
-            pos = Vec2D(
+            pos = Point(
                 x: from.position.x + p * (to.position.x - from.position.x),
                 y: from.position.y + p * (to.position.y - from.position.y)
             )

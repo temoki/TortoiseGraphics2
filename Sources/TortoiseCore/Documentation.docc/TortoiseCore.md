@@ -58,7 +58,7 @@ to produce output.
 ### Value Types
 
 - ``Color``
-- ``Vec2D``
-- ``Size2D``
+- ``Point``
+- ``Size``
 - ``Angle``
 - ``TurtleState``

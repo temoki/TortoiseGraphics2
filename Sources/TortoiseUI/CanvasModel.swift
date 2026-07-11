@@ -10,7 +10,7 @@ import TortoiseCore
 @MainActor
 final class CanvasModel {
     let frames: [PlaybackFrame]
-    let canvasSize: Size2D
+    let canvasSize: Size
 
     private(set) var currentFrameIndex: Int = -1
     private(set) var strokes: [Stroke] = []
@@ -40,7 +40,7 @@ final class CanvasModel {
                                : TurtleState.default.speed
     }
 
-    init(commands: [TurtleCommand], canvasSize: Size2D) {
+    init(commands: [TurtleCommand], canvasSize: Size) {
         self.frames = CommandPlayer.play(commands: commands)
         self.canvasSize = canvasSize
         if let first = frames.first {

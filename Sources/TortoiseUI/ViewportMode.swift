@@ -12,7 +12,7 @@ public enum ViewportMode {
 extension ViewportMode {
     /// Returns a transform mapping turtle coordinates (center origin, Y up)
     /// to SwiftUI Canvas coordinates (top-left origin, Y down).
-    func transform(canvasSize: Size2D, viewSize: CGSize) -> CGAffineTransform {
+    func transform(canvasSize: Size, viewSize: CGSize) -> CGAffineTransform {
         let tx = viewSize.width / 2
         let ty = viewSize.height / 2
         switch self {

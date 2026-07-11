@@ -15,7 +15,7 @@ public struct CommandPlayer {
 
         var turtle = initialTurtle
         var bgColor = initialBackgroundColor
-        var fillPoints: [Vec2D]? = nil
+        var fillPoints: [Point]? = nil
 
         for (index, command) in commands.enumerated() {
             let isFillActive = fillPoints != nil
@@ -41,7 +41,7 @@ public struct CommandPlayer {
                 turtle.heading = (turtle.heading + degrees).truncatingRemainder(dividingBy: 360)
 
             case .home:
-                let next = Vec2D.zero
+                let next = Point.zero
                 if turtle.isPenDown {
                     newStroke = Stroke(
                         from: turtle.position, to: next,
@@ -113,7 +113,7 @@ public struct CommandPlayer {
                 let dy = turtle.position.y - center.y
                 let startAngleDeg = atan2(dy, dx) * (180 / .pi)
                 let endAngleRad = (startAngleDeg + extent) * (.pi / 180)
-                let newPos = Vec2D(
+                let newPos = Point(
                     x: center.x + radius * cos(endAngleRad),
                     y: center.y + radius * sin(endAngleRad)
                 )
