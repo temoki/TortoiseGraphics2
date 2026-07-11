@@ -11,6 +11,8 @@ public struct PlaybackFrame: Sendable {
     public let backgroundColor: Color
     /// Line segment drawn by this command, if any.
     public let newStroke: Stroke?
+    /// Circular arc drawn by this command, if any.
+    public let newArcStroke: ArcStroke?
     /// Fill polygon completed by an `endFill` command, if any.
     public let completedFill: Fill?
     /// `true` when this command cleared all previous drawing.

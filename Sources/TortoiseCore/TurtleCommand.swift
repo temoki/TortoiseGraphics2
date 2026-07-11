@@ -38,4 +38,11 @@ public enum TurtleCommand: Sendable, Equatable {
     case backgroundColor(Color)
     /// Clear all drawings; turtle position and pen state are preserved.
     case clear
+
+    // MARK: Arc
+    /// Draw a circular arc counterclockwise.
+    ///
+    /// The arc center is placed to the turtle's left at distance `|radius|`.
+    /// `extent` is in degrees: 360 = full circle, positive = counterclockwise.
+    case arc(radius: Double, extent: Double)
 }

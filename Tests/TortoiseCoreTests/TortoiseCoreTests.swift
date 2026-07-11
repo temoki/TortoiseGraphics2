@@ -54,18 +54,52 @@ struct TortoiseAPITests {
         #expect(t.commands == [.penUp, .penDown])
     }
 
-    @Test("setPenColor appends .penColor")
-    func penColorCommand() {
+    @Test("penColor property getter and setter")
+    func penColorProperty() {
         let t = Tortoise()
-        t.setPenColor(.red)
+        t.penColor = .red
         #expect(t.commands == [.penColor(.red)])
+        #expect(t.penColor == .red)
     }
 
-    @Test("setPenWidth appends .penWidth")
-    func penWidthCommand() {
+    @Test("penWidth property getter and setter")
+    func penWidthProperty() {
         let t = Tortoise()
-        t.setPenWidth(3)
+        t.penWidth = 3
         #expect(t.commands == [.penWidth(3)])
+        #expect(t.penWidth == 3)
+    }
+
+    @Test("fillColor property getter and setter")
+    func fillColorProperty() {
+        let t = Tortoise()
+        t.fillColor = .blue
+        #expect(t.commands == [.fillColor(.blue)])
+        #expect(t.fillColor == .blue)
+    }
+
+    @Test("heading property getter and setter appends .setHeading")
+    func headingProperty() {
+        let t = Tortoise()
+        t.heading = 270
+        #expect(t.commands == [.setHeading(270)])
+        #expect(t.heading == 270)
+    }
+
+    @Test("speed property getter and setter")
+    func speedProperty() {
+        let t = Tortoise()
+        t.speed = 3
+        #expect(t.commands == [.speed(3)])
+        #expect(t.speed == 3)
+    }
+
+    @Test("backgroundColor property getter and setter")
+    func backgroundColorProperty() {
+        let t = Tortoise()
+        t.backgroundColor = .cyan
+        #expect(t.commands == [.backgroundColor(.cyan)])
+        #expect(t.backgroundColor == .cyan)
     }
 
     @Test("beginFill / endFill append correct commands")
@@ -90,11 +124,11 @@ struct TortoiseAPITests {
         #expect(t.commands == [.setPosition(Vec2D(x: 10, y: 20))])
     }
 
-    @Test("setHeading appends .setHeading")
-    func setHeadingCommand() {
+    @Test("position read-only property reflects movements")
+    func positionProperty() {
         let t = Tortoise()
-        t.setHeading(270)
-        #expect(t.commands == [.setHeading(270)])
+        t.forward(100)
+        #expect(isClose(t.position, Vec2D(x: 0, y: 100)))
     }
 
     @Test("Python aliases produce same commands as primary API")
@@ -131,13 +165,44 @@ struct TortoiseAPITests {
         #expect(t1.commands == t2.commands)
     }
 
-    @Test("seth is alias for setHeading")
+    @Test("seth is alias for heading setter")
     func sethAlias() {
         let t1 = Tortoise()
-        t1.setHeading(180)
+        t1.heading = 180
         let t2 = Tortoise()
         t2.seth(180)
         #expect(t1.commands == t2.commands)
+    }
+
+    @Test("circle() appends .arc(radius:extent:360)")
+    func circleFullCommand() {
+        let t = Tortoise()
+        t.circle(radius: 100)
+        #expect(t.commands == [.arc(radius: 100, extent: 360)])
+    }
+
+    @Test("circle(radius:extent:) appends .arc with given extent")
+    func circleArcCommand() {
+        let t = Tortoise()
+        t.circle(radius: 50, extent: 90)
+        #expect(t.commands == [.arc(radius: 50, extent: 90)])
+    }
+
+    @Test("full circle returns turtle to start position")
+    func fullCircleReturnsHome() {
+        let t = Tortoise()
+        t.circle(radius: 100)
+        #expect(isClose(t.position, Vec2D.zero))
+    }
+
+    @Test("quarter circle moves turtle to correct position")
+    func quarterCirclePosition() {
+        let t = Tortoise()
+        t.circle(radius: 100, extent: 90)
+        // Starting at (0,0) heading north: center = (-100, 0)
+        // After 90° CCW arc: end = (-100, 100), heading = 270°
+        #expect(isClose(t.position, Vec2D(x: -100, y: 100)))
+        #expect(isClose(t.heading, -90))
     }
 }
 
@@ -149,29 +214,25 @@ struct CommandPlayerTests {
     func forwardNorth() {
         let frames = CommandPlayer.play(commands: [.forward(100)])
         #expect(frames.count == 1)
-        let pos = frames[0].turtleState.position
-        #expect(isClose(pos, Vec2D(x: 0, y: 100)))
+        #expect(isClose(frames[0].turtleState.position, Vec2D(x: 0, y: 100)))
     }
 
     @Test("rotate 90 then forward moves east")
     func forwardEastAfterRightTurn() {
         let frames = CommandPlayer.play(commands: [.rotate(90), .forward(100)])
-        let pos = frames.last!.turtleState.position
-        #expect(isClose(pos, Vec2D(x: 100, y: 0)))
+        #expect(isClose(frames.last!.turtleState.position, Vec2D(x: 100, y: 0)))
     }
 
     @Test("rotate -90 then forward moves west")
     func forwardWestAfterLeftTurn() {
         let frames = CommandPlayer.play(commands: [.rotate(-90), .forward(100)])
-        let pos = frames.last!.turtleState.position
-        #expect(isClose(pos, Vec2D(x: -100, y: 0)))
+        #expect(isClose(frames.last!.turtleState.position, Vec2D(x: -100, y: 0)))
     }
 
     @Test("rotate 180 then forward moves south")
     func forwardSouth() {
         let frames = CommandPlayer.play(commands: [.rotate(180), .forward(100)])
-        let pos = frames.last!.turtleState.position
-        #expect(isClose(pos, Vec2D(x: 0, y: -100)))
+        #expect(isClose(frames.last!.turtleState.position, Vec2D(x: 0, y: -100)))
     }
 
     @Test("penDown forward produces a stroke")
@@ -203,11 +264,7 @@ struct CommandPlayerTests {
 
     @Test("home moves to origin and resets heading")
     func homeResetsPositionAndHeading() {
-        let frames = CommandPlayer.play(commands: [
-            .forward(100),
-            .rotate(45),
-            .home,
-        ])
+        let frames = CommandPlayer.play(commands: [.forward(100), .rotate(45), .home])
         let state = frames.last!.turtleState
         #expect(isClose(state.position, Vec2D.zero))
         #expect(isClose(state.heading, 0))
@@ -216,9 +273,7 @@ struct CommandPlayerTests {
     @Test("home with pen down produces a stroke back to origin")
     func homeDrawsLineWhenPenDown() {
         let frames = CommandPlayer.play(commands: [.forward(100), .home])
-        let homeFrame = frames[1]
-        #expect(homeFrame.newStroke != nil)
-        #expect(isClose(homeFrame.newStroke!.to, Vec2D.zero))
+        #expect(isClose(frames[1].newStroke!.to, Vec2D.zero))
     }
 
     @Test("setPosition teleports turtle")
@@ -246,9 +301,8 @@ struct CommandPlayerTests {
             .endFill,
         ]
         let frames = CommandPlayer.play(commands: cmds)
-        let fillFrame = frames.last!
-        #expect(fillFrame.completedFill != nil)
-        #expect(fillFrame.completedFill!.points.count == 3)
+        #expect(frames.last!.completedFill != nil)
+        #expect(frames.last!.completedFill!.points.count == 3)
     }
 
     @Test("fill color is taken from fillColor command")
@@ -298,8 +352,34 @@ struct CommandPlayerTests {
             cmds.append(.rotate(90))
         }
         let frames = CommandPlayer.play(commands: cmds)
-        let pos = frames.last!.turtleState.position
-        #expect(isClose(pos, Vec2D.zero))
+        #expect(isClose(frames.last!.turtleState.position, Vec2D.zero))
+    }
+
+    @Test("full circle arc returns turtle to start position")
+    func fullArcReturnsToStart() {
+        let frames = CommandPlayer.play(commands: [.arc(radius: 100, extent: 360)])
+        #expect(isClose(frames.last!.turtleState.position, Vec2D.zero))
+    }
+
+    @Test("quarter circle arc moves turtle to correct position and heading")
+    func quarterArcPosition() {
+        let frames = CommandPlayer.play(commands: [.arc(radius: 100, extent: 90)])
+        let state = frames.last!.turtleState
+        #expect(isClose(state.position, Vec2D(x: -100, y: 100)))
+        #expect(isClose(state.heading, -90))
+    }
+
+    @Test("arc with pen down produces an ArcStroke")
+    func arcProducesArcStroke() {
+        let frames = CommandPlayer.play(commands: [.arc(radius: 50, extent: 180)])
+        #expect(frames.last!.newArcStroke != nil)
+        #expect(frames.last!.newStroke == nil)
+    }
+
+    @Test("arc with pen up produces no stroke")
+    func arcPenUpNoStroke() {
+        let frames = CommandPlayer.play(commands: [.penUp, .arc(radius: 50, extent: 90)])
+        #expect(frames.last!.newArcStroke == nil)
     }
 }
 
@@ -333,9 +413,7 @@ struct Vec2DTests {
 
     @Test("distance between two points")
     func distance() {
-        let a = Vec2D(x: 0, y: 0)
-        let b = Vec2D(x: 3, y: 4)
-        #expect(isClose(a.distance(to: b), 5))
+        #expect(isClose(Vec2D(x: 0, y: 0).distance(to: Vec2D(x: 3, y: 4)), 5))
     }
 }
 

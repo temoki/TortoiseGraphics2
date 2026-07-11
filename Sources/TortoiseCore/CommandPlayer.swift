@@ -1,3 +1,5 @@
+import Foundation
+
 /// Replays a sequence of ``TurtleCommand`` values into ``PlaybackFrame`` values.
 ///
 /// This is a pure function: the same input always produces the same output,
@@ -17,6 +19,7 @@ public struct CommandPlayer {
 
         for (index, command) in commands.enumerated() {
             var newStroke: Stroke? = nil
+            var newArcStroke: ArcStroke? = nil
             var completedFill: Fill? = nil
             var didClear = false
 
@@ -98,6 +101,31 @@ public struct CommandPlayer {
 
             case .clear:
                 didClear = true
+
+            case .arc(let radius, let extent):
+                let center = arcCenter(position: turtle.position, heading: turtle.heading, radius: radius)
+                let dx = turtle.position.x - center.x
+                let dy = turtle.position.y - center.y
+                let startAngleDeg = atan2(dy, dx) * (180 / .pi)
+                let endAngleRad = (startAngleDeg + extent) * (.pi / 180)
+                let newPos = Vec2D(
+                    x: center.x + radius * cos(endAngleRad),
+                    y: center.y + radius * sin(endAngleRad)
+                )
+
+                if turtle.isPenDown {
+                    newArcStroke = ArcStroke(
+                        center: center,
+                        radius: radius,
+                        startAngle: startAngleDeg,
+                        sweep: extent,
+                        color: turtle.penColor,
+                        width: turtle.penWidth
+                    )
+                }
+                fillPoints?.append(newPos)
+                turtle.position = newPos
+                turtle.heading = (turtle.heading - extent).truncatingRemainder(dividingBy: 360)
             }
 
             frames.append(PlaybackFrame(
@@ -105,11 +133,20 @@ public struct CommandPlayer {
                 turtleState: turtle,
                 backgroundColor: bgColor,
                 newStroke: newStroke,
+                newArcStroke: newArcStroke,
                 completedFill: completedFill,
                 didClear: didClear
             ))
         }
 
         return frames
+    }
+
+    private static func arcCenter(position: Vec2D, heading: Double, radius: Double) -> Vec2D {
+        let leftRad = (heading - 90) * (.pi / 180)
+        return Vec2D(
+            x: position.x + radius * sin(leftRad),
+            y: position.y + radius * cos(leftRad)
+        )
     }
 }

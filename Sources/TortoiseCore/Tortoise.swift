@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 /// The main turtle-graphics API.
@@ -19,73 +20,130 @@ public final class Tortoise {
     /// The command stream produced so far.
     public private(set) var commands: [TurtleCommand] = []
 
+    private var state: TurtleState = .default
+    private var _backgroundColor: Color = .white
+
     public init() {}
+
+    // MARK: - Read-only positional state
+
+    public var position: Vec2D { state.position }
+    public var isPenDown: Bool { state.isPenDown }
+    public var isVisible: Bool { state.isVisible }
+
+    // MARK: - Read-write properties (append a command on set)
+
+    public var penColor: Color {
+        get { state.penColor }
+        set { state.penColor = newValue; commands.append(.penColor(newValue)) }
+    }
+
+    public var penWidth: Double {
+        get { state.penWidth }
+        set {
+            state.penWidth = max(0, newValue)
+            commands.append(.penWidth(state.penWidth))
+        }
+    }
+
+    public var fillColor: Color {
+        get { state.fillColor }
+        set { state.fillColor = newValue; commands.append(.fillColor(newValue)) }
+    }
+
+    /// Heading in degrees (0 = north, clockwise positive).
+    public var heading: Double {
+        get { state.heading }
+        set {
+            state.heading = newValue.truncatingRemainder(dividingBy: 360)
+            commands.append(.setHeading(state.heading))
+        }
+    }
+
+    /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
+    public var speed: Double {
+        get { state.speed }
+        set { state.speed = max(0, newValue); commands.append(.speed(state.speed)) }
+    }
+
+    public var backgroundColor: Color {
+        get { _backgroundColor }
+        set { _backgroundColor = newValue; commands.append(.backgroundColor(newValue)) }
+    }
 
     // MARK: - Movement
 
     /// Move forward by `distance` pixels (negative = backward).
     public func forward(_ distance: Double) {
+        state.position = state.position.moved(distance: distance, heading: state.heading)
         commands.append(.forward(distance))
     }
 
     /// Move backward by `distance` pixels.
     public func backward(_ distance: Double) {
-        commands.append(.forward(-distance))
+        forward(-distance)
     }
 
     /// Rotate clockwise by `degrees`.
     public func right(_ degrees: Double) {
+        state.heading = (state.heading + degrees).truncatingRemainder(dividingBy: 360)
         commands.append(.rotate(degrees))
     }
 
     /// Rotate counterclockwise by `degrees`.
     public func left(_ degrees: Double) {
-        commands.append(.rotate(-degrees))
+        right(-degrees)
     }
 
-    /// Move to origin (0, 0) and reset heading to north.
+    /// Move to origin (0, 0) and reset heading to north (0°).
     public func home() {
+        state.position = .zero
+        state.heading = 0
         commands.append(.home)
     }
 
     /// Teleport to the given position without changing heading.
     public func setPosition(x: Double, y: Double) {
-        commands.append(.setPosition(Vec2D(x: x, y: y)))
+        state.position = Vec2D(x: x, y: y)
+        commands.append(.setPosition(state.position))
     }
 
     /// Teleport to the given position without changing heading.
     public func setPosition(_ position: Vec2D) {
+        state.position = position
         commands.append(.setPosition(position))
     }
 
-    /// Set heading in degrees (0 = north, clockwise).
-    public func setHeading(_ degrees: Double) {
-        commands.append(.setHeading(degrees))
+    /// Draw an arc counterclockwise.
+    ///
+    /// The center is placed to the left of the turtle at distance `radius`.
+    /// `extent` controls how many degrees of the circle are drawn (360 = full circle).
+    /// Positive `extent` draws counterclockwise; negative `extent` draws clockwise.
+    public func circle(radius: Double, extent: Double = 360) {
+        let (newPos, newHeading) = Self.arcEndState(
+            position: state.position,
+            heading: state.heading,
+            radius: radius,
+            extent: extent
+        )
+        state.position = newPos
+        state.heading = newHeading
+        commands.append(.arc(radius: radius, extent: extent))
     }
 
     // MARK: - Pen
 
     public func penDown() {
+        state.isPenDown = true
         commands.append(.penDown)
     }
 
     public func penUp() {
+        state.isPenDown = false
         commands.append(.penUp)
     }
 
-    public func setPenColor(_ color: Color) {
-        commands.append(.penColor(color))
-    }
-
-    public func setPenWidth(_ width: Double) {
-        commands.append(.penWidth(width))
-    }
-
     // MARK: - Fill
-
-    public func setFillColor(_ color: Color) {
-        commands.append(.fillColor(color))
-    }
 
     public func beginFill() {
         commands.append(.beginFill)
@@ -98,23 +156,16 @@ public final class Tortoise {
     // MARK: - Appearance
 
     public func showTurtle() {
+        state.isVisible = true
         commands.append(.showTurtle)
     }
 
     public func hideTurtle() {
+        state.isVisible = false
         commands.append(.hideTurtle)
     }
 
-    /// Set playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
-    public func speed(_ speed: Double) {
-        commands.append(.speed(speed))
-    }
-
     // MARK: - Canvas
-
-    public func setBackgroundColor(_ color: Color) {
-        commands.append(.backgroundColor(color))
-    }
 
     /// Clear all drawings; turtle position and pen state are preserved.
     public func clear() {
@@ -143,6 +194,37 @@ public final class Tortoise {
     public func goto(_ position: Vec2D) { setPosition(position) }
     /// `goto` — alias for ``setPosition(x:y:)``.
     public func goto(x: Double, y: Double) { setPosition(x: x, y: y) }
-    /// `seth` — alias for ``setHeading(_:)``.
-    public func seth(_ degrees: Double) { setHeading(degrees) }
+    /// `seth` — alias for ``heading`` setter.
+    public func seth(_ degrees: Double) { heading = degrees }
+}
+
+// MARK: - Arc geometry helper (shared with CommandPlayer)
+
+extension Tortoise {
+    static func arcEndState(
+        position: Vec2D,
+        heading: Double,
+        radius: Double,
+        extent: Double
+    ) -> (position: Vec2D, heading: Double) {
+        let center = arcCenter(position: position, heading: heading, radius: radius)
+        let dx = position.x - center.x
+        let dy = position.y - center.y
+        let startAngle = atan2(dy, dx)
+        let endAngleRad = startAngle + extent * (.pi / 180)
+        let newPos = Vec2D(
+            x: center.x + radius * cos(endAngleRad),
+            y: center.y + radius * sin(endAngleRad)
+        )
+        let newHeading = (heading - extent).truncatingRemainder(dividingBy: 360)
+        return (newPos, newHeading)
+    }
+
+    static func arcCenter(position: Vec2D, heading: Double, radius: Double) -> Vec2D {
+        let leftRad = (heading - 90) * (.pi / 180)
+        return Vec2D(
+            x: position.x + radius * sin(leftRad),
+            y: position.y + radius * cos(leftRad)
+        )
+    }
 }
