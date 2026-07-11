@@ -78,7 +78,44 @@ SwiftUI Canvas描画     SVGレンダラ         ImageRenderer(PNG等)
 
 第一段階はウィンドウ(2D)アプリとしてそのまま動作させる(SwiftUIベースなら追加コストほぼゼロ)。第二段階として、RealityKitでタートルを3D空間に置き、描画結果を空間内のボードに表示する「空間タートル」を実験的機能として検討。
 
-## 5. ロードマップ
+## 5. 旧設計からの変更点
+
+コードレビューで見つかった設計課題と、新版での方針。
+
+### 5.1 グローバル可変状態の廃止
+
+旧版は `Angle.currentUnit`(degrees/radians切替)と `Color.currentMode`(0-255/0-1切替)が `static var` のグローバル状態で、全タートル・全キャンバスに影響し呼び出し順で挙動が変わる。Swift 6 strict concurrencyではコンパイルエラーになる。
+
+新版: グローバル関数 `degrees()` / `radians()` / `colorMode()` を廃止し、角度単位はタートルごとの設定または型で表現(例: `Angle.degrees(90)`)。色は0-1の `Double` + alpha に統一する。
+
+### 5.2 実バグの教訓 → テスト必須化
+
+旧版にはテスト不在に起因する実バグが残っている。
+
+- `Vec2D` の内積演算子: `lhs.x * rhs.x + lhs.y + rhs.y`(`lhs.y * rhs.y` の誤り)
+- `fillColor(_ hex:)` がペン色(`state.pen.color`)を書き換えている(コピペミス)
+- `towards()` が `atan2` でなく `atan` を使用 → 象限が不正、x座標が同一だとゼロ除算
+- `backword` のスペルミスがpublic APIに残存
+
+新版: TortoiseCoreの全public APIにswift-testingでユニットテストを書くことをフェーズ1の完了条件とする。
+
+### 5.3 APIのSwift化
+
+旧版は `penColor(_:)` 関数と `penColor` プロパティの同名並立などPython turtle直訳のAPI。新版は `var penColor: Color { get set }` のようにSwiftらしい形を基本とし、Python風の関数形(`fd()`, `pd()` 等)はエイリアスレイヤーとして分離して提供する。
+
+### 5.4 Colorの刷新
+
+独自RGB(アルファなし)+colorModeを廃止し、0-1 `Double` + alpha に統一。`SwiftUI.Color` との相互変換を標準装備する。
+
+### 5.5 円弧の一級サポート
+
+旧版の `circle()` は内部で `right` + `forward` を繰り返す多角形近似。新版ではコマンドストリームに「円弧コマンド」を設け、描画時は真の円弧、SVG出力時は `A`(arc)パスで出力する。
+
+### 5.6 その他の近代化
+
+`random()` は `arc4random_uniform` から `Double.random(in:)` へ。`Int.timesRepeat` は教育用APIとして維持しつつ、標準の `for` ループへの導線をドキュメントに明記する。
+
+## 6. ロードマップ
 
 | フェーズ | 内容 | 完了条件 |
 |---|---|---|
@@ -92,7 +129,7 @@ SwiftUI Canvas描画     SVGレンダラ         ImageRenderer(PNG等)
 
 フェーズ1〜3はライブラリとして独立価値があるため先行リリースし、アプリ(フェーズ5)はその上に構築する。
 
-## 6. 技術選定メモ
+## 7. 技術選定メモ
 
 - **テスト**: swift-testing(Xcode 26標準)。描画系はコマンド列のスナップショット+SVG文字列比較で、GUI不要のCIテストにする
 - **Lint/Format**: swift-format(Apple公式)に移行し、同梱バイナリのSwiftLintを廃止
@@ -100,6 +137,6 @@ SwiftUI Canvas描画     SVGレンダラ         ImageRenderer(PNG等)
 - **Swift Playgrounds対応**: 旧PlaygroundBook形式は廃止。必要ならApp Playgrounds(.swiftpm)形式のサンプルを提供
 - **絵文字API**: `let 🐢 = Tortoise()` の書き味は本プロジェクトの個性なので維持する
 
-## 7. 旧リポジトリの扱い
+## 8. 旧リポジトリの扱い
 
 最終リリース(1.0.0-beta.3)のまま新リポジトリへのリンクを添えてアーカイブ。Issue/スターの履歴は残る。CocoaPods podspecは新規公開を停止。
