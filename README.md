@@ -1,6 +1,6 @@
 <img src="docs/banner.png" />
 
-# TortoiseGraphics
+# TortoiseGraphics2
 
 [![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://swift.org/package-manager)
@@ -8,6 +8,8 @@
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20visionOS-lightgrey.svg)]()
 
 A [tortoise graphics](https://en.wikipedia.org/wiki/Turtle_graphics) engine — a key feature of the [Logo](https://en.wikipedia.org/wiki/Logo_(programming_language)) programming language — written in Swift.
+
+> **Version 2** of [TortoiseGraphics](https://github.com/temoki/TortoiseGraphics), rewritten for Swift 6 strict concurrency and SwiftUI.
 
 ```swift
 let 🐢 = Tortoise()
