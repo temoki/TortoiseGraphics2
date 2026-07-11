@@ -45,4 +45,10 @@ public enum TurtleCommand: Sendable, Equatable {
     /// The arc center is placed to the turtle's left at distance `|radius|`.
     /// `extent` is in degrees: 360 = full circle, positive = counterclockwise.
     case arc(radius: Double, extent: Double)
+
+    // MARK: Dot
+    /// Draw a filled circle at the current position without moving the turtle.
+    ///
+    /// `size` is the diameter in logical units.
+    case dot(Double)
 }

@@ -47,6 +47,7 @@ public struct TortoiseCanvasView: View {
                 drawBackground(&ctx, size: size)
                 drawFills(&ctx, transform: t)
                 drawStrokes(&ctx, transform: t, scale: s)
+                drawDots(&ctx, transform: t, scale: s)
                 drawTurtle(&ctx, transform: t, scale: s)
             }
             .onChange(of: timeline.date) { _, date in
@@ -132,6 +133,15 @@ public struct TortoiseCanvasView: View {
         return path
     }
 
+    private func drawDots(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double) {
+        for dot in model.dots {
+            let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
+            let r = dot.size / 2 * s
+            let rect = CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2)
+            ctx.fill(Path(ellipseIn: rect), with: .color(SwiftUI.Color(dot.color)))
+        }
+    }
+
     private func drawTurtle(_ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double) {
         guard model.turtleState.isVisible else { return }
 
@@ -184,6 +194,7 @@ public struct TortoiseCanvasView: View {
     func turtleStar() -> TortoiseCanvasView {
         let 🐢 = Tortoise()
         🐢.speed = 0  // draw instantly
+        🐢.backward(100)
         for _ in 1...36 {
             🐢.forward(200)
             🐢.right(170)

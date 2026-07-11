@@ -31,16 +31,19 @@ public final class Tortoise {
 
     private var state: TurtleState = .default
     private var _backgroundColor: Color = .white
+    private var _isFilling: Bool = false
 
     public init(canvasSize: Size2D = .defaultCanvas) {
         self.canvasSize = canvasSize
     }
 
-    // MARK: - Read-only positional state
+    // MARK: - Read-only state
 
     public var position: Vec2D { state.position }
     public var isPenDown: Bool { state.isPenDown }
     public var isVisible: Bool { state.isVisible }
+    /// `true` when between a ``beginFill()`` and ``endFill()`` call.
+    public var isFilling: Bool { _isFilling }
 
     // MARK: - Read-write properties (append a command on set)
 
@@ -125,6 +128,52 @@ public final class Tortoise {
         commands.append(.setPosition(position))
     }
 
+    /// Teleport to `(x, position.y)` without changing heading or Y coordinate.
+    public func setX(_ x: Double) {
+        setPosition(x: x, y: state.position.y)
+    }
+
+    /// Teleport to `(position.x, y)` without changing heading or X coordinate.
+    public func setY(_ y: Double) {
+        setPosition(x: state.position.x, y: y)
+    }
+
+    /// Returns the heading (in degrees) toward the given point from the current position.
+    ///
+    /// - Returns: A value in [0, 360) where 0 = north, 90 = east, clockwise positive.
+    public func towards(x: Double, y: Double) -> Double {
+        let dx = x - state.position.x
+        let dy = y - state.position.y
+        let angle = atan2(dx, dy) * (180 / .pi)
+        let normalized = angle.truncatingRemainder(dividingBy: 360)
+        return normalized < 0 ? normalized + 360 : normalized
+    }
+
+    /// Returns the heading (in degrees) toward `position` from the current position.
+    public func towards(_ position: Vec2D) -> Double {
+        towards(x: position.x, y: position.y)
+    }
+
+    /// Returns the Euclidean distance from the current position to the given point.
+    public func distance(x: Double, y: Double) -> Double {
+        let dx = x - state.position.x
+        let dy = y - state.position.y
+        return (dx * dx + dy * dy).squareRoot()
+    }
+
+    /// Returns the Euclidean distance from the current position to `position`.
+    public func distance(_ position: Vec2D) -> Double {
+        distance(x: position.x, y: position.y)
+    }
+
+    /// Draw a filled circle at the current position without moving the turtle.
+    ///
+    /// - Parameter size: Diameter in logical units. Defaults to `max(penWidth + 4, 2 * penWidth)`.
+    public func dot(size: Double? = nil) {
+        let resolvedSize = size ?? max(state.penWidth + 4, 2 * state.penWidth)
+        commands.append(.dot(resolvedSize))
+    }
+
     /// Draw an arc counterclockwise.
     ///
     /// The center is placed to the left of the turtle at distance `radius`.
@@ -157,10 +206,12 @@ public final class Tortoise {
     // MARK: - Fill
 
     public func beginFill() {
+        _isFilling = true
         commands.append(.beginFill)
     }
 
     public func endFill() {
+        _isFilling = false
         commands.append(.endFill)
     }
 

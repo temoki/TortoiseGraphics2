@@ -15,6 +15,8 @@ public struct PlaybackFrame: Sendable {
     public let newArcStroke: ArcStroke?
     /// Fill polygon completed by an `endFill` command, if any.
     public let completedFill: Fill?
+    /// Filled circle drawn by a `dot` command, if any.
+    public let newDot: Dot?
     /// `true` when this command cleared all previous drawing.
     public let didClear: Bool
     /// `true` when this frame was produced while a fill region was active

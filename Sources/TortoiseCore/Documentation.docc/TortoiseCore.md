@@ -53,6 +53,7 @@ to produce output.
 - ``Stroke``
 - ``ArcStroke``
 - ``Fill``
+- ``Dot``
 
 ### Value Types
 

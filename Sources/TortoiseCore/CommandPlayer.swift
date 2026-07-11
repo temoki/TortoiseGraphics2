@@ -22,6 +22,7 @@ public struct CommandPlayer {
             var newStroke: Stroke? = nil
             var newArcStroke: ArcStroke? = nil
             var completedFill: Fill? = nil
+            var newDot: Dot? = nil
             var didClear = false
 
             switch command {
@@ -103,6 +104,9 @@ public struct CommandPlayer {
             case .clear:
                 didClear = true
 
+            case .dot(let size):
+                newDot = Dot(center: turtle.position, size: size, color: turtle.penColor)
+
             case .arc(let radius, let extent):
                 let center = Tortoise.arcCenter(position: turtle.position, heading: turtle.heading, radius: radius)
                 let dx = turtle.position.x - center.x
@@ -136,6 +140,7 @@ public struct CommandPlayer {
                 newStroke: newStroke,
                 newArcStroke: newArcStroke,
                 completedFill: completedFill,
+                newDot: newDot,
                 didClear: didClear,
                 isFillActive: isFillActive
             ))

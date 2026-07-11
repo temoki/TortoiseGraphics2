@@ -77,6 +77,10 @@ private struct SVGBuilder {
                 if frame.isFillActive { pendingFillStrokes.append(.arcStroke(a)) }
                 else                  { elements.append(.arcStroke(a)) }
             }
+            if let d = frame.newDot {
+                if frame.isFillActive { pendingFillStrokes.append(.dot(d)) }
+                else                  { elements.append(.dot(d)) }
+            }
         }
         // Flush any unclosed fill (endFill missing)
         elements.append(contentsOf: pendingFillStrokes)
@@ -91,6 +95,7 @@ private struct SVGBuilder {
             case .fill(let fill):       lines.append(svgFill(fill))
             case .stroke(let stroke):   lines.append(svgStroke(stroke))
             case .arcStroke(let arc):   lines.append(svgArc(arc))
+            case .dot(let dot):         lines.append(svgDot(dot))
             }
         }
 
@@ -105,6 +110,13 @@ private struct SVGBuilder {
             .map { "\(n(x($0.x))),\(n(y($0.y)))" }
             .joined(separator: " ")
         return #"  <polygon points="\#(pts)" fill="\#(color(fill.color))"/>"#
+    }
+
+    private func svgDot(_ dot: Dot) -> String {
+        let cx = n(x(dot.center.x))
+        let cy = n(y(dot.center.y))
+        let r  = n(dot.size / 2)
+        return #"  <circle cx="\#(cx)" cy="\#(cy)" r="\#(r)" fill="\#(color(dot.color))"/>"#
     }
 
     private func svgStroke(_ stroke: Stroke) -> String {
@@ -177,4 +189,5 @@ private enum SVGElement {
     case fill(Fill)
     case stroke(Stroke)
     case arcStroke(ArcStroke)
+    case dot(Dot)
 }

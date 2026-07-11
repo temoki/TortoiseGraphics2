@@ -16,6 +16,7 @@ final class CanvasModel {
     private(set) var strokes: [Stroke] = []
     private(set) var arcStrokes: [ArcStroke] = []
     private(set) var fills: [Fill] = []
+    private(set) var dots: [Dot] = []
     private(set) var backgroundColor: TortoiseCore.Color = .white
     private(set) var turtleState: TurtleState = .default
 
@@ -93,10 +94,12 @@ final class CanvasModel {
             strokes.removeAll()
             arcStrokes.removeAll()
             fills.removeAll()
+            dots.removeAll()
         }
         if let s = frame.newStroke { strokes.append(s) }
         if let a = frame.newArcStroke { arcStrokes.append(a) }
         if let f = frame.completedFill { fills.append(f) }
+        if let d = frame.newDot { dots.append(d) }
         backgroundColor = frame.backgroundColor
         turtleState = frame.turtleState
         currentFrameIndex = nextIndex
@@ -110,7 +113,7 @@ final class CanvasModel {
     private static func isInstantMode(frames: [PlaybackFrame]) -> Bool {
         for frame in frames {
             if frame.turtleState.speed <= 0 { return true }
-            if frame.newStroke != nil || frame.newArcStroke != nil || frame.completedFill != nil {
+            if frame.newStroke != nil || frame.newArcStroke != nil || frame.completedFill != nil || frame.newDot != nil {
                 return false
             }
         }
