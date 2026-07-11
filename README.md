@@ -106,25 +106,67 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
                       to: URL(filePath: "square.svg"))
 ```
 
-### Turtle API quick reference
+### Tortoise API quick reference
 
-```swift
-🐢.forward(100)          // move forward
-🐢.backward(50)          // move backward
-🐢.right(90)             // rotate clockwise
-🐢.left(45)              // rotate counterclockwise
-🐢.penUp()               // lift pen (no drawing)
-🐢.penDown()             // lower pen (resume drawing)
-🐢.penColor = .red       // pen color
-🐢.penWidth = 2          // stroke width
-🐢.fillColor = .yellow
-🐢.beginFill()
-🐢.circle(radius: 50)    // filled circle
-🐢.endFill()
-🐢.home()                // return to origin, heading north
-🐢.speed = 0             // instant (no animation)
-🐢.backgroundColor = .black
-```
+#### Movement
+
+| Method / Property | Description |
+|---|---|
+| `forward(_ distance: Double)` | Move forward by `distance` pixels |
+| `backward(_ distance: Double)` | Move backward by `distance` pixels |
+| `right(_ degrees: Double)` | Rotate clockwise |
+| `left(_ degrees: Double)` | Rotate counterclockwise |
+| `home()` | Teleport to origin and reset heading to north |
+| `setPosition(x:y:)` / `setPosition(_:)` | Teleport to a position (pen draws if down) |
+| `setX(_ x: Double)` | Teleport to `(x, y)` keeping current Y |
+| `setY(_ y: Double)` | Teleport to `(x, y)` keeping current X |
+| `circle(radius:extent:)` | Draw a circular arc (default `extent`: 360°) |
+| `dot(size:)` | Draw a filled circle at the current position |
+
+#### Pen
+
+| Method / Property | Description |
+|---|---|
+| `penDown()` | Lower pen — movements draw lines |
+| `penUp()` | Lift pen — movements don't draw |
+| `isPenDown: Bool` | Whether the pen is currently down (read-only) |
+| `penColor: Color` | Stroke color |
+| `penWidth: Double` | Stroke width in logical units |
+
+#### Fill
+
+| Method / Property | Description |
+|---|---|
+| `beginFill()` | Start collecting fill polygon vertices |
+| `endFill()` | Close and draw the fill polygon |
+| `fillColor: Color` | Fill color |
+| `isFilling: Bool` | Whether a fill region is currently active (read-only) |
+
+#### Query
+
+| Method / Property | Description |
+|---|---|
+| `position: Point` | Current position in turtle coordinates (read-only) |
+| `heading: Double` | Current heading in degrees (0 = north, CW+); settable |
+| `towards(x:y:)` / `towards(_:)` | Heading toward a point from current position |
+| `distance(x:y:)` / `distance(_:)` | Distance to a point from current position |
+
+#### Appearance
+
+| Method / Property | Description |
+|---|---|
+| `showTurtle()` | Make the turtle visible |
+| `hideTurtle()` | Hide the turtle |
+| `isVisible: Bool` | Whether the turtle is visible (read-only) |
+
+#### Canvas
+
+| Method / Property | Description |
+|---|---|
+| `backgroundColor: Color` | Canvas background color |
+| `clear()` | Erase all drawings (turtle state is preserved) |
+| `speed: Double` | Animation speed: 1 (slowest) … 10 (fastest), 0 = instant |
+| `canvasSize: Size` | Logical canvas dimensions |
 
 ## Architecture
 
