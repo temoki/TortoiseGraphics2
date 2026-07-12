@@ -3,36 +3,52 @@ import TortoiseCore
 
 /// A SwiftUI view that renders and animates tortoise-graphics commands.
 ///
-/// Pass a ``Tortoise`` instance and the view plays back its command stream
-/// using `TimelineView` and `Canvas`. The animation respects each command's
-/// speed; `speed(0)` renders all drawing instantly.
+/// Pass a ``Tortoise`` instance, or describe the drawing inline with a closure.
+/// The view plays back the command stream using `TimelineView` and `Canvas`.
+/// Use `.tortoiseViewport(_:)` to control how the drawing maps onto the view.
 ///
 /// ```swift
-/// let 🐢 = Tortoise()
-/// 🐢.penColor = .red
-/// for _ in 1...4 {
-///     🐢.forward(100)
-///     🐢.right(90)
+/// // Existing-instance form
+/// TortoiseCanvasView(tortoise)
+///     .tortoiseViewport(.autoFit(padding: 16))
+///
+/// // Closure form
+/// TortoiseCanvasView { t in
+///     t.speed = 0
+///     for _ in 1...4 {
+///         t.forward(100)
+///         t.right(90)
+///     }
 /// }
-/// TortoiseCanvasView(🐢)
 /// ```
 public struct TortoiseCanvasView: View {
     private let tortoise: Tortoise
-    private let viewportMode: ViewportMode
 
     @State private var model: CanvasModel
+    @Environment(\.tortoiseViewport) private var viewportMode
 
     /// Creates a canvas view for the given tortoise.
     ///
-    /// The view immediately reflects all commands already in the tortoise at
-    /// construction time. If those commands begin with `speed(0)`, the full
-    /// drawing is visible even in static (non-animated) Xcode Previews.
-    /// Commands added to the tortoise after the view appears are picked up
+    /// Commands already in the tortoise at construction time are reflected
+    /// immediately. Commands added after the view appears are picked up
     /// automatically via a `task(id:)` observer.
     @MainActor
-    public init(_ tortoise: Tortoise, viewport viewportMode: ViewportMode = .scaleToFit) {
+    public init(_ tortoise: Tortoise) {
         self.tortoise = tortoise
-        self.viewportMode = viewportMode
+        self._model = State(
+            wrappedValue: CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        )
+    }
+
+    /// Creates a canvas view by configuring a new ``Tortoise`` inside the closure.
+    ///
+    /// The closure runs once at init time. Use `speed(0)` to make the drawing
+    /// visible in static Xcode Previews.
+    @MainActor
+    public init(_ draw: @MainActor (Tortoise) -> Void) {
+        let tortoise = Tortoise()
+        draw(tortoise)
+        self.tortoise = tortoise
         self._model = State(
             wrappedValue: CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
         )
@@ -41,7 +57,6 @@ public struct TortoiseCanvasView: View {
     public var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { ctx, size in
-                // Compute the viewport transform and scale factor once per frame.
                 let t = viewportMode.transform(
                     canvasSize: model.canvasSize, viewSize: size,
                     drawingBounds: model.drawingBounds)
@@ -70,8 +85,6 @@ public struct TortoiseCanvasView: View {
             with: .color(SwiftUI.Color(model.backgroundColor)))
     }
 
-    /// Renders committed elements in command-execution order, then draws the partial
-    /// stroke/arc for the frame currently being animated.
     private func drawElements(
         _ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double
     ) {
@@ -107,7 +120,6 @@ public struct TortoiseCanvasView: View {
             }
         }
 
-        // Partial stroke/arc for the frame currently being animated.
         if let next = model.inProgressFrame, model.animationProgress > 0 {
             let p = model.animationProgress
             if let stroke = next.newStroke {
@@ -157,7 +169,6 @@ public struct TortoiseCanvasView: View {
     ) {
         guard model.tortoiseState.isVisible else { return }
 
-        // Interpolate position and heading toward the in-progress frame.
         let pos: Point
         let heading: Double
         if let next = model.inProgressFrame, model.animationProgress > 0 {
@@ -191,12 +202,25 @@ public struct TortoiseCanvasView: View {
 
         let position = CGPoint(x: pos.x, y: pos.y).applying(t)
         var tortoiseCtx = ctx
+        tortoiseCtx.translateBy(x: position.x, y: position.y)
         // heading 0 = north (tip already points up), heading 90 = east (CW 90°).
         // SwiftUI rotate(by:) is CW-positive in Y-down space, matching tortoise heading.
-        tortoiseCtx.translateBy(x: position.x, y: position.y)
         tortoiseCtx.rotate(by: .degrees(heading))
         tortoiseCtx.fill(path, with: .color(.green.opacity(0.7)))
         tortoiseCtx.stroke(path, with: .color(.green), lineWidth: 1.5)
+    }
+}
+
+// MARK: - Viewport modifier
+
+extension EnvironmentValues {
+    @Entry var tortoiseViewport: ViewportMode = .scaleToFit
+}
+
+extension View {
+    /// Sets the viewport mode for any ``TortoiseCanvasView`` in the view hierarchy.
+    public func tortoiseViewport(_ mode: ViewportMode) -> some View {
+        environment(\.tortoiseViewport, mode)
     }
 }
 
@@ -206,7 +230,7 @@ public struct TortoiseCanvasView: View {
     @MainActor
     func tortoiseStar() -> TortoiseCanvasView {
         let t = Tortoise()
-        t.speed = 0  // draw instantly
+        t.speed = 0
         t.backward(100)
         for _ in 1...36 {
             t.forward(200)
