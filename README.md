@@ -179,6 +179,14 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 
 #### Viewport (TortoiseCanvasView)
 
+Use the `.tortoiseViewport(_:)` modifier to control how the drawing maps onto the view:
+
+```swift
+TortoiseCanvasView(tortoise)
+    .tortoiseViewport(.autoFit)
+    .padding()
+```
+
 | `ViewportMode` | Description |
 |---|---|
 | `.scaleToFit` | Scale logical canvas to fill the view, letterboxed. **Default.** |
