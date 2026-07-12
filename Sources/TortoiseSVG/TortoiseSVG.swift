@@ -52,7 +52,7 @@ private struct SVGBuilder {
 
     func build() -> String {
         var elements: [SVGElement] = []
-        var bgColor: Color = .white
+        var bgColor: Color = .clear
         // Strokes/arcs drawn while isFillActive are held here until endFill,
         // then flushed AFTER the fill polygon so the polygon renders below its outline.
         var pendingFillStrokes: [SVGElement] = []
@@ -102,7 +102,9 @@ private struct SVGBuilder {
         lines.append(
             #"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \#(n(w)) \#(n(h))" width="\#(n(w))" height="\#(n(h))">"#
         )
-        lines.append(#"  <rect width="\#(n(w))" height="\#(n(h))" fill="\#(color(bgColor))"/>"#)
+        if bgColor.alpha > 0 {
+            lines.append(#"  <rect width="\#(n(w))" height="\#(n(h))" fill="\#(color(bgColor))"/>"#)
+        }
 
         for element in elements {
             switch element {

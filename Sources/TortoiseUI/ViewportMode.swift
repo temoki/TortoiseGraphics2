@@ -7,11 +7,11 @@ public enum ViewportMode {
     case scaleToFit
     /// 1 tortoise unit = 1 point, origin at view center. Wider views show more canvas.
     case original
-    /// Scale and translate so the actual drawing bounding box fills the view with optional padding.
+    /// Scale and translate so the actual drawing bounding box fills the view.
     ///
-    /// `padding` is in logical tortoise units added on each side. Falls back to `.scaleToFit`
-    /// when the command stream produces no visible output.
-    case autoFit(padding: Double = 8)
+    /// Use SwiftUI's `.padding()` modifier to add space around the view.
+    /// Falls back to `.scaleToFit` when the command stream produces no visible output.
+    case autoFit
 }
 
 extension ViewportMode {
@@ -30,19 +30,17 @@ extension ViewportMode {
         case .original:
             // x' = x + tx,  y' = -y + ty
             return CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: tx, ty: ty)
-        case .autoFit(let padding):
+        case .autoFit:
             guard let bb = drawingBounds else {
                 // No visible output — fall back to scaleToFit.
                 let scale = min(
                     viewSize.width / canvasSize.width, viewSize.height / canvasSize.height)
                 return CGAffineTransform(a: scale, b: 0, c: 0, d: -scale, tx: tx, ty: ty)
             }
-            let pw = bb.width + 2 * padding
-            let ph = bb.height + 2 * padding
             // Protect against a degenerate bounding box (single point or horizontal/vertical line).
             let scale = min(
-                pw > 0 ? viewSize.width / pw : 1,
-                ph > 0 ? viewSize.height / ph : 1
+                bb.width > 0 ? viewSize.width / bb.width : 1,
+                bb.height > 0 ? viewSize.height / bb.height : 1
             )
             // Map bb center in tortoise space to the view center.
             // x' = scale * x + atx,  y' = -scale * y + aty

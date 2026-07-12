@@ -84,7 +84,7 @@ struct ContentView: View {
     }()
 
     var body: some View {
-        TortoiseCanvasView(🐢, viewport: .scaleToFit)
+        TortoiseCanvasView(🐢)
             .frame(width: 400, height: 400)
     }
 }
@@ -183,7 +183,7 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 |---|---|
 | `.scaleToFit` | Scale logical canvas to fill the view, letterboxed. **Default.** |
 | `.original` | 1 tortoise unit = 1 point, origin at view center |
-| `.autoFit(padding:)` | Scale and center to fit the actual drawing bounding box, with `padding` (in tortoise units) on each side. Default padding: 8. |
+| `.autoFit` | Scale and center to fit the actual drawing bounding box. Use `.padding()` to add space around the view. |
 
 ## Architecture
 

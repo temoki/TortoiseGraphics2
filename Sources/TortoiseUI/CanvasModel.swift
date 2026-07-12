@@ -16,7 +16,7 @@ final class CanvasModel {
     /// Drawing elements in command-execution order.
     /// Fill polygons are inserted before their outline strokes so they render below them.
     private(set) var elements: [DrawElement] = []
-    private(set) var backgroundColor: TortoiseCore.Color = .white
+    private(set) var backgroundColor: TortoiseCore.Color = .clear
     private(set) var tortoiseState: TortoiseState = .default
 
     /// Progress (0 → 1) through the animation of the next frame.

@@ -8,7 +8,7 @@ public struct CommandPlayer {
     public static func play(
         commands: [TortoiseCommand],
         initialTortoise: TortoiseState = .default,
-        initialBackgroundColor: Color = .white
+        initialBackgroundColor: Color = .clear
     ) -> [PlaybackFrame] {
         var frames: [PlaybackFrame] = []
         frames.reserveCapacity(commands.count)

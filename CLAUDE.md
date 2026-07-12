@@ -39,7 +39,9 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **`[DrawElement]` + `pendingFillElements` in `CanvasModel`.** Drawing elements are stored as a single ordered `[DrawElement]` list (not separate arrays per type) to preserve command-execution order. Strokes/dots emitted while `isFillActive` are buffered in `pendingFillElements`; on `endFill` the fill polygon is appended first, then the buffered elements are flushed on top — so the fill polygon always renders below its outline strokes regardless of command order.
 
-**`DrawingBounds` computed at init.** `CanvasModel.drawingBounds` is an axis-aligned bounding box of all visible output across all frames, computed once in `init` (not per-tick). Arcs use the full-circle bounding box (center ± radius) — conservative but always correct, and avoids trigonometry over partial arc segments. `ViewportMode.autoFit(padding:)` consumes this to scale and center the view; it falls back to `.scaleToFit` when `drawingBounds` is `nil` (no visible output). The `transform()` method signature takes `drawingBounds: DrawingBounds?` as a parameter so `TortoiseCanvasView` passes the model's precomputed value.
+**`DrawingBounds` computed at init.** `CanvasModel.drawingBounds` is an axis-aligned bounding box of all visible output across all frames, computed once in `init` (not per-tick). Arcs use the full-circle bounding box (center ± radius) — conservative but always correct, and avoids trigonometry over partial arc segments. `ViewportMode.autoFit` consumes this to scale and center the view; it falls back to `.scaleToFit` when `drawingBounds` is `nil` (no visible output). The `transform()` method signature takes `drawingBounds: DrawingBounds?` as a parameter so `TortoiseCanvasView` passes the model's precomputed value.
+
+**`backgroundColor` defaults to `.clear`.** `TortoiseCanvasView` skips the background fill when `alpha == 0`, letting SwiftUI's `.background()` modifier control the canvas background. The SVG renderer likewise omits the `<rect>` element when the background is transparent.
 
 ## Coordinate System
 

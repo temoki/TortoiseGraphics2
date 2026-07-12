@@ -80,6 +80,7 @@ public struct TortoiseCanvasView: View {
     // MARK: - Drawing
 
     private func drawBackground(_ ctx: inout GraphicsContext, size: CGSize) {
+        guard model.backgroundColor.alpha > 0 else { return }
         ctx.fill(
             Path(CGRect(origin: .zero, size: size)),
             with: .color(SwiftUI.Color(model.backgroundColor)))
@@ -227,17 +228,15 @@ extension View {
 // MARK: - Preview
 
 #Preview("Tortoise Star") {
-    @MainActor
-    func tortoiseStar() -> TortoiseCanvasView {
-        let t = Tortoise()
+    TortoiseCanvasView { t in
         t.speed = 0
         t.backward(100)
         for _ in 1...36 {
             t.forward(200)
             t.right(170)
         }
-        return TortoiseCanvasView(t)
     }
-    return tortoiseStar()
-        .frame(width: 400, height: 400)
+    .tortoiseViewport(.autoFit)
+    .padding()
+    .frame(width: 400, height: 400)
 }
