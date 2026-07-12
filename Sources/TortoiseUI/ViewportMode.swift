@@ -37,10 +37,14 @@ extension ViewportMode {
                     viewSize.width / canvasSize.width, viewSize.height / canvasSize.height)
                 return CGAffineTransform(a: scale, b: 0, c: 0, d: -scale, tx: tx, ty: ty)
             }
+            // Inset = max rendered tortoise half-size, so the sprite never clips at the edge.
+            let inset = tortoiseBaseSize * tortoiseScaleMax
+            let pw = bb.width + 2 * inset
+            let ph = bb.height + 2 * inset
             // Protect against a degenerate bounding box (single point or horizontal/vertical line).
             let scale = min(
-                bb.width > 0 ? viewSize.width / bb.width : 1,
-                bb.height > 0 ? viewSize.height / bb.height : 1
+                pw > 0 ? viewSize.width / pw : 1,
+                ph > 0 ? viewSize.height / ph : 1
             )
             // Map bb center in tortoise space to the view center.
             // x' = scale * x + atx,  y' = -scale * y + aty

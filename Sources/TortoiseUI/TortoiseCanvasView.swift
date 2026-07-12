@@ -191,8 +191,8 @@ public struct TortoiseCanvasView: View {
             heading = model.tortoiseState.heading
         }
 
-        let s = min(max(rawScale, 0.5), 2.0)
-        let tortoiseSize = 10.0 * s
+        let s = min(max(rawScale, tortoiseScaleMin), tortoiseScaleMax)
+        let tortoiseSize = tortoiseBaseSize * s
 
         // Triangle pointing north (tip at -Y in screen space = up on screen).
         var path = Path()
