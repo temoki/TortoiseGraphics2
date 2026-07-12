@@ -18,7 +18,7 @@ for _ in 1...36 {
     🐢.forward(200)
     🐢.right(170)
 }
-TortoiseCanvasView(🐢)
+TortoiseCanvas(🐢)
 ```
 
 ## Modules
@@ -84,7 +84,7 @@ struct ContentView: View {
     }()
 
     var body: some View {
-        TortoiseCanvasView(🐢)
+        TortoiseCanvas(🐢)
             .frame(width: 400, height: 400)
     }
 }
@@ -177,12 +177,12 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 | `speed: Double` | Animation speed: 1 (slowest) … 10 (fastest), 0 = instant |
 | `canvasSize: Size` | Logical canvas dimensions |
 
-#### Viewport (TortoiseCanvasView)
+#### Viewport (TortoiseCanvas)
 
 Use the `.tortoiseViewport(_:)` modifier to control how the drawing maps onto the view:
 
 ```swift
-TortoiseCanvasView(tortoise)
+TortoiseCanvas(tortoise)
     .tortoiseViewport(.autoFit)
     .padding()
 ```

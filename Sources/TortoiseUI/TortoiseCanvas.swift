@@ -9,11 +9,11 @@ import TortoiseCore
 ///
 /// ```swift
 /// // Existing-instance form
-/// TortoiseCanvasView(tortoise)
+/// TortoiseCanvas(tortoise)
 ///     .tortoiseViewport(.autoFit(padding: 16))
 ///
 /// // Closure form
-/// TortoiseCanvasView { t in
+/// TortoiseCanvas { t in
 ///     t.speed = 0
 ///     for _ in 1...4 {
 ///         t.forward(100)
@@ -21,7 +21,7 @@ import TortoiseCore
 ///     }
 /// }
 /// ```
-public struct TortoiseCanvasView: View {
+public struct TortoiseCanvas: View {
     private let tortoise: Tortoise
 
     @State private var model: CanvasModel
@@ -219,7 +219,7 @@ extension EnvironmentValues {
 }
 
 extension View {
-    /// Sets the viewport mode for any ``TortoiseCanvasView`` in the view hierarchy.
+    /// Sets the viewport mode for any ``TortoiseCanvas`` in the view hierarchy.
     public func tortoiseViewport(_ mode: ViewportMode) -> some View {
         environment(\.tortoiseViewport, mode)
     }
@@ -228,7 +228,7 @@ extension View {
 // MARK: - Preview
 
 #Preview("Tortoise Star") {
-    TortoiseCanvasView { t in
+    TortoiseCanvas { t in
         t.speed = 0
         t.backward(100)
         for _ in 1...36 {
