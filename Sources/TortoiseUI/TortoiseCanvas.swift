@@ -10,7 +10,6 @@ import TortoiseCore
 /// ```swift
 /// // Existing-instance form
 /// TortoiseCanvas(🐢)
-///     .tortoiseViewport(.autoFit)
 ///
 /// // Closure form
 /// TortoiseCanvas { 🐢 in
@@ -215,7 +214,7 @@ public struct TortoiseCanvas: View {
 // MARK: - Viewport modifier
 
 extension EnvironmentValues {
-    @Entry var tortoiseViewport: ViewportMode = .scaleToFit
+    @Entry var tortoiseViewport: ViewportMode = .autoFit
 }
 
 extension View {
@@ -234,5 +233,4 @@ extension View {
             🐢.right(170)
         }
     }
-    .tortoiseViewport(.autoFit)
 }

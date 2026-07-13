@@ -81,7 +81,6 @@ struct ContentView: View {
                 🐢.right(90)
             }
         }
-        .frame(width: 400, height: 400)
     }
 }
 ```
@@ -179,14 +178,13 @@ Use the `.tortoiseViewport(_:)` modifier to control how the drawing maps onto th
 
 ```swift
 TortoiseCanvas(🐢)
-    .tortoiseViewport(.autoFit)
 ```
 
 | `ViewportMode` | Description |
 |---|---|
-| `.scaleToFit` | Scale logical canvas to fill the view, letterboxed. **Default.** |
+| `.scaleToFit` | Scale logical canvas to fill the view, letterboxed. |
 | `.original` | 1 tortoise unit = 1 point, origin at view center |
-| `.autoFit` | Scale and center to fit the actual drawing bounding box. |
+| `.autoFit` | Scale and center to fit the actual drawing bounding box. **Default.** |
 
 ## Architecture
 
