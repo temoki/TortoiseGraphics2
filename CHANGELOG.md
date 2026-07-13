@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.0.0-beta3
+
+### Added
+- `TortoiseCanvas` closure init: describe the drawing inline without creating a `Tortoise` instance
+- `.tortoiseViewport(_:)` environment modifier to set `ViewportMode` from outside the view
+- SVG autoFit: `TortoiseSVG.render(_:fit:)` and `Tortoise.svg(fit:)` crop the `viewBox` to the actual drawing bounding box (default `fit: true`)
+- `DrawingBounds` moved to `TortoiseCore` (public) — shared between `TortoiseUI` and `TortoiseSVG`
+- Tortoise Star SVG (`docs/tortoise-star.svg`) added to README
+
+### Changed
+- `TortoiseCanvasView` renamed to `TortoiseCanvas` (matches SwiftUI `Canvas` naming)
+- `TortoiseCanvas` default background is now `.clear`; use SwiftUI's `.background()` modifier instead
+- `ViewportMode.autoFit` no longer takes a `padding:` parameter; use SwiftUI's `.padding()` instead
+- Default viewport mode changed from `.scaleToFit` to `.autoFit`
+- `TortoiseUI` and `TortoiseSVG` re-export `TortoiseCore` via `@_exported import` — no need to import `TortoiseCore` separately
+- TortoiseSVG public API redesigned to be Tortoise-centric: `TortoiseSVG.render(_ tortoise:)` and `Tortoise.svg()` replace the old `render(commands:canvasSize:)` and `write(commands:canvasSize:to:)`
+
+### Removed
+- `TortoiseSVG.write(commands:canvasSize:to:)` — use `String.write(to:atomically:encoding:)` on the result of `svg()` instead
+- `ViewportMode.autoFit(padding:)` parameter
+
 ## 2.0.0-beta2
 
 ### Fixed
