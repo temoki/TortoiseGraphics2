@@ -39,6 +39,10 @@ jobs:
             --hosting-base-path TortoiseGraphics2 \
             --output-path ./.docc-build
 
+      - name: Redirect site root to documentation landing page
+        run: |
+          echo '<!doctype html><html><head><meta http-equiv="refresh" content="0; url=documentation/"></head></html>' > ./.docc-build/index.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
