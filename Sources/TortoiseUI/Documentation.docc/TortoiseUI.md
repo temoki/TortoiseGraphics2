@@ -10,9 +10,22 @@ time — `forward()` draws the line progressively and `circle()` traces the
 arc, matching the classic tortoise-graphics feel.
 
 ```swift
-TortoiseCanvasView(🐢)
-    .frame(width: 400, height: 400)
+// Closure form — configures a new Tortoise inline
+TortoiseCanvas { 🐢 in
+    🐢.speed = 5
+    for _ in 1...4 {
+        🐢.forward(100)
+        🐢.right(90)
+    }
+}
+
+// Instance form — pass an existing Tortoise
+TortoiseCanvas(🐢)
 ```
+
+Use the `.tortoiseViewport(_:)` modifier to change how the drawing maps onto
+the view. The default is ``ViewportMode/autoFit``, which scales and centers
+to fit the actual drawing bounding box.
 
 ### Speed
 
@@ -34,16 +47,16 @@ visible even in static Xcode Previews.
 
 ``ViewportMode`` controls how the logical canvas maps to the view's bounds:
 
-- **`.scaleToFit`** (default) — fits the logical canvas inside the view,
-  letterboxed. Matches the SVG `viewBox`.
-- **`.original`** — 1 px = 1 logical unit, origin centered. The visible
-  area grows as the window grows.
+- **`.autoFit`** (default) — scales and centers to fit the actual drawing
+  bounding box. Use SwiftUI's `.padding()` to add space around the drawing.
+- **`.scaleToFit`** — fits the full logical canvas inside the view, letterboxed.
+- **`.original`** — 1 tortoise unit = 1 point, origin at view center.
 
 ## Topics
 
 ### Views
 
-- ``TortoiseCanvasView``
+- ``TortoiseCanvas``
 
 ### Viewport
 

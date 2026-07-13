@@ -4,22 +4,30 @@ SVG export for TortoiseGraphics.
 
 ## Overview
 
-`TortoiseSVG` converts a ``TortoiseCommand`` stream into a self-contained,
-static SVG document. It is a **pure function** — no platform APIs, no side
-effects, no Foundation URL types required for the core `render` path.
+`TortoiseSVG` converts a ``Tortoise`` command stream into a self-contained,
+static SVG document. It is a **pure function** — no platform APIs, no side effects.
 
 ```swift
-// Render to a String
-let svg = TortoiseSVG.render(commands: 🐢.commands, canvasSize: 🐢.canvasSize)
+import TortoiseSVG
 
-// Write directly to a file
-try TortoiseSVG.write(commands: 🐢.commands,
-                      canvasSize: 🐢.canvasSize,
-                      to: URL(filePath: "drawing.svg"))
+let 🐢 = Tortoise()
+🐢.penColor = .blue
+for _ in 1...4 {
+    🐢.forward(100)
+    🐢.right(90)
+}
+
+let svg = TortoiseSVG.render(🐢)
+// or equivalently:
+let svg = 🐢.svg()
+
+// Write to a file using Swift's built-in String method
+try svg.write(to: URL(filePath: "drawing.svg"), atomically: true, encoding: .utf8)
 ```
 
-The SVG `viewBox` matches the logical canvas size, so the output scales
-losslessly in any browser or vector editor.
+By default (`fit: true`), the SVG `viewBox` is cropped to the actual drawing
+bounding box, producing a tight output. Pass `fit: false` to keep the full
+logical canvas size as the `viewBox`.
 
 ### What is supported
 
@@ -33,10 +41,11 @@ losslessly in any browser or vector editor.
 | `clear` command | Removes all prior elements |
 
 Fill polygons are rendered **below** their outline strokes in the SVG output,
-matching the visual behavior of `TortoiseCanvasView`.
+matching the visual behavior of ``TortoiseCanvas``.
 
 ## Topics
 
 ### Export
 
 - ``TortoiseSVG``
+- ``Tortoise/svg(fit:)``

@@ -29,7 +29,7 @@ for _ in 1...36 {
 |--------|-------------|
 | **TortoiseCore** | Tortoise API + command stream. Foundation-only; no platform dependencies. |
 | **TortoiseUI** | SwiftUI animated canvas view (`TimelineView` + `Canvas`). |
-| **TortoiseSVG** | Command stream → static SVG string or file. No platform dependencies. |
+| **TortoiseSVG** | Tortoise → static SVG string. No platform dependencies. |
 
 The design follows an event-sourcing pattern: `Tortoise` accumulates
 `[TortoiseCommand]`; rendering is handled by separate, pure-function

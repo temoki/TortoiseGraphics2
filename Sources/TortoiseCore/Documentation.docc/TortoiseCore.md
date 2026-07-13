@@ -55,6 +55,10 @@ to produce output.
 - ``Fill``
 - ``Dot``
 
+### Geometry
+
+- ``DrawingBounds``
+
 ### Value Types
 
 - ``Color``
