@@ -20,16 +20,20 @@ import Foundation
 public enum TortoiseSVG {
     /// Renders a tortoise's drawing as a static SVG string.
     ///
-    /// The SVG `viewBox` matches the tortoise's logical canvas size, so it
-    /// scales cleanly in any browser or vector editor without loss of quality.
+    /// When `fit` is `true` (the default), the SVG `viewBox` is cropped to the
+    /// actual drawing bounding box, producing a tight SVG. Set `fit` to `false`
+    /// to keep the full logical canvas size as the `viewBox`.
     @MainActor
-    public static func render(_ tortoise: Tortoise) -> String {
-        render(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+    public static func render(_ tortoise: Tortoise, fit: Bool = true) -> String {
+        let frames = CommandPlayer.play(commands: tortoise.commands)
+        let bounds = fit ? DrawingBounds.compute(from: frames) : nil
+        return SVGBuilder(frames: frames, canvasSize: tortoise.canvasSize, fittedBounds: bounds)
+            .build()
     }
 
     static func render(commands: [TortoiseCommand], canvasSize: Size) -> String {
         let frames = CommandPlayer.play(commands: commands)
-        return SVGBuilder(frames: frames, canvasSize: canvasSize).build()
+        return SVGBuilder(frames: frames, canvasSize: canvasSize, fittedBounds: nil).build()
     }
 }
 
@@ -38,10 +42,11 @@ public enum TortoiseSVG {
 extension Tortoise {
     /// Returns the tortoise's drawing as a static SVG string.
     ///
-    /// Equivalent to `TortoiseSVG.render(self)`. Declared as a function
-    /// rather than a computed property because SVG generation has non-trivial cost.
-    public func svg() -> String {
-        TortoiseSVG.render(self)
+    /// When `fit` is `true` (the default), the `viewBox` is cropped to the
+    /// actual drawing bounding box. Declared as a function rather than a
+    /// computed property because SVG generation has non-trivial cost.
+    public func svg(fit: Bool = true) -> String {
+        TortoiseSVG.render(self, fit: fit)
     }
 }
 
@@ -50,6 +55,7 @@ extension Tortoise {
 private struct SVGBuilder {
     let frames: [PlaybackFrame]
     let canvasSize: Size
+    let fittedBounds: DrawingBounds?
 
     private var w: Double { canvasSize.width }
     private var h: Double { canvasSize.height }
@@ -103,11 +109,30 @@ private struct SVGBuilder {
 
         var lines: [String] = []
         lines.append(#"<?xml version="1.0" encoding="UTF-8"?>"#)
-        lines.append(
-            #"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \#(n(w)) \#(n(h))" width="\#(n(w))" height="\#(n(h))">"#
-        )
-        if bgColor.alpha > 0 {
-            lines.append(#"  <rect width="\#(n(w))" height="\#(n(h))" fill="\#(color(bgColor))"/>"#)
+
+        if let bb = fittedBounds {
+            // viewBox cropped to the actual drawing bounding box in SVG space.
+            let vx = n(x(bb.minX))
+            let vy = n(y(bb.maxY))
+            let vw = n(bb.width)
+            let vh = n(bb.height)
+            lines.append(
+                #"<svg xmlns="http://www.w3.org/2000/svg" viewBox="\#(vx) \#(vy) \#(vw) \#(vh)" width="\#(vw)" height="\#(vh)">"#
+            )
+            if bgColor.alpha > 0 {
+                lines.append(
+                    #"  <rect x="\#(vx)" y="\#(vy)" width="\#(vw)" height="\#(vh)" fill="\#(color(bgColor))"/>"#
+                )
+            }
+        }
+        else {
+            lines.append(
+                #"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \#(n(w)) \#(n(h))" width="\#(n(w))" height="\#(n(h))">"#
+            )
+            if bgColor.alpha > 0 {
+                lines.append(
+                    #"  <rect width="\#(n(w))" height="\#(n(h))" fill="\#(color(bgColor))"/>"#)
+            }
         }
 
         for element in elements {
