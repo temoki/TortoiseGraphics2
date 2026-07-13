@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="200 110 90 90" width="90" height="90">
+  <line x1="200" y1="200" x2="200" y2="110" stroke="#800080" stroke-width="1" stroke-linecap="round"/>
+  <line x1="200" y1="110" x2="290" y2="110" stroke="#800080" stroke-width="1" stroke-linecap="round"/>
+  <line x1="290" y1="110" x2="290" y2="200" stroke="#800080" stroke-width="1" stroke-linecap="round"/>
+  <line x1="290" y1="200" x2="200" y2="200" stroke="#800080" stroke-width="1" stroke-linecap="round"/>
+</svg>

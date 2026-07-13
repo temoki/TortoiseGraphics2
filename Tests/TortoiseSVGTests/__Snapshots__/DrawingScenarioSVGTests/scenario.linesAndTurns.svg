@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="136.36 100 163.64 121.21" width="163.64" height="121.21">
+  <line x1="200" y1="200" x2="200" y2="100" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+  <line x1="200" y1="100" x2="300" y2="100" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+  <line x1="300" y1="100" x2="300" y2="200" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+  <line x1="300" y1="200" x2="200" y2="200" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+  <line x1="200" y1="200" x2="157.57" y2="157.57" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+  <line x1="157.57" y1="157.57" x2="178.79" y2="178.79" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+  <line x1="178.79" y1="178.79" x2="136.36" y2="221.21" stroke="#000000" stroke-width="1" stroke-linecap="round"/>
+</svg>

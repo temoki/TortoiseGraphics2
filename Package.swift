@@ -15,6 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0"),
     ],
     targets: [
         .target(name: "TortoiseCore"),
@@ -26,13 +27,30 @@ let package = Package(
             name: "TortoiseSVG",
             dependencies: ["TortoiseCore"]
         ),
+        .target(
+            name: "TortoiseTestSupport",
+            dependencies: ["TortoiseCore"],
+            path: "Tests/TortoiseTestSupport"
+        ),
         .testTarget(
             name: "TortoiseCoreTests",
             dependencies: ["TortoiseCore"]
         ),
         .testTarget(
             name: "TortoiseSVGTests",
-            dependencies: ["TortoiseSVG"]
+            dependencies: [
+                "TortoiseSVG",
+                "TortoiseTestSupport",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+            ]
+        ),
+        .testTarget(
+            name: "TortoiseUITests",
+            dependencies: [
+                "TortoiseUI",
+                "TortoiseTestSupport",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+            ]
         ),
     ]
 )

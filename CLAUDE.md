@@ -56,6 +56,17 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 ## Testing
 
-Tests live in `Tests/TortoiseCoreTests/` and `Tests/TortoiseSVGTests/`. `TortoiseUI` has no automated tests (GUI animation). Tests use swift-testing (`@Suite`, `@Test`, `#expect`). `Tortoise` is `@MainActor` so test suites that use it are marked `@MainActor`.
+Tests live in `Tests/TortoiseCoreTests/`, `Tests/TortoiseSVGTests/`, and `Tests/TortoiseUITests/`. Tests use swift-testing (`@Suite`, `@Test`, `#expect`). `Tortoise` is `@MainActor` so test suites that use it are marked `@MainActor`.
 
 SVG tests avoid raw string literals (`#"..."#`) when the expected string contains `"#` (e.g. hex colors) — use regular strings with escaped quotes instead: `"fill=\"#ff0000\""`.
+
+**Drawing-scenario golden tests.** `Tests/TortoiseTestSupport/` (a non-product target) defines `DrawingScenario.all` — feature-grouped tortoise programs that together cover every `TortoiseCommand` case. Both renderers are verified against the same scenarios via pointfreeco/swift-snapshot-testing:
+
+- `TortoiseSVGTests/DrawingScenarioSVGTests` compares full SVG strings against goldens in `Tests/TortoiseSVGTests/__Snapshots__/`.
+- `TortoiseUITests/DrawingScenarioCanvasTests` (macOS-only, `#if os(macOS)`) renders `TortoiseCanvas` via `ImageRenderer` (`scale = 2`, instant mode forced by prepending `speed = 0`) and compares PNGs in `Tests/TortoiseUITests/__Snapshots__/` with `precision: 0.995, perceptualPrecision: 0.98` to absorb OS-level antialiasing drift.
+
+After intentionally changing scenario programs or renderer output, re-record **both** golden sets in the same commit and visually inspect them:
+
+```bash
+SNAPSHOT_TESTING_RECORD=all swift test --filter DrawingScenario
+```

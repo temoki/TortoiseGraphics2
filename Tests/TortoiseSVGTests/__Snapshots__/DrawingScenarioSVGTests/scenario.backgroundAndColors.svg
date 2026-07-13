@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="128 140 144 132" width="144" height="132">
+  <rect x="128" y="140" width="144" height="132" fill="#000000"/>
+  <line x1="200" y1="200" x2="200" y2="188" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="224" y2="188" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+  <line x1="224" y1="188" x2="224" y2="224" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="224" y1="224" x2="176" y2="224" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+  <line x1="176" y1="224" x2="176" y2="164" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="176" y1="164" x2="248" y2="164" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+  <line x1="248" y1="164" x2="248" y2="248" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="248" y1="248" x2="152" y2="248" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+  <line x1="152" y1="248" x2="152" y2="140" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="152" y1="140" x2="272" y2="140" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+  <line x1="272" y1="140" x2="272" y2="272" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <line x1="272" y1="272" x2="128" y2="272" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+</svg>
