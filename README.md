@@ -19,7 +19,6 @@ for _ in 1...36 {
     🐢.forward(200)
     🐢.right(170)
 }
-TortoiseCanvas(🐢)
 ```
 
 <img src="docs/tortoise-star.svg" />
