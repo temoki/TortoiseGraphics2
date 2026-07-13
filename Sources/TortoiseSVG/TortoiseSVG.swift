@@ -1,5 +1,5 @@
 import Foundation
-import TortoiseCore
+@_exported import TortoiseCore
 
 /// SVG export for TortoiseGraphics.
 ///

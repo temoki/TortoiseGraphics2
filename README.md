@@ -69,7 +69,6 @@ writing your own renderer.
 ### Animated SwiftUI view
 
 ```swift
-import TortoiseCore
 import TortoiseUI
 
 struct ContentView: View {
@@ -91,7 +90,6 @@ rendering — useful for static previews and SVG export.
 ### SVG export
 
 ```swift
-import TortoiseCore
 import TortoiseSVG
 
 let 🐢 = Tortoise()
