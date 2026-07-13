@@ -13,7 +13,8 @@ A [turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics) engine — a 
 
 ```swift
 let 🐢 = Tortoise()
-🐢.penColor = .red
+🐢.penColor = .orange
+🐢.penWidth = 2
 for _ in 1...36 {
     🐢.forward(200)
     🐢.right(170)
