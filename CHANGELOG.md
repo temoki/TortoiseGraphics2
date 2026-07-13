@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.0-beta5
+
+### Fixed
+- `TortoiseCanvas`: strokes drawn between `beginFill()` and `endFill()` were invisible during animation and only appeared all at once when the fill completed. `CanvasModel` now appends them live and tracks where to insert the fill polygon afterward, instead of buffering the strokes until `endFill`.
+
 ## 2.0.0-beta4
 
 ### Added

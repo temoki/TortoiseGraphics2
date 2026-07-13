@@ -28,9 +28,10 @@ final class CanvasModel {
     let drawingBounds: DrawingBounds?
 
     private var lastTickDate: Date?
-    // Strokes/dots produced while isFillActive are held here until endFill,
-    // then flushed after the fill polygon so the polygon renders below its outlines.
-    private var pendingFillElements: [DrawElement] = []
+    // Index into `elements` captured when a fill becomes active, so the completed
+    // fill polygon can be inserted below the strokes drawn while filling, without
+    // delaying those strokes' own appearance during animation.
+    private var fillInsertionIndex: Int?
 
     var isFinished: Bool { frames.isEmpty || currentFrameIndex >= frames.count - 1 }
 
@@ -104,39 +105,30 @@ final class CanvasModel {
 
         if frame.didClear {
             elements.removeAll()
-            pendingFillElements.removeAll()
+            fillInsertionIndex = nil
         }
 
-        // endFill: insert the polygon first, then flush pending strokes/dots above it.
-        if let f = frame.completedFill {
-            elements.append(.fill(f))
-            elements.append(contentsOf: pendingFillElements)
-            pendingFillElements.removeAll()
+        // beginFill: remember where the eventual fill polygon belongs, so strokes
+        // drawn during the fill can still be appended (and animated) immediately.
+        if frame.isFillActive && fillInsertionIndex == nil {
+            fillInsertionIndex = elements.count
         }
 
         if let s = frame.newStroke {
-            if frame.isFillActive {
-                pendingFillElements.append(.stroke(s))
-            }
-            else {
-                elements.append(.stroke(s))
-            }
+            elements.append(.stroke(s))
         }
         if let a = frame.newArcStroke {
-            if frame.isFillActive {
-                pendingFillElements.append(.arcStroke(a))
-            }
-            else {
-                elements.append(.arcStroke(a))
-            }
+            elements.append(.arcStroke(a))
         }
         if let d = frame.newDot {
-            if frame.isFillActive {
-                pendingFillElements.append(.dot(d))
-            }
-            else {
-                elements.append(.dot(d))
-            }
+            elements.append(.dot(d))
+        }
+
+        // endFill: insert the polygon at the position recorded when the fill began,
+        // so it renders below the outline strokes drawn while filling.
+        if let f = frame.completedFill {
+            elements.insert(.fill(f), at: fillInsertionIndex ?? elements.count)
+            fillInsertionIndex = nil
         }
 
         backgroundColor = frame.backgroundColor
