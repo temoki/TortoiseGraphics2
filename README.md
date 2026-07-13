@@ -85,7 +85,7 @@ struct ContentView: View {
 ```
 
 `speed` ranges from 1 (slowest) to 10 (fastest). Set it to `0` for instant
-rendering — useful for static previews and SVG export.
+rendering — useful for static previews.
 
 ### SVG export
 
@@ -93,19 +93,18 @@ rendering — useful for static previews and SVG export.
 import TortoiseSVG
 
 let 🐢 = Tortoise()
-🐢.speed = 0
 🐢.penColor = .blue
 for _ in 1...4 {
     🐢.forward(100)
     🐢.right(90)
 }
 
-// As a String
-let svg = TortoiseSVG.render(commands: 🐢.commands, canvasSize: 🐢.canvasSize)
+let svg = TortoiseSVG.render(🐢)
+// or:
+let svg = 🐢.svg()
 
-// Written directly to a file
-try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
-                      to: URL(filePath: "square.svg"))
+// Write to a file using Swift's built-in String method
+try svg.write(to: URL(filePath: "square.svg"), atomically: true, encoding: .utf8)
 ```
 
 ### Tortoise API quick reference

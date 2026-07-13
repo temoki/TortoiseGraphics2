@@ -3,7 +3,7 @@ import Foundation
 
 /// SVG export for TortoiseGraphics.
 ///
-/// Converts a ``TortoiseCommand`` stream into a static SVG document.
+/// Converts a ``Tortoise`` command stream into a static SVG document.
 /// Pure function; no platform-specific dependencies.
 ///
 /// ```swift
@@ -13,31 +13,35 @@ import Foundation
 ///     🐢.forward(100)
 ///     🐢.right(90)
 /// }
-/// let svg = TortoiseSVG.render(commands: 🐢.commands, canvasSize: 🐢.canvasSize)
+/// let svg = TortoiseSVG.render(🐢)
+/// // or:
+/// let svg = 🐢.svg()
 /// ```
 public enum TortoiseSVG {
-    /// Renders a tortoise-graphics command stream as a static SVG string.
+    /// Renders a tortoise's drawing as a static SVG string.
     ///
-    /// The SVG `viewBox` matches the logical canvas size, so it scales cleanly
-    /// in any browser or vector editor without loss of quality.
-    public static func render(
-        commands: [TortoiseCommand],
-        canvasSize: Size = .defaultCanvas
-    ) -> String {
+    /// The SVG `viewBox` matches the tortoise's logical canvas size, so it
+    /// scales cleanly in any browser or vector editor without loss of quality.
+    @MainActor
+    public static func render(_ tortoise: Tortoise) -> String {
+        render(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+    }
+
+    static func render(commands: [TortoiseCommand], canvasSize: Size) -> String {
         let frames = CommandPlayer.play(commands: commands)
         return SVGBuilder(frames: frames, canvasSize: canvasSize).build()
     }
+}
 
-    /// Writes a static SVG file to `url`.
+// MARK: - Tortoise extension
+
+extension Tortoise {
+    /// Returns the tortoise's drawing as a static SVG string.
     ///
-    /// Convenience wrapper around ``render(commands:canvasSize:)``.
-    public static func write(
-        commands: [TortoiseCommand],
-        canvasSize: Size = .defaultCanvas,
-        to url: URL
-    ) throws {
-        let svg = render(commands: commands, canvasSize: canvasSize)
-        try svg.write(to: url, atomically: true, encoding: .utf8)
+    /// Equivalent to `TortoiseSVG.render(self)`. Declared as a function
+    /// rather than a computed property because SVG generation has non-trivial cost.
+    public func svg() -> String {
+        TortoiseSVG.render(self)
     }
 }
 
