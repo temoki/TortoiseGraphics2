@@ -9,15 +9,15 @@ import TortoiseCore
 ///
 /// ```swift
 /// // Existing-instance form
-/// TortoiseCanvas(tortoise)
-///     .tortoiseViewport(.autoFit(padding: 16))
+/// TortoiseCanvas(🐢)
+///     .tortoiseViewport(.autoFit)
 ///
 /// // Closure form
-/// TortoiseCanvas { t in
-///     t.speed = 0
+/// TortoiseCanvas { 🐢 in
+///     🐢.speed = 0
 ///     for _ in 1...4 {
-///         t.forward(100)
-///         t.right(90)
+///         🐢.forward(100)
+///         🐢.right(90)
 ///     }
 /// }
 /// ```
@@ -228,15 +228,11 @@ extension View {
 // MARK: - Preview
 
 #Preview("Tortoise Star") {
-    TortoiseCanvas { t in
-        t.speed = 0
-        t.backward(100)
+    TortoiseCanvas { 🐢 in
         for _ in 1...36 {
-            t.forward(200)
-            t.right(170)
+            🐢.forward(200)
+            🐢.right(170)
         }
     }
     .tortoiseViewport(.autoFit)
-    .padding()
-    .frame(width: 400, height: 400)
 }

@@ -73,19 +73,15 @@ import TortoiseCore
 import TortoiseUI
 
 struct ContentView: View {
-    let 🐢: Tortoise = {
-        let t = Tortoise()
-        t.speed = 5
-        for _ in 1...4 {
-            t.forward(100)
-            t.right(90)
-        }
-        return t
-    }()
-
     var body: some View {
-        TortoiseCanvas(🐢)
-            .frame(width: 400, height: 400)
+        TortoiseCanvas { 🐢 in
+            🐢.speed = 5
+            for _ in 1...4 {
+                🐢.forward(100)
+                🐢.right(90)
+            }
+        }
+        .frame(width: 400, height: 400)
     }
 }
 ```
@@ -182,16 +178,15 @@ try TortoiseSVG.write(commands: 🐢.commands, canvasSize: 🐢.canvasSize,
 Use the `.tortoiseViewport(_:)` modifier to control how the drawing maps onto the view:
 
 ```swift
-TortoiseCanvas(tortoise)
+TortoiseCanvas(🐢)
     .tortoiseViewport(.autoFit)
-    .padding()
 ```
 
 | `ViewportMode` | Description |
 |---|---|
 | `.scaleToFit` | Scale logical canvas to fill the view, letterboxed. **Default.** |
 | `.original` | 1 tortoise unit = 1 point, origin at view center |
-| `.autoFit` | Scale and center to fit the actual drawing bounding box. Use `.padding()` to add space around the view. |
+| `.autoFit` | Scale and center to fit the actual drawing bounding box. |
 
 ## Architecture
 
