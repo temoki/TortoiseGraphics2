@@ -3,6 +3,7 @@
 ## 2.0.0-beta3
 
 ### Added
+- Animated GIF (`docs/animated-square.gif`) added to README for the SwiftUI animated view section
 - `TortoiseCanvas` closure init: describe the drawing inline without creating a `Tortoise` instance
 - `.tortoiseViewport(_:)` environment modifier to set `ViewportMode` from outside the view
 - SVG autoFit: `TortoiseSVG.render(_:fit:)` and `Tortoise.svg(fit:)` crop the `viewBox` to the actual drawing bounding box (default `fit: true`)

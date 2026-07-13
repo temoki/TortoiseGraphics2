@@ -70,6 +70,8 @@ writing your own renderer.
 
 ### Animated SwiftUI view
 
+<img src="docs/animated-square.gif" />
+
 ```swift
 import TortoiseUI
 
