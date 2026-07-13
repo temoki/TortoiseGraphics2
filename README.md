@@ -21,6 +21,8 @@ for _ in 1...36 {
 TortoiseCanvas(🐢)
 ```
 
+<img src="docs/tortoise-star.svg" />
+
 ## Modules
 
 | Module | Description |
