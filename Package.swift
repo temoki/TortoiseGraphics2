@@ -13,6 +13,9 @@ let package = Package(
         .library(name: "TortoiseUI", targets: ["TortoiseUI"]),
         .library(name: "TortoiseSVG", targets: ["TortoiseSVG"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.0"),
+    ],
     targets: [
         .target(name: "TortoiseCore"),
         .target(

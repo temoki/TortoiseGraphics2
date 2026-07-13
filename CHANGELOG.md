@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0-beta4
+
+### Added
+- Documentation site published to GitHub Pages (`.github/workflows/docs.yml`), triggered on version-tag pushes — combines the `TortoiseCore`, `TortoiseUI`, and `TortoiseSVG` DocC catalogs into a single browsable site
+- `swift-docc-plugin` package dependency, so `swift package generate-documentation` (already referenced in `CLAUDE.md`) actually works
+- Documentation badge in README linking to the published site
+
 ## 2.0.0-beta3
 
 ### Added
