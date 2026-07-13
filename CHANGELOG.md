@@ -2,6 +2,9 @@
 
 ## 2.0.0-beta5
 
+### Added
+- Comprehensive drawing-command golden tests: shared `DrawingScenario` fixtures (13 scenarios) covering every `TortoiseCommand` case, verified against checked-in goldens via swift-snapshot-testing — full-string SVG comparison in `TortoiseSVGTests`, and `TortoiseCanvas` PNG snapshots rendered with `ImageRenderer` in the new `TortoiseUITests` target (macOS)
+
 ### Fixed
 - `TortoiseCanvas`: strokes drawn between `beginFill()` and `endFill()` were invisible during animation and only appeared all at once when the fill completed. `CanvasModel` now appends them live and tracks where to insert the fill polygon afterward, instead of buffering the strokes until `endFill`.
 
