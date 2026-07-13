@@ -236,3 +236,14 @@ extension View {
         }
     }
 }
+
+#Preview("Animated Square") {
+    TortoiseCanvas { 🐢 in
+        🐢.speed = 5
+        🐢.penColor = .blue
+        for _ in 1...4 {
+            🐢.forward(100)
+            🐢.right(90)
+        }
+    }
+}
