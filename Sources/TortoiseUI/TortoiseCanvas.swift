@@ -228,6 +228,8 @@ extension View {
 
 #Preview("Tortoise Star") {
     TortoiseCanvas { 🐢 in
+        🐢.penColor = .orange
+        🐢.penWidth = 2
         for _ in 1...36 {
             🐢.forward(200)
             🐢.right(170)
