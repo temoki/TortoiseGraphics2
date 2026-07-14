@@ -181,7 +181,21 @@ struct TortoiseAPITests {
         // Starting at (0,0) heading north: center = (-100, 0)
         // After 90° CCW arc: end = (-100, 100), heading = 270°
         #expect(isClose(t.position, Point(x: -100, y: 100)))
-        #expect(isClose(t.heading, -90))
+        #expect(isClose(t.heading, 270))
+    }
+
+    @Test("heading is always normalized to [0, 360)")
+    func headingNormalized() {
+        let t = Tortoise()
+        t.left(90)
+        #expect(isClose(t.heading, 270))
+        t.heading = -450
+        #expect(isClose(t.heading, 270))
+        #expect(t.commands.last == .setHeading(270))
+        t.right(720)
+        #expect(isClose(t.heading, 270))
+        t.heading = 360
+        #expect(isClose(t.heading, 0))
     }
 }
 
@@ -378,7 +392,15 @@ struct CommandPlayerTests {
         let frames = CommandPlayer.play(commands: [.arc(radius: 100, extent: 90)])
         let state = frames.last!.tortoiseState
         #expect(isClose(state.position, Point(x: -100, y: 100)))
-        #expect(isClose(state.heading, -90))
+        #expect(isClose(state.heading, 270))
+    }
+
+    @Test("rotate and setHeading normalize heading to [0, 360)")
+    func headingNormalizedOnReplay() {
+        let counterclockwise = CommandPlayer.play(commands: [.rotate(-90)])
+        #expect(isClose(counterclockwise.last!.tortoiseState.heading, 270))
+        let wrapped = CommandPlayer.play(commands: [.setHeading(-450), .rotate(720)])
+        #expect(isClose(wrapped.last!.tortoiseState.heading, 270))
     }
 
     @Test("arc with pen down produces an ArcStroke")

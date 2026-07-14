@@ -6,6 +6,9 @@
 - `TortoiseState.applying(_:)` — a pure state-transition reducer, now the single source of truth shared by `Tortoise` (recording) and `CommandPlayer` (replay). This removes the duplicated state math that could silently drift apart, and is also useful for custom renderers doing incremental replay
 - Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
 
+### Changed
+- `Tortoise.heading` and `TortoiseState.heading` are now always normalized to [0, 360), matching `towards()` and Python turtle — previously counterclockwise turns reported negative values (e.g. `left(90)` from north returned `-90`; it now returns `270`)
+
 ### Fixed
 - `clear()` while a fill is in progress now discards the in-progress fill (matching Python turtle): previously the pre-clear vertices leaked into the polygon completed by a later `endFill()`, resurrecting erased geometry — `isFilling` now also becomes `false` after `clear()`, and a fill started after a discarded one renders at the correct z-order in `TortoiseCanvas`
 - `TortoiseCanvas`: the `TimelineView(.animation)` schedule kept firing at display refresh rate after playback finished, redrawing an unchanged canvas and wasting CPU/battery — the schedule is now paused once playback completes, and resumes when new commands re-create the playback model

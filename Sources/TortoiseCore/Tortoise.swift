@@ -71,9 +71,13 @@ public final class Tortoise {
     }
 
     /// Heading in degrees (0 = north, clockwise positive).
+    ///
+    /// Reading always returns a value in [0, 360), matching ``towards(x:y:)``
+    /// and Python turtle; setting accepts any value and normalizes it
+    /// (e.g. `-90` becomes `270`).
     public var heading: Double {
         get { state.heading }
-        set { record(.setHeading(newValue.truncatingRemainder(dividingBy: 360))) }
+        set { record(.setHeading(TortoiseState.normalizedHeading(newValue))) }
     }
 
     /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.

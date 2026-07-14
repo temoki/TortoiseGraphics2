@@ -3,6 +3,7 @@ public struct TortoiseState: Sendable, Equatable {
     /// Current position in tortoise coordinate space (center origin, Y up).
     public var position: Point
     /// Current heading in degrees (0 = north, clockwise positive).
+    /// Kept normalized to [0, 360) by ``applying(_:)``.
     public var heading: Double
     public var isPenDown: Bool
     public var penColor: Color
@@ -25,6 +26,12 @@ public struct TortoiseState: Sendable, Equatable {
 }
 
 extension TortoiseState {
+    /// Normalizes an angle in degrees to the canonical heading range [0, 360).
+    static func normalizedHeading(_ degrees: Double) -> Double {
+        let remainder = degrees.truncatingRemainder(dividingBy: 360)
+        return remainder < 0 ? remainder + 360 : remainder
+    }
+
     /// Returns the state after applying a single command.
     ///
     /// This is the single source of truth for tortoise state transitions:
@@ -40,14 +47,14 @@ extension TortoiseState {
         case .forward(let distance):
             state.position = position.moved(distance: distance, heading: heading)
         case .rotate(let degrees):
-            state.heading = (heading + degrees).truncatingRemainder(dividingBy: 360)
+            state.heading = Self.normalizedHeading(heading + degrees)
         case .home:
             state.position = .zero
             state.heading = 0
         case .setPosition(let position):
             state.position = position
         case .setHeading(let degrees):
-            state.heading = degrees.truncatingRemainder(dividingBy: 360)
+            state.heading = Self.normalizedHeading(degrees)
         case .penDown:
             state.isPenDown = true
         case .penUp:
@@ -68,7 +75,7 @@ extension TortoiseState {
             let end = Tortoise.arcEndState(
                 position: position, heading: heading, radius: radius, extent: extent)
             state.position = end.position
-            state.heading = end.heading
+            state.heading = Self.normalizedHeading(end.heading)
         case .beginFill, .endFill, .backgroundColor, .clear, .dot:
             break
         }
