@@ -5,7 +5,7 @@
 [![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://swift.org/package-manager)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20visionOS-lightgrey.svg)]()
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20visionOS%20%7C%20Linux-lightgrey.svg)]()
 [![Documentation](https://img.shields.io/badge/documentation-DocC-blue.svg)](https://temoki.github.io/TortoiseGraphics2/)
 
 A [turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics) engine — a key feature of the [Logo](https://en.wikipedia.org/wiki/Logo_(programming_language)) programming language — written in Swift.
@@ -40,8 +40,8 @@ and testing all share a single source of truth.
 ## Requirements
 
 - **Swift** 6.2+
-- **Xcode** 26+
-- **Platforms** iOS 26+ · macOS 26+ · visionOS 26+
+- **Xcode** 26+ (Apple platforms)
+- **Platforms** iOS 26+ · macOS 26+ · visionOS 26+ · Linux (`TortoiseCore` / `TortoiseSVG` only — `TortoiseUI` requires SwiftUI)
 
 ## Installation
 

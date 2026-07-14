@@ -26,6 +26,21 @@ jobs:
       - name: Test
         run: swift test
 
+  # Package.swift omits the SwiftUI-based TortoiseUI product/targets on Linux,
+  # so plain `swift build` / `swift test` covers TortoiseCore + TortoiseSVG here.
+  linux:
+    name: Linux (Core + SVG)
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Test
+        run: swift test
+
   format-lint:
     name: swift-format lint
     runs-on: macos-15

@@ -25,6 +25,8 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **Module dependency rule:** `TortoiseCore` has no platform dependencies (Foundation only). `TortoiseUI` and `TortoiseSVG` both depend on `TortoiseCore` and never on each other.
 
+**Linux support:** `TortoiseCore` and `TortoiseSVG` build and pass all tests on Linux — do not introduce Apple-only APIs into them (the CI `linux` job enforces this). `Package.swift` omits the SwiftUI-based `TortoiseUI` product and targets on Linux via `#if !os(Linux)` (a manifest `#if os()` evaluates on the build host), so plain `swift build` / `swift test` work there.
+
 ## Key Design Decisions
 
 **`@MainActor @Observable` on `Tortoise` and `CanvasModel`.** `Tortoise` is always created and used on the main actor. `CanvasModel` is internal to `TortoiseUI` and also main-actor-bound.
