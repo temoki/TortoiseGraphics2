@@ -9,6 +9,7 @@
 - Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
 
 ### Changed
+- CI hardening: Xcode selection no longer pins a single point release (it picks the newest stable Xcode 26.x on the runner image), SwiftPM build directories are cached across runs, and release-mode compilation moved to its own parallel job so the test job no longer builds everything twice
 - `Tortoise.heading` and `TortoiseState.heading` are now always normalized to [0, 360), matching `towards()` and Python turtle — previously counterclockwise turns reported negative values (e.g. `left(90)` from north returned `-90`; it now returns `270`)
 
 ### Fixed

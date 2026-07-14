@@ -72,14 +72,22 @@ Rules:
 - If you add or change a `TortoiseCommand` — or anything else that affects
   visible output — add or update a scenario so both renderers stay covered.
 
+The PNG goldens depend on OS-level rendering. The current set was recorded on
+**macOS 26** (Xcode 26); CI compares them on `macos-15` runners, with a small
+tolerance (`precision: 0.995`, `perceptualPrecision: 0.98`) absorbing
+antialiasing drift between OS versions. If a PR bumps the CI runner image
+(`runs-on: macos-XX`) or you re-record on a different macOS version, confirm
+the PNG golden tests still pass in CI — and if they don't, re-record both
+golden sets and visually inspect them as described above.
+
 ## Submitting a pull request
 
 1. Fork the repository and create a branch from `main`.
 2. Make your change, including tests for new behavior.
 3. Verify locally that `swift test` and the swift-format lint pass.
 4. Add a `CHANGELOG.md` entry for user-visible changes.
-5. Open a pull request against `main`. CI (build & test on macOS, plus the
-   format lint) must pass.
+5. Open a pull request against `main`. CI must pass: tests on macOS and
+   Linux, a release-mode build, and the format lint.
 
 Please keep each pull request focused on a single topic — small PRs are
 reviewed faster.
