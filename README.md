@@ -49,20 +49,28 @@ Add the package in Xcode via **File › Add Package Dependencies**, or add it
 to your `Package.swift`:
 
 ```swift
+platforms: [
+    .iOS(.v26), .macOS(.v26), .visionOS(.v26),
+],
 dependencies: [
-    .package(url: "https://github.com/temoki/TortoiseGraphics", from: "2.0.0"),
+    .package(url: "https://github.com/temoki/TortoiseGraphics2", exact: "2.0.0-beta5"),
 ],
 targets: [
     .target(
         name: "YourTarget",
         dependencies: [
-            .product(name: "TortoiseCore", package: "TortoiseGraphics"),
-            .product(name: "TortoiseUI",   package: "TortoiseGraphics"),
-            .product(name: "TortoiseSVG",  package: "TortoiseGraphics"),
+            .product(name: "TortoiseCore", package: "TortoiseGraphics2"),
+            .product(name: "TortoiseUI",   package: "TortoiseGraphics2"),
+            .product(name: "TortoiseSVG",  package: "TortoiseGraphics2"),
         ]
     ),
 ]
 ```
+
+> **Note** While 2.0.0 is in beta, pin the exact prerelease version as shown
+> above (in Xcode, choose the **Exact Version** dependency rule) — a plain
+> `from: "2.0.0"` requirement does not match prerelease tags. Once the stable
+> 2.0.0 is released, `from: "2.0.0"` will work.
 
 Import only what you need — `TortoiseCore` alone is sufficient if you're
 writing your own renderer.
