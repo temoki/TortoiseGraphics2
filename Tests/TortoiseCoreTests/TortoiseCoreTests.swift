@@ -386,28 +386,3 @@ struct PointTests {
         #expect(isClose(Point(x: 0, y: 0).distance(to: Point(x: 3, y: 4)), 5))
     }
 }
-
-// MARK: - Angle
-
-@Suite("Angle")
-struct AngleTests {
-    @Test("degrees ↔ radians round-trip")
-    func degreesRadians() {
-        let a = Angle(degrees: 90)
-        #expect(isClose(a.radians, .pi / 2))
-        let b = Angle(radians: .pi)
-        #expect(isClose(b.degrees, 180))
-    }
-
-    @Test("angle addition")
-    func addition() {
-        let a = Angle(degrees: 45) + Angle(degrees: 45)
-        #expect(isClose(a.degrees, 90))
-    }
-
-    @Test("angle negation")
-    func negation() {
-        let a = -Angle(degrees: 30)
-        #expect(isClose(a.degrees, -30))
-    }
-}

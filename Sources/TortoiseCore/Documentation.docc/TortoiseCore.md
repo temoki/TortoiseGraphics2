@@ -64,5 +64,4 @@ to produce output.
 - ``Color``
 - ``Point``
 - ``Size``
-- ``Angle``
 - ``TortoiseState``

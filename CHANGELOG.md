@@ -8,6 +8,9 @@
 ### Fixed
 - README: the installation snippet pointed at the v1 repository URL (`temoki/TortoiseGraphics`) and used `from: "2.0.0"`, which cannot resolve prerelease tags — it now points at this repository, uses a prerelease-aware `from: "2.0.0-beta1"` requirement, and includes the required `platforms` declaration
 
+### Removed
+- `Angle` type from `TortoiseCore` — no API accepted or returned it; all angles in the public API are plain `Double` degrees
+
 ## 2.0.0-beta5
 
 ### Added
