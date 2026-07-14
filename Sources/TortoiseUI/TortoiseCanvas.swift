@@ -54,7 +54,9 @@ public struct TortoiseCanvas: View {
     }
 
     public var body: some View {
-        TimelineView(.animation) { timeline in
+        // Pause the schedule once playback finishes so the view stops redrawing
+        // at display refresh rate; replacing the model (via task(id:)) resumes it.
+        TimelineView(.animation(paused: model.isFinished)) { timeline in
             Canvas { ctx, size in
                 let t = viewportMode.transform(
                     canvasSize: model.canvasSize, viewSize: size,
