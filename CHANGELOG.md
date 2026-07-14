@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
+
 ## 2.0.0-beta5
 
 ### Added
