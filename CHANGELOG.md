@@ -6,6 +6,7 @@
 - Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
 
 ### Fixed
+- `clear()` while a fill is in progress now discards the in-progress fill (matching Python turtle): previously the pre-clear vertices leaked into the polygon completed by a later `endFill()`, resurrecting erased geometry — `isFilling` now also becomes `false` after `clear()`, and a fill started after a discarded one renders at the correct z-order in `TortoiseCanvas`
 - `TortoiseCanvas`: the `TimelineView(.animation)` schedule kept firing at display refresh rate after playback finished, redrawing an unchanged canvas and wasting CPU/battery — the schedule is now paused once playback completes, and resumes when new commands re-create the playback model
 - README: the installation snippet pointed at the v1 repository URL (`temoki/TortoiseGraphics`) and used `from: "2.0.0"`, which cannot resolve prerelease tags — it now points at this repository, uses a prerelease-aware `from: "2.0.0-beta1"` requirement, and includes the required `platforms` declaration
 

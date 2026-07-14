@@ -110,7 +110,9 @@ final class CanvasModel {
 
         // beginFill: remember where the eventual fill polygon belongs, so strokes
         // drawn during the fill can still be appended (and animated) immediately.
-        if frame.isFillActive && fillInsertionIndex == nil {
+        // Skip the clear frame itself: its isFillActive is snapshotted before the
+        // command ran, but clear discards the in-progress fill.
+        if frame.isFillActive && !frame.didClear && fillInsertionIndex == nil {
             fillInsertionIndex = elements.count
         }
 

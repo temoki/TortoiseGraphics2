@@ -111,6 +111,15 @@ struct TortoiseAPITests {
         #expect(t.commands == [.beginFill, .endFill])
     }
 
+    @Test("clear during fill resets isFilling")
+    func clearResetsIsFilling() {
+        let t = Tortoise()
+        t.beginFill()
+        #expect(t.isFilling)
+        t.clear()
+        #expect(!t.isFilling)
+    }
+
     @Test("home appends .home")
     func homeCommand() {
         let t = Tortoise()
@@ -294,6 +303,39 @@ struct CommandPlayerTests {
         let frames = CommandPlayer.play(commands: [.forward(100), .clear])
         #expect(frames.last!.didClear)
         #expect(!frames.first!.didClear)
+    }
+
+    @Test("clear during fill discards the fill (matching Python turtle)")
+    func clearDiscardsInProgressFill() {
+        let cmds: [TortoiseCommand] = [
+            .beginFill,
+            .forward(100),
+            .rotate(120),
+            .forward(100),
+            .clear,
+            .endFill,
+        ]
+        let frames = CommandPlayer.play(commands: cmds)
+        #expect(frames.allSatisfy { $0.completedFill == nil })
+    }
+
+    @Test("fill started after clear contains only post-clear points")
+    func fillAfterClearStartsFresh() {
+        let cmds: [TortoiseCommand] = [
+            .beginFill,
+            .forward(100),
+            .clear,
+            .endFill,
+            .beginFill,
+            .forward(100),
+            .rotate(120),
+            .forward(100),
+            .endFill,
+        ]
+        let frames = CommandPlayer.play(commands: cmds)
+        let fill = frames.last!.completedFill
+        #expect(fill != nil)
+        #expect(fill?.points.count == 3)
     }
 
     @Test("backgroundColor command updates background color")

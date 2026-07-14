@@ -103,6 +103,9 @@ public struct CommandPlayer {
 
             case .clear:
                 didClear = true
+                // Matching Python turtle: clear() discards an in-progress fill,
+                // so a later endFill does not resurrect pre-clear vertices.
+                fillPoints = nil
 
             case .dot(let size):
                 newDot = Dot(center: tortoise.position, size: size, color: tortoise.penColor)

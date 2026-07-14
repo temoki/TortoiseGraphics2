@@ -47,6 +47,37 @@ struct CanvasModelTests {
         #expect(model.animationProgress == 0)
     }
 
+    @Test("fill aborted by clear does not misplace a later fill")
+    func fillAfterAbortedFillInsertsAtCorrectIndex() {
+        let tortoise = Tortoise()
+        tortoise.speed = 0
+        tortoise.beginFill()
+        tortoise.forward(50)
+        tortoise.clear()
+        tortoise.endFill()  // No-op: the fill was discarded by clear().
+        tortoise.forward(60)  // Stroke drawn before the second fill begins.
+        tortoise.beginFill()
+        tortoise.right(120)
+        tortoise.forward(60)
+        tortoise.right(120)
+        tortoise.forward(60)
+        tortoise.endFill()
+        let model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+
+        // Expected order: pre-fill stroke, then the fill polygon below its
+        // own outline strokes — not below the unrelated earlier stroke.
+        #expect(model.elements.count == 4)
+        guard model.elements.count == 4 else { return }
+        guard case .stroke = model.elements[0] else {
+            Issue.record("elements[0] should be the pre-fill stroke")
+            return
+        }
+        guard case .fill = model.elements[1] else {
+            Issue.record("elements[1] should be the fill polygon")
+            return
+        }
+    }
+
     @Test("ticking a finished model changes nothing")
     func tickAfterFinishedIsNoOp() {
         let tortoise = Tortoise()

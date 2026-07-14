@@ -12,6 +12,7 @@ extension DrawingScenario {
         teleportAndHome,
         backgroundAndColors,
         clearAndRedraw,
+        clearDuringFill,
         hiddenTortoise,
         showAfterHide,
         speedChanges,
@@ -154,6 +155,27 @@ extension DrawingScenario {
             t.forward(80)
             t.right(120)
         }
+    }
+
+    /// Covers `clear` while a fill is in progress: the discarded fill must not
+    /// reappear, and a fill started after the clear must render normally.
+    public static let clearDuringFill = DrawingScenario("clearDuringFill") { t in
+        t.penColor = .red
+        t.fillColor = .yellow
+        t.beginFill()
+        t.forward(80)
+        t.right(120)
+        t.forward(80)
+        t.clear()
+        t.endFill()  // No-op: the fill was discarded by clear().
+        t.penColor = .blue
+        t.fillColor = .cyan
+        t.beginFill()
+        for _ in 0..<4 {
+            t.forward(80)
+            t.right(90)
+        }
+        t.endFill()
     }
 
     /// Covers `hideTortoise`: the canvas snapshot must not show the tortoise sprite.

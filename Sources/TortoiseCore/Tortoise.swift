@@ -241,8 +241,13 @@ public final class Tortoise {
 
     // MARK: - Canvas
 
-    /// Clear all drawings; tortoise position and pen state are preserved.
+    /// Clear all drawings; tortoise position, heading, and pen state are preserved.
+    ///
+    /// An in-progress fill started with ``beginFill()`` is discarded
+    /// (matching Python turtle): ``isFilling`` becomes `false` and a
+    /// subsequent ``endFill()`` does nothing.
     public func clear() {
+        _isFilling = false
         commands.append(.clear)
     }
 

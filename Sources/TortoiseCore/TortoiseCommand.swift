@@ -36,7 +36,8 @@ public enum TortoiseCommand: Sendable, Equatable {
 
     // MARK: Canvas
     case backgroundColor(Color)
-    /// Clear all drawings; tortoise position and pen state are preserved.
+    /// Clear all drawings and discard any in-progress fill;
+    /// tortoise position and pen state are preserved.
     case clear
 
     // MARK: Arc
