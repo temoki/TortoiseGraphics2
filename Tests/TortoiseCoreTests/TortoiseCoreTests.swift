@@ -395,6 +395,52 @@ struct CommandPlayerTests {
     }
 }
 
+// MARK: - Tortoise / CommandPlayer consistency
+
+@Suite("Tortoise / CommandPlayer consistency")
+@MainActor
+struct StateConsistencyTests {
+    @Test("random program: recorded state matches CommandPlayer replay")
+    func randomProgramMatchesReplay() {
+        // Deterministic LCG so failures are reproducible.
+        var seed: UInt64 = 0x5DEE_CE66_D123_4567
+        func nextDouble(_ range: ClosedRange<Double>) -> Double {
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+            let unit = Double(seed >> 11) * (1.0 / 9_007_199_254_740_992.0)  // ÷ 2^53
+            return range.lowerBound + unit * (range.upperBound - range.lowerBound)
+        }
+
+        let t = Tortoise()
+        for step in 0..<300 {
+            switch step % 10 {
+            case 0: t.forward(nextDouble(-150...150))
+            case 1: t.right(nextDouble(-720...720))
+            case 2: t.left(nextDouble(0...360))
+            case 3: t.circle(radius: nextDouble(5...120), extent: nextDouble(-400...400))
+            case 4: t.setPosition(x: nextDouble(-200...200), y: nextDouble(-200...200))
+            case 5: t.heading = nextDouble(-720...720)
+            case 6: t.penWidth = nextDouble(-2...9)
+            case 7:
+                if step % 20 == 7 {
+                    t.penUp()
+                }
+                else {
+                    t.penDown()
+                }
+            case 8: t.speed = nextDouble(-1...10)
+            default: t.home()
+            }
+        }
+
+        let replayed = CommandPlayer.play(commands: t.commands).last!.tortoiseState
+        #expect(isClose(t.position, replayed.position))
+        #expect(isClose(t.heading, replayed.heading))
+        #expect(t.isPenDown == replayed.isPenDown)
+        #expect(t.penWidth == replayed.penWidth)
+        #expect(t.speed == replayed.speed)
+    }
+}
+
 // MARK: - Color
 
 @Suite("Color")

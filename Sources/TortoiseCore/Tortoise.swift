@@ -37,6 +37,14 @@ public final class Tortoise {
         self.canvasSize = canvasSize
     }
 
+    /// Appends a command to the stream and advances the tortoise state through
+    /// the shared ``TortoiseState/applying(_:)`` reducer — the same function
+    /// ``CommandPlayer`` uses for replay, so the two can never drift apart.
+    private func record(_ command: TortoiseCommand) {
+        commands.append(command)
+        state = state.applying(command)
+    }
+
     // MARK: - Read-only state
 
     public var position: Point { state.position }
@@ -49,51 +57,36 @@ public final class Tortoise {
 
     public var penColor: Color {
         get { state.penColor }
-        set {
-            state.penColor = newValue
-            commands.append(.penColor(newValue))
-        }
+        set { record(.penColor(newValue)) }
     }
 
     public var penWidth: Double {
         get { state.penWidth }
-        set {
-            state.penWidth = max(0, newValue)
-            commands.append(.penWidth(state.penWidth))
-        }
+        set { record(.penWidth(max(0, newValue))) }
     }
 
     public var fillColor: Color {
         get { state.fillColor }
-        set {
-            state.fillColor = newValue
-            commands.append(.fillColor(newValue))
-        }
+        set { record(.fillColor(newValue)) }
     }
 
     /// Heading in degrees (0 = north, clockwise positive).
     public var heading: Double {
         get { state.heading }
-        set {
-            state.heading = newValue.truncatingRemainder(dividingBy: 360)
-            commands.append(.setHeading(state.heading))
-        }
+        set { record(.setHeading(newValue.truncatingRemainder(dividingBy: 360))) }
     }
 
     /// Playback speed: 1 (slowest) … 10 (fastest), 0 = instant.
     public var speed: Double {
         get { state.speed }
-        set {
-            state.speed = max(0, newValue)
-            commands.append(.speed(state.speed))
-        }
+        set { record(.speed(max(0, newValue))) }
     }
 
     public var backgroundColor: Color {
         get { _backgroundColor }
         set {
             _backgroundColor = newValue
-            commands.append(.backgroundColor(newValue))
+            record(.backgroundColor(newValue))
         }
     }
 
@@ -101,8 +94,7 @@ public final class Tortoise {
 
     /// Move forward by `distance` pixels (negative = backward).
     public func forward(_ distance: Double) {
-        state.position = state.position.moved(distance: distance, heading: state.heading)
-        commands.append(.forward(distance))
+        record(.forward(distance))
     }
 
     /// Move backward by `distance` pixels.
@@ -112,8 +104,7 @@ public final class Tortoise {
 
     /// Rotate clockwise by `degrees`.
     public func right(_ degrees: Double) {
-        state.heading = (state.heading + degrees).truncatingRemainder(dividingBy: 360)
-        commands.append(.rotate(degrees))
+        record(.rotate(degrees))
     }
 
     /// Rotate counterclockwise by `degrees`.
@@ -123,21 +114,17 @@ public final class Tortoise {
 
     /// Move to origin (0, 0) and reset heading to north (0°).
     public func home() {
-        state.position = .zero
-        state.heading = 0
-        commands.append(.home)
+        record(.home)
     }
 
     /// Teleport to the given position without changing heading.
     public func setPosition(x: Double, y: Double) {
-        state.position = Point(x: x, y: y)
-        commands.append(.setPosition(state.position))
+        record(.setPosition(Point(x: x, y: y)))
     }
 
     /// Teleport to the given position without changing heading.
     public func setPosition(_ position: Point) {
-        state.position = position
-        commands.append(.setPosition(position))
+        record(.setPosition(position))
     }
 
     /// Teleport to `(x, position.y)` without changing heading or Y coordinate.
@@ -183,7 +170,7 @@ public final class Tortoise {
     /// - Parameter size: Diameter in logical units. Defaults to `max(penWidth + 4, 2 * penWidth)`.
     public func dot(size: Double? = nil) {
         let resolvedSize = size ?? max(state.penWidth + 4, 2 * state.penWidth)
-        commands.append(.dot(resolvedSize))
+        record(.dot(resolvedSize))
     }
 
     /// Draw an arc counterclockwise.
@@ -192,51 +179,39 @@ public final class Tortoise {
     /// `extent` controls how many degrees of the circle are drawn (360 = full circle).
     /// Positive `extent` draws counterclockwise; negative `extent` draws clockwise.
     public func circle(radius: Double, extent: Double = 360) {
-        let (newPos, newHeading) = Self.arcEndState(
-            position: state.position,
-            heading: state.heading,
-            radius: radius,
-            extent: extent
-        )
-        state.position = newPos
-        state.heading = newHeading
-        commands.append(.arc(radius: radius, extent: extent))
+        record(.arc(radius: radius, extent: extent))
     }
 
     // MARK: - Pen
 
     public func penDown() {
-        state.isPenDown = true
-        commands.append(.penDown)
+        record(.penDown)
     }
 
     public func penUp() {
-        state.isPenDown = false
-        commands.append(.penUp)
+        record(.penUp)
     }
 
     // MARK: - Fill
 
     public func beginFill() {
         _isFilling = true
-        commands.append(.beginFill)
+        record(.beginFill)
     }
 
     public func endFill() {
         _isFilling = false
-        commands.append(.endFill)
+        record(.endFill)
     }
 
     // MARK: - Appearance
 
     public func showTortoise() {
-        state.isVisible = true
-        commands.append(.showTortoise)
+        record(.showTortoise)
     }
 
     public func hideTortoise() {
-        state.isVisible = false
-        commands.append(.hideTortoise)
+        record(.hideTortoise)
     }
 
     // MARK: - Canvas
@@ -248,7 +223,7 @@ public final class Tortoise {
     /// subsequent ``endFill()`` does nothing.
     public func clear() {
         _isFilling = false
-        commands.append(.clear)
+        record(.clear)
     }
 
 }

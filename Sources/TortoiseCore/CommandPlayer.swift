@@ -25,60 +25,37 @@ public struct CommandPlayer {
             var newDot: Dot? = nil
             var didClear = false
 
+            // State transitions go through the shared reducer (the same one
+            // Tortoise uses); the switch below only derives drawing output.
+            let before = tortoise
+            tortoise = tortoise.applying(command)
+
             switch command {
-            case .forward(let distance):
-                let next = tortoise.position.moved(distance: distance, heading: tortoise.heading)
-                if tortoise.isPenDown {
+            case .forward, .home, .setPosition:
+                if before.isPenDown {
                     newStroke = Stroke(
-                        from: tortoise.position, to: next,
-                        color: tortoise.penColor, width: tortoise.penWidth
+                        from: before.position, to: tortoise.position,
+                        color: before.penColor, width: before.penWidth
                     )
                 }
-                fillPoints?.append(next)
-                tortoise.position = next
+                fillPoints?.append(tortoise.position)
 
-            case .rotate(let degrees):
-                tortoise.heading = (tortoise.heading + degrees).truncatingRemainder(dividingBy: 360)
-
-            case .home:
-                let next = Point.zero
-                if tortoise.isPenDown {
-                    newStroke = Stroke(
-                        from: tortoise.position, to: next,
-                        color: tortoise.penColor, width: tortoise.penWidth
+            case .arc(let radius, let extent):
+                if before.isPenDown {
+                    let center = Tortoise.arcCenter(
+                        position: before.position, heading: before.heading, radius: radius)
+                    let dx = before.position.x - center.x
+                    let dy = before.position.y - center.y
+                    newArcStroke = ArcStroke(
+                        center: center,
+                        radius: radius,
+                        startAngle: atan2(dy, dx) * (180 / .pi),
+                        sweep: extent,
+                        color: before.penColor,
+                        width: before.penWidth
                     )
                 }
-                fillPoints?.append(next)
-                tortoise.position = next
-                tortoise.heading = 0
-
-            case .setPosition(let pos):
-                if tortoise.isPenDown {
-                    newStroke = Stroke(
-                        from: tortoise.position, to: pos,
-                        color: tortoise.penColor, width: tortoise.penWidth
-                    )
-                }
-                fillPoints?.append(pos)
-                tortoise.position = pos
-
-            case .setHeading(let degrees):
-                tortoise.heading = degrees.truncatingRemainder(dividingBy: 360)
-
-            case .penDown:
-                tortoise.isPenDown = true
-
-            case .penUp:
-                tortoise.isPenDown = false
-
-            case .penColor(let color):
-                tortoise.penColor = color
-
-            case .penWidth(let width):
-                tortoise.penWidth = max(0, width)
-
-            case .fillColor(let color):
-                tortoise.fillColor = color
+                fillPoints?.append(tortoise.position)
 
             case .beginFill:
                 fillPoints = [tortoise.position]
@@ -88,15 +65,6 @@ public struct CommandPlayer {
                     completedFill = Fill(points: points, color: tortoise.fillColor)
                 }
                 fillPoints = nil
-
-            case .showTortoise:
-                tortoise.isVisible = true
-
-            case .hideTortoise:
-                tortoise.isVisible = false
-
-            case .speed(let s):
-                tortoise.speed = max(0, s)
 
             case .backgroundColor(let color):
                 bgColor = color
@@ -110,31 +78,9 @@ public struct CommandPlayer {
             case .dot(let size):
                 newDot = Dot(center: tortoise.position, size: size, color: tortoise.penColor)
 
-            case .arc(let radius, let extent):
-                let center = Tortoise.arcCenter(
-                    position: tortoise.position, heading: tortoise.heading, radius: radius)
-                let dx = tortoise.position.x - center.x
-                let dy = tortoise.position.y - center.y
-                let startAngleDeg = atan2(dy, dx) * (180 / .pi)
-                let endAngleRad = (startAngleDeg + extent) * (.pi / 180)
-                let newPos = Point(
-                    x: center.x + radius * cos(endAngleRad),
-                    y: center.y + radius * sin(endAngleRad)
-                )
-
-                if tortoise.isPenDown {
-                    newArcStroke = ArcStroke(
-                        center: center,
-                        radius: radius,
-                        startAngle: startAngleDeg,
-                        sweep: extent,
-                        color: tortoise.penColor,
-                        width: tortoise.penWidth
-                    )
-                }
-                fillPoints?.append(newPos)
-                tortoise.position = newPos
-                tortoise.heading = (tortoise.heading - extent).truncatingRemainder(dividingBy: 360)
+            case .rotate, .setHeading, .penDown, .penUp, .penColor, .penWidth,
+                .fillColor, .showTortoise, .hideTortoise, .speed:
+                break  // State-only commands: no drawing output.
             }
 
             frames.append(

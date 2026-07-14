@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `TortoiseState.applying(_:)` — a pure state-transition reducer, now the single source of truth shared by `Tortoise` (recording) and `CommandPlayer` (replay). This removes the duplicated state math that could silently drift apart, and is also useful for custom renderers doing incremental replay
 - Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
 
 ### Fixed

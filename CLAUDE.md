@@ -31,6 +31,8 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **`nonisolated static func` for arc math.** `Tortoise.arcCenter()` and `Tortoise.arcEndState()` are pure math helpers shared between `Tortoise` (main-actor) and `CommandPlayer` (non-isolated). They must stay `nonisolated static` — do not add state access to them.
 
+**`TortoiseState.applying(_:)` is the single state-transition reducer.** `Tortoise` applies each command as it records it (via its private `record(_:)`), and `CommandPlayer` replays streams through the same function — never reimplement position/heading/pen state math on either side. The player's switch only derives drawing output (strokes, fills, dots) from the before/after states. `StateConsistencyTests` guards this with a random-program comparison.
+
 **`@MainActor init` + `State(wrappedValue:)` in `TortoiseCanvas`.** This is an intentional violation of the swiftui_way.md rule against assigning `@State` in `init`. It's required so instant-mode programs are visible in static Xcode Previews (where `TimelineView` never fires). The known limitation: if the `Tortoise` *instance* is swapped for a new one with the same `commands.count`, the guard in `task(id:)` won't re-initialize the model.
 
 **Sub-frame animation via `animationProgress`.** `CanvasModel` exposes `animationProgress: Double` (0→1) and `inProgressFrame: PlaybackFrame?`. `TortoiseCanvas` uses these to interpolate tortoise position/heading and draw partial strokes, so the tortoise visibly walks as it draws. Do not collapse this back to per-frame snapping.
