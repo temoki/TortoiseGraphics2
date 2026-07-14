@@ -6,7 +6,7 @@
 - Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
 
 ### Fixed
-- README: the installation snippet pointed at the v1 repository URL (`temoki/TortoiseGraphics`) and used `from: "2.0.0"`, which cannot resolve prerelease tags — it now points at this repository, pins the current beta with `exact:`, and includes the required `platforms` declaration
+- README: the installation snippet pointed at the v1 repository URL (`temoki/TortoiseGraphics`) and used `from: "2.0.0"`, which cannot resolve prerelease tags — it now points at this repository, uses a prerelease-aware `from: "2.0.0-beta1"` requirement, and includes the required `platforms` declaration
 
 ## 2.0.0-beta5
 

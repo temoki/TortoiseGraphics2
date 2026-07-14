@@ -53,7 +53,7 @@ platforms: [
     .iOS(.v26), .macOS(.v26), .visionOS(.v26),
 ],
 dependencies: [
-    .package(url: "https://github.com/temoki/TortoiseGraphics2", exact: "2.0.0-beta5"),
+    .package(url: "https://github.com/temoki/TortoiseGraphics2", from: "2.0.0-beta1"),
 ],
 targets: [
     .target(
@@ -67,10 +67,10 @@ targets: [
 ]
 ```
 
-> **Note** While 2.0.0 is in beta, pin the exact prerelease version as shown
-> above (in Xcode, choose the **Exact Version** dependency rule) — a plain
-> `from: "2.0.0"` requirement does not match prerelease tags. Once the stable
-> 2.0.0 is released, `from: "2.0.0"` will work.
+> **Note** While 2.0.0 is in beta, the version requirement needs a prerelease
+> lower bound — a plain `from: "2.0.0"` does not match prerelease tags.
+> `from: "2.0.0-beta1"` resolves to the newest beta, and picks up the stable
+> 2.0.0 release automatically once it ships.
 
 Import only what you need — `TortoiseCore` alone is sufficient if you're
 writing your own renderer.
