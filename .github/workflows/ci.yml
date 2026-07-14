@@ -24,7 +24,23 @@ jobs:
         run: swift build -c release
 
       - name: Test
-        run: swift test
+        run: swift test --enable-code-coverage
+
+      - name: Export coverage (lcov)
+        run: |
+          BIN_PATH=$(swift build --show-bin-path)
+          xcrun llvm-cov export -format=lcov \
+            -instr-profile "$BIN_PATH/codecov/default.profdata" \
+            -ignore-filename-regex="\.build|Tests" \
+            "$BIN_PATH/TortoiseGraphicsPackageTests.xctest/Contents/MacOS/TortoiseGraphicsPackageTests" \
+            > coverage.lcov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
   # Package.swift omits the SwiftUI-based TortoiseUI product/targets on Linux,
   # so plain `swift build` / `swift test` covers TortoiseCore + TortoiseSVG here.

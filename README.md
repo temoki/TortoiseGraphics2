@@ -5,6 +5,7 @@
 [![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://swift.org/package-manager)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![codecov](https://codecov.io/gh/temoki/TortoiseGraphics2/graph/badge.svg)](https://codecov.io/gh/temoki/TortoiseGraphics2)
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20visionOS%20%7C%20Linux-lightgrey.svg)]()
 [![Documentation](https://img.shields.io/badge/documentation-DocC-blue.svg)](https://temoki.github.io/TortoiseGraphics2/)
 
