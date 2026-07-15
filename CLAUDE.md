@@ -45,6 +45,8 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **`DrawingBounds` computed at init.** `CanvasModel.drawingBounds` is an axis-aligned bounding box of all visible output across all frames, computed once in `init` (not per-tick). Arcs use the full-circle bounding box (center ± radius) — conservative but always correct, and avoids trigonometry over partial arc segments. `ViewportMode.autoFit` consumes this to scale and center the view; it falls back to `.scaleToFit` when `drawingBounds` is `nil` (no visible output). The `transform()` method signature takes `drawingBounds: DrawingBounds?` as a parameter so `TortoiseCanvas` passes the model's precomputed value.
 
+**`@_exported import TortoiseCore` in `TortoiseUI` and `TortoiseSVG`.** Users only write `import TortoiseUI` / `import TortoiseSVG` and still see all Core types. The underscored attribute has no stability guarantee from Swift; if a future toolchain breaks it, the fallback is to drop the re-export and require users to add `import TortoiseCore` themselves — a breaking change to document in the CHANGELOG, not something to work around with tricks.
+
 **`backgroundColor` defaults to `.clear`.** `TortoiseCanvas` skips the background fill when `alpha == 0`, letting SwiftUI's `.background()` modifier control the canvas background. The SVG renderer likewise omits the `<rect>` element when the background is transparent.
 
 ## Coordinate System
