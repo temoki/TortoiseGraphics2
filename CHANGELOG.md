@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Examples gallery: six single-file drawings with SwiftUI `#Preview`s under `Examples/` (square spiral, fractal tree, Koch snowflake, circle rosette, filled star, waves), shown as a grid in the README's new Gallery section; `swift run Examples` regenerates the `docs/examples/*.svg` images from the same drawing code the previews use
 - Code coverage measurement in CI: the macOS test job now runs with `--enable-code-coverage`, exports lcov, and uploads to [Codecov](https://codecov.io/gh/temoki/TortoiseGraphics2); coverage badge added to README
 - Release automation: pushing a version tag now creates the GitHub Release automatically, with that version's CHANGELOG section as release notes; the manual steps are documented in CONTRIBUTING.md
 - Linux support for `TortoiseCore` and `TortoiseSVG`, verified by a new CI job (`swift:6.2` container) — the package manifest omits the SwiftUI-based `TortoiseUI` product and targets on Linux, so plain `swift build` / `swift test` work there out of the box

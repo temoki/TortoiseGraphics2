@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 320 320" width="320" height="320">
+  <rect x="40" y="40" width="320" height="320" fill="#ffffff"/>
+  <path d="M 200,200 A 80,80 0 0,1 40,200 A 80,80 0 0,1 200,200" stroke="#ff0000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 61.44,120 A 80,80 0 0,1 200,200" stroke="#ff8000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 120,61.44 A 80,80 0 0,1 200,200" stroke="#ff00ff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 200,40 A 80,80 0 0,1 200,200" stroke="#800080" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 280,61.44 A 80,80 0 0,1 200,200" stroke="#ff0000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 338.56,120 A 80,80 0 0,1 200,200" stroke="#ff8000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 360,200 A 80,80 0 0,1 200,200" stroke="#ff00ff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 338.56,280 A 80,80 0 0,1 200,200" stroke="#800080" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 280,338.56 A 80,80 0 0,1 200,200" stroke="#ff0000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 200,360 A 80,80 0 0,1 200,200" stroke="#ff8000" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 120,338.56 A 80,80 0 0,1 200,200" stroke="#ff00ff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,200 A 80,80 0 0,1 61.44,280 A 80,80 0 0,1 200,200" stroke="#800080" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>

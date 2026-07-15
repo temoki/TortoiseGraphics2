@@ -10,6 +10,7 @@ swift test                                       # run all tests
 swift test --filter TortoiseCore                 # run one test suite
 swift test --filter "forward with pen down"      # run one test by name
 swift package generate-documentation             # build DocC
+swift run Examples                               # regenerate docs/examples/*.svg (README gallery)
 ```
 
 ## Architecture

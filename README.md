@@ -25,6 +25,18 @@ for _ in 1...36 {
 
 <img src="docs/tortoise-star.svg" />
 
+## Gallery
+
+Each drawing is a single-file example with a SwiftUI `#Preview` — open this
+package in Xcode and pick a file under [Examples/](Examples/) to watch it
+draw itself. `swift run Examples` regenerates the images below.
+
+| <a href="Examples/SquareSpiral.swift"><img src="docs/examples/square-spiral.svg" width="230" alt="Square Spiral"></a> | <a href="Examples/FractalTree.swift"><img src="docs/examples/fractal-tree.svg" width="230" alt="Fractal Tree"></a> | <a href="Examples/KochSnowflake.swift"><img src="docs/examples/koch-snowflake.svg" width="230" alt="Koch Snowflake"></a> |
+|:--:|:--:|:--:|
+| [Square Spiral](Examples/SquareSpiral.swift) | [Fractal Tree](Examples/FractalTree.swift) | [Koch Snowflake](Examples/KochSnowflake.swift) |
+| <a href="Examples/CircleRosette.swift"><img src="docs/examples/circle-rosette.svg" width="230" alt="Circle Rosette"></a> | <a href="Examples/FilledStar.swift"><img src="docs/examples/filled-star.svg" width="230" alt="Filled Star"></a> | <a href="Examples/Waves.swift"><img src="docs/examples/waves.svg" width="230" alt="Waves"></a> |
+| [Circle Rosette](Examples/CircleRosette.swift) | [Filled Star](Examples/FilledStar.swift) | [Waves](Examples/Waves.swift) |
+
 ## Modules
 
 | Module | Description |

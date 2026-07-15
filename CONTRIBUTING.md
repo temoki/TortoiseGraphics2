@@ -30,10 +30,10 @@ repository root is the source of truth.
 
 ```bash
 # What CI runs — must pass:
-xcrun swift-format lint --recursive --strict Sources Tests
+xcrun swift-format lint --recursive --strict Sources Tests Examples
 
 # Auto-format your changes:
-xcrun swift-format format --in-place --recursive Sources Tests
+xcrun swift-format format --in-place --recursive Sources Tests Examples
 ```
 
 ## Architecture ground rules

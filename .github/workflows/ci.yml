@@ -99,4 +99,4 @@ jobs:
         uses: ./.github/actions/select-xcode
 
       - name: Lint
-        run: xcrun swift-format lint --recursive --strict Sources Tests
+        run: xcrun swift-format lint --recursive --strict Sources Tests Examples

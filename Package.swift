@@ -50,6 +50,13 @@ var targets: [Target] = [
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ]
         ),
+        // Gallery of single-file examples with SwiftUI #Previews; running it
+        // (`swift run Examples`) regenerates docs/examples/*.svg for the README.
+        .executableTarget(
+            name: "Examples",
+            dependencies: ["TortoiseUI", "TortoiseSVG"],
+            path: "Examples"
+        ),
     ]
 #endif
 
