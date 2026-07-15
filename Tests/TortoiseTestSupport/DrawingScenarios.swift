@@ -6,6 +6,7 @@ extension DrawingScenario {
         linesAndTurns,
         penStyles,
         arcs,
+        negativeRadiusArcs,
         filledShapes,
         fillWithArc,
         dots,
@@ -68,6 +69,22 @@ extension DrawingScenario {
         t.setPosition(x: 100, y: -80)
         t.penDown()
         t.circle(radius: 40, extent: -120)
+    }
+
+    /// Covers `arc` with a negative radius (center on the tortoise's right,
+    /// Python-turtle compatible): alternating signs trace an S-curve, and a
+    /// negative full circle closes back on its start.
+    public static let negativeRadiusArcs = DrawingScenario("negativeRadiusArcs") { t in
+        t.penColor = .blue
+        t.penWidth = 2
+        t.circle(radius: -50, extent: 180)
+        t.penColor = .red
+        t.circle(radius: 50, extent: 180)
+        t.penUp()
+        t.setPosition(x: -60, y: -60)
+        t.penDown()
+        t.penColor = .green
+        t.circle(radius: -40)
     }
 
     /// Covers `fillColor`, `beginFill`, and `endFill` (with and without outline).

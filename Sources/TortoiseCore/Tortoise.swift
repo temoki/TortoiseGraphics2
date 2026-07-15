@@ -177,11 +177,14 @@ public final class Tortoise {
         record(.dot(resolvedSize))
     }
 
-    /// Draw an arc counterclockwise.
+    /// Draw a circular arc.
     ///
-    /// The center is placed to the left of the tortoise at distance `radius`.
-    /// `extent` controls how many degrees of the circle are drawn (360 = full circle).
-    /// Positive `extent` draws counterclockwise; negative `extent` draws clockwise.
+    /// The center is placed to the left of the tortoise at distance `radius`;
+    /// a positive `extent` then draws counterclockwise and a negative one
+    /// clockwise (360 = full circle).
+    /// A negative `radius` mirrors the arc, matching Python turtle: the center
+    /// sits to the tortoise's right and both sweep directions flip, so the
+    /// same `extent` bends the path the other way.
     public func circle(radius: Double, extent: Double = 360) {
         record(.arc(radius: radius, extent: extent))
     }
@@ -245,12 +248,15 @@ extension Tortoise {
         let dx = position.x - center.x
         let dy = position.y - center.y
         let startAngle = atan2(dy, dx)
-        let endAngleRad = startAngle + extent * (.pi / 180)
+        // A negative radius mirrors the arc (center on the tortoise's right,
+        // matching Python turtle): the sweep direction and turn flip together.
+        let direction: Double = radius < 0 ? -1 : 1
+        let endAngleRad = startAngle + direction * extent * (.pi / 180)
         let newPos = Point(
-            x: center.x + radius * cos(endAngleRad),
-            y: center.y + radius * sin(endAngleRad)
+            x: center.x + abs(radius) * cos(endAngleRad),
+            y: center.y + abs(radius) * sin(endAngleRad)
         )
-        let newHeading = (heading - extent).truncatingRemainder(dividingBy: 360)
+        let newHeading = (heading - direction * extent).truncatingRemainder(dividingBy: 360)
         return (newPos, newHeading)
     }
 

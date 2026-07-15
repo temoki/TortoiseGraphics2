@@ -46,11 +46,13 @@ public struct CommandPlayer {
                         position: before.position, heading: before.heading, radius: radius)
                     let dx = before.position.x - center.x
                     let dy = before.position.y - center.y
+                    // A negative radius mirrors the arc; renderers receive an
+                    // absolute radius with the sweep direction flipped instead.
                     newArcStroke = ArcStroke(
                         center: center,
-                        radius: radius,
+                        radius: abs(radius),
                         startAngle: atan2(dy, dx) * (180 / .pi),
-                        sweep: extent,
+                        sweep: radius < 0 ? -extent : extent,
                         color: before.penColor,
                         width: before.penWidth
                     )

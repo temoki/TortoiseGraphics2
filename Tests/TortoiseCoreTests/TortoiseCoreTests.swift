@@ -184,6 +184,31 @@ struct TortoiseAPITests {
         #expect(isClose(t.heading, 270))
     }
 
+    @Test("negative radius mirrors the arc to the tortoise's right")
+    func negativeRadiusQuarterCircle() {
+        let t = Tortoise()
+        t.circle(radius: -100, extent: 90)
+        // Starting at (0,0) heading north: center = (100, 0)
+        // After 90° CW arc (Python-turtle style): end = (100, 100), heading = 90°
+        #expect(isClose(t.position, Point(x: 100, y: 100)))
+        #expect(isClose(t.heading, 90))
+    }
+
+    @Test("negative radius full circle returns to start")
+    func negativeRadiusFullCircle() {
+        let t = Tortoise()
+        t.circle(radius: -50)
+        #expect(isClose(t.position, Point.zero))
+        #expect(isClose(t.heading, 0))
+    }
+
+    @Test("negative radius zero-extent arc does not move the tortoise")
+    func negativeRadiusZeroExtent() {
+        let t = Tortoise()
+        t.circle(radius: -50, extent: 0)
+        #expect(isClose(t.position, Point.zero))
+    }
+
     @Test("heading is always normalized to [0, 360)")
     func headingNormalized() {
         let t = Tortoise()
@@ -395,6 +420,21 @@ struct CommandPlayerTests {
         #expect(isClose(state.heading, 270))
     }
 
+    @Test("negative radius arc emits an absolute radius with flipped sweep")
+    func negativeRadiusArcStroke() {
+        let frames = CommandPlayer.play(commands: [.arc(radius: -40, extent: 90)])
+        let arc = frames.last!.newArcStroke!
+        // Center (40, 0) is on the tortoise's right; the stroke is normalized
+        // to a positive radius with the sweep direction flipped.
+        #expect(isClose(arc.center, Point(x: 40, y: 0)))
+        #expect(isClose(arc.radius, 40))
+        #expect(isClose(arc.startAngle, 180))
+        #expect(isClose(arc.sweep, -90))
+        let state = frames.last!.tortoiseState
+        #expect(isClose(state.position, Point(x: 40, y: 40)))
+        #expect(isClose(state.heading, 90))
+    }
+
     @Test("rotate and setHeading normalize heading to [0, 360)")
     func headingNormalizedOnReplay() {
         let counterclockwise = CommandPlayer.play(commands: [.rotate(-90)])
@@ -438,7 +478,7 @@ struct StateConsistencyTests {
             case 0: t.forward(nextDouble(-150...150))
             case 1: t.right(nextDouble(-720...720))
             case 2: t.left(nextDouble(0...360))
-            case 3: t.circle(radius: nextDouble(5...120), extent: nextDouble(-400...400))
+            case 3: t.circle(radius: nextDouble(-120...120), extent: nextDouble(-400...400))
             case 4: t.setPosition(x: nextDouble(-200...200), y: nextDouble(-200...200))
             case 5: t.heading = nextDouble(-720...720)
             case 6: t.penWidth = nextDouble(-2...9)

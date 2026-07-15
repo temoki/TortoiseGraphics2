@@ -41,10 +41,12 @@ public enum TortoiseCommand: Sendable, Equatable {
     case clear
 
     // MARK: Arc
-    /// Draw a circular arc counterclockwise.
+    /// Draw a circular arc.
     ///
-    /// The arc center is placed to the tortoise's left at distance `|radius|`.
+    /// The arc center is placed to the tortoise's left at distance `radius`.
     /// `extent` is in degrees: 360 = full circle, positive = counterclockwise.
+    /// A negative `radius` mirrors the arc (center on the tortoise's right,
+    /// sweep directions flipped), matching Python turtle.
     case arc(radius: Double, extent: Double)
 
     // MARK: Dot
