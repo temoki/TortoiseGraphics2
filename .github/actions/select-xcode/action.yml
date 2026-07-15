@@ -1,0 +1,25 @@
+name: Select Xcode
+description: >
+  Selects the newest stable Xcode for one major version on the runner.
+  To move CI to a new Xcode, change the default below — every workflow
+  that uses this action picks it up.
+
+inputs:
+  xcode-major:
+    description: Xcode major version to select
+    default: "26"
+
+runs:
+  using: composite
+  steps:
+    - name: Select newest stable Xcode ${{ inputs.xcode-major }}.x
+      shell: bash
+      run: |
+        app=$(ls -d "/Applications/Xcode_${{ inputs.xcode-major }}"*.app 2>/dev/null | grep -vi beta | sort -V | tail -n 1)
+        if [ -z "$app" ]; then
+          echo "::error::No stable Xcode ${{ inputs.xcode-major }}.x found. Available:"
+          ls -d /Applications/Xcode*.app || true
+          exit 1
+        fi
+        echo "Selected: $app"
+        sudo xcode-select -s "$app"

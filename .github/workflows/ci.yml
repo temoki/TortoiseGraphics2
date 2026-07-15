@@ -21,9 +21,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Select Xcode
-        # Newest stable Xcode 26.x on the runner image, so image updates
-        # that drop a specific point release (e.g. 26.0) don't break CI.
-        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -vi beta | sort -V | tail -n 1)"
+        uses: ./.github/actions/select-xcode
 
       - name: Cache SwiftPM build directory
         uses: actions/cache@v4
@@ -60,7 +58,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Select Xcode
-        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -vi beta | sort -V | tail -n 1)"
+        uses: ./.github/actions/select-xcode
 
       - name: Cache SwiftPM build directory
         uses: actions/cache@v4
@@ -98,7 +96,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Select Xcode
-        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | grep -vi beta | sort -V | tail -n 1)"
+        uses: ./.github/actions/select-xcode
 
       - name: Lint
         run: xcrun swift-format lint --recursive --strict Sources Tests
