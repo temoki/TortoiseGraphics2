@@ -2,7 +2,10 @@ import CoreGraphics
 import TortoiseCore
 
 /// Controls how the tortoise coordinate space maps onto the view.
-public enum ViewportMode {
+///
+/// Conformances are declared explicitly so that adding an associated value
+/// to a case later cannot silently drop the implicit ones.
+public enum ViewportMode: Sendable, Equatable {
     /// Scale the logical canvas to fill the view, preserving aspect ratio (letterboxed). Default.
     case scaleToFit
     /// 1 tortoise unit = 1 point, origin at view center. Wider views show more canvas.
