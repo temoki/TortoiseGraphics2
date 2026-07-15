@@ -6,7 +6,7 @@
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://swift.org/package-manager)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![codecov](https://codecov.io/gh/temoki/TortoiseGraphics2/graph/badge.svg)](https://codecov.io/gh/temoki/TortoiseGraphics2)
-[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20visionOS%20%7C%20Linux-lightgrey.svg)]()
+[![Platform](https://img.shields.io/badge/platform-iOS%2026%2B%20%7C%20macOS%2026%2B%20%7C%20visionOS%2026%2B%20%7C%20Linux-lightgrey.svg)]()
 [![Documentation](https://img.shields.io/badge/documentation-DocC-blue.svg)](https://temoki.github.io/TortoiseGraphics2/)
 
 A [turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics) engine — a key feature of the [Logo](https://en.wikipedia.org/wiki/Logo_(programming_language)) programming language — written in Swift.
