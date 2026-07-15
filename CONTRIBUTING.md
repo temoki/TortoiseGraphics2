@@ -92,6 +92,35 @@ golden sets and visually inspect them as described above.
 Please keep each pull request focused on a single topic — small PRs are
 reviewed faster.
 
+## Releasing (maintainers)
+
+Everything is driven by pushing a version tag; there are no manual steps in
+the GitHub web UI.
+
+1. Make sure the release commit is on `main` with CI green.
+2. In `CHANGELOG.md`, rename the `## Unreleased` heading to the new version
+   (e.g. `## 2.0.0-beta6` — the heading must match the tag exactly), commit,
+   and push.
+3. Tag that commit and push the tag:
+
+   ```bash
+   git tag 2.0.0-beta6
+   git push origin 2.0.0-beta6
+   ```
+
+4. The tag push triggers two workflows:
+   - **release.yml** creates the GitHub Release, using the tag's CHANGELOG
+     section as release notes (it fails if the section is missing) and
+     appending the auto-generated compare link.
+   - **docs.yml** rebuilds the DocC site and deploys it to GitHub Pages.
+
+Version tags follow [SemVer](https://semver.org). Note that a plain
+`from: "2.0.0"` SwiftPM requirement never resolves prerelease tags — see the
+README's installation note while 2.x is in beta.
+
+Don't push throwaway tags matching `X.Y.Z*` to test workflows: any such tag
+deploys the docs site and creates a public release.
+
 ## Reporting bugs and requesting features
 
 Please use the issue templates. For bugs, a minimal tortoise program that

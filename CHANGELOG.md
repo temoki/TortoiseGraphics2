@@ -4,6 +4,7 @@
 
 ### Added
 - Code coverage measurement in CI: the macOS test job now runs with `--enable-code-coverage`, exports lcov, and uploads to [Codecov](https://codecov.io/gh/temoki/TortoiseGraphics2); coverage badge added to README
+- Release automation: pushing a version tag now creates the GitHub Release automatically, with that version's CHANGELOG section as release notes; the manual steps are documented in CONTRIBUTING.md
 - Linux support for `TortoiseCore` and `TortoiseSVG`, verified by a new CI job (`swift:6.2` container) — the package manifest omits the SwiftUI-based `TortoiseUI` product and targets on Linux, so plain `swift build` / `swift test` work there out of the box
 - `TortoiseState.applying(_:)` — a pure state-transition reducer, now the single source of truth shared by `Tortoise` (recording) and `CommandPlayer` (replay). This removes the duplicated state math that could silently drift apart, and is also useful for custom renderers doing incremental replay
 - Community documents: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), GitHub issue forms (bug report / feature request), and a pull request template
