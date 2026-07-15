@@ -4,16 +4,16 @@ import Foundation
 ///
 /// This is a pure function: the same input always produces the same output,
 /// with no side effects. All rendering backends (SwiftUI, SVG, PNG) call this.
-public struct CommandPlayer {
+public enum CommandPlayer {
     public static func play(
         commands: [TortoiseCommand],
-        initialTortoise: TortoiseState = .default,
+        initialState: TortoiseState = .default,
         initialBackgroundColor: Color = .clear
     ) -> [PlaybackFrame] {
         var frames: [PlaybackFrame] = []
         frames.reserveCapacity(commands.count)
 
-        var tortoise = initialTortoise
+        var tortoise = initialState
         var bgColor = initialBackgroundColor
         var fillPoints: [Point]? = nil
 

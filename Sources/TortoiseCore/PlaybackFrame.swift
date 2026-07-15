@@ -2,7 +2,7 @@
 ///
 /// Renderers step through an array of `PlaybackFrame` values
 /// produced by ``CommandPlayer`` to animate or export a drawing.
-public struct PlaybackFrame: Sendable {
+public struct PlaybackFrame: Sendable, Equatable {
     /// Index into the original command array.
     public let commandIndex: Int
     /// Tortoise state *after* this command has been applied.

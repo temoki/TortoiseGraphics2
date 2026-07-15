@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- `CommandPlayer` is now a caseless `enum` (it was a `struct` with only static members, so instantiating it was meaningless), and its `play` parameter `initialTortoise:` is renamed to `initialState:` to match its `TortoiseState` type — results of a pre-2.0.0 public API audit
+- `Dot` and `PlaybackFrame` now conform to `Equatable`, matching the other drawing-output types
+
 ## 2.0.0-beta6
 
 ### Added
