@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-beta6
 
 ### Added
 - Discoverability: GitHub topics set on the repository, and `.spi.yml` added for the Swift Package Index (documentation hosting for all three targets)
