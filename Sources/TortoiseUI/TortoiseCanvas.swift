@@ -35,7 +35,9 @@ public struct TortoiseCanvas: View {
     public init(_ tortoise: Tortoise) {
         self.tortoise = tortoise
         self._model = State(
-            wrappedValue: CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+            wrappedValue: CanvasModel(
+                commands: tortoise.commands, canvasSize: tortoise.canvasSize,
+                sourceMutationCount: tortoise.mutationCount)
         )
     }
 
@@ -49,7 +51,9 @@ public struct TortoiseCanvas: View {
         draw(tortoise)
         self.tortoise = tortoise
         self._model = State(
-            wrappedValue: CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+            wrappedValue: CanvasModel(
+                commands: tortoise.commands, canvasSize: tortoise.canvasSize,
+                sourceMutationCount: tortoise.mutationCount)
         )
     }
 
@@ -70,11 +74,15 @@ public struct TortoiseCanvas: View {
                 model.tick(date: date)
             }
         }
-        .task(id: tortoise.commands.count) {
-            // Guard: init already created a model with the current commands;
-            // only recreate when new commands have been appended after appear.
-            guard tortoise.commands.count != model.frames.count else { return }
-            model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        .task(id: tortoise.mutationCount) {
+            // Guard: init already created a model for the current mutation;
+            // only recreate when the tortoise has been mutated since
+            // (commands appended, or reset() — even if commands.count is back
+            // to the same value afterwards).
+            guard tortoise.mutationCount != model.sourceMutationCount else { return }
+            model = CanvasModel(
+                commands: tortoise.commands, canvasSize: tortoise.canvasSize,
+                sourceMutationCount: tortoise.mutationCount)
         }
     }
 

@@ -20,6 +20,14 @@ public final class Tortoise {
     /// The command stream produced so far.
     public private(set) var commands: [TortoiseCommand] = []
 
+    /// Monotonically increasing count of mutations to the command stream —
+    /// incremented by every recorded command and by ``reset()``.
+    ///
+    /// `TortoiseUI` observes this (not `commands.count`) to detect changes:
+    /// a ``reset()`` followed by re-recording the same number of commands
+    /// leaves the count unchanged, but never leaves `mutationCount` unchanged.
+    package private(set) var mutationCount = 0
+
     /// The logical canvas size in tortoise coordinate units.
     ///
     /// This value is independent of the view's pixel dimensions.
@@ -43,6 +51,7 @@ public final class Tortoise {
     private func record(_ command: TortoiseCommand) {
         commands.append(command)
         state = state.applying(command)
+        mutationCount += 1
     }
 
     // MARK: - Read-only state
@@ -231,6 +240,24 @@ public final class Tortoise {
     public func clear() {
         _isFilling = false
         record(.clear)
+    }
+
+    /// Discards the command stream and restores the initial state.
+    ///
+    /// Position, heading, pen, fill, visibility, speed, and background color
+    /// all return to their defaults, ``commands`` becomes empty, and an
+    /// in-progress fill is discarded (``isFilling`` becomes `false`);
+    /// ``canvasSize`` is preserved. Equivalent to Python turtle's `reset()`.
+    ///
+    /// Unlike ``clear()`` — which appends a command and therefore keeps the
+    /// stream growing — `reset()` empties the stream, so replay cost does not
+    /// accumulate when a program is re-run repeatedly.
+    public func reset() {
+        commands = []
+        state = .default
+        _backgroundColor = .white
+        _isFilling = false
+        mutationCount += 1
     }
 
 }

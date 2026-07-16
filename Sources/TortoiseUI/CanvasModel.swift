@@ -11,6 +11,11 @@ import TortoiseCore
 final class CanvasModel {
     let frames: [PlaybackFrame]
     let canvasSize: Size
+    /// The `Tortoise.mutationCount` this model was built from. `TortoiseCanvas`
+    /// compares it against the live tortoise to decide whether to rebuild —
+    /// unlike `commands.count`, it also changes when `reset()` is followed by
+    /// re-recording the same number of commands.
+    let sourceMutationCount: Int
 
     private(set) var currentFrameIndex: Int = -1
     /// Drawing elements in command-execution order.
@@ -48,9 +53,10 @@ final class CanvasModel {
             : TortoiseState.default.speed
     }
 
-    init(commands: [TortoiseCommand], canvasSize: Size) {
+    init(commands: [TortoiseCommand], canvasSize: Size, sourceMutationCount: Int = 0) {
         self.frames = CommandPlayer.play(commands: commands)
         self.canvasSize = canvasSize
+        self.sourceMutationCount = sourceMutationCount
         if let first = frames.first {
             self.backgroundColor = first.backgroundColor
         }

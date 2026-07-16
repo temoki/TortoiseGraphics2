@@ -78,6 +78,25 @@ struct CanvasModelTests {
         }
     }
 
+    @Test("mutation count detects reset + same-length reinjection")
+    func sourceMutationCountDetectsResetReinjection() {
+        let tortoise = Tortoise()
+        tortoise.forward(50)
+        tortoise.right(90)
+        let model = CanvasModel(
+            commands: tortoise.commands, canvasSize: tortoise.canvasSize,
+            sourceMutationCount: tortoise.mutationCount)
+
+        tortoise.reset()
+        tortoise.forward(80)
+        tortoise.right(120)
+
+        // A count-based key sees no change here — this is exactly the case
+        // the TortoiseCanvas rebuild guard must catch via mutationCount.
+        #expect(tortoise.commands.count == model.frames.count)
+        #expect(tortoise.mutationCount != model.sourceMutationCount)
+    }
+
     @Test("ticking a finished model changes nothing")
     func tickAfterFinishedIsNoOp() {
         let tortoise = Tortoise()
