@@ -1,0 +1,16 @@
+# Codecov status configuration.
+#
+# SwiftUI view-internal code (body / task / onChange closures in TortoiseUI)
+# needs a live SwiftUI runtime to execute — neither unit tests nor the
+# ImageRenderer-based snapshot tests can reach it — so a few uncovered lines
+# are expected whenever a change touches view plumbing. Keep the project
+# status tolerant of small dips, and make patch coverage informational
+# (reported in the PR comment, but never a failing status).
+coverage:
+  status:
+    project:
+      default:
+        threshold: 1%
+    patch:
+      default:
+        informational: true
