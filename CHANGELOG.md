@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `Codable` conformance for `TortoiseCommand`, `Color`, `Point`, and `Size`, with hand-written coding keys so the JSON wire format is decoupled from Swift identifier names and frozen for the 2.x series — command streams can now be persisted as app documents, test fixtures, or golden files. The format and its stability guarantee are documented in the new "Command Serialization" DocC article ([#25](https://github.com/temoki/TortoiseGraphics2/issues/25))
+
 ## 2.0.0-beta7
 
 ### Changed
