@@ -22,6 +22,7 @@ import TortoiseCore
 /// ```
 public struct TortoiseCanvas: View {
     private let tortoise: Tortoise
+    private let player: TortoisePlayer?
 
     @State private var model: CanvasModel
     @Environment(\.tortoiseViewport) private var viewportMode
@@ -33,12 +34,17 @@ public struct TortoiseCanvas: View {
     /// automatically via a `task(id:)` observer.
     @MainActor
     public init(_ tortoise: Tortoise) {
-        self.tortoise = tortoise
-        self._model = State(
-            wrappedValue: CanvasModel(
-                commands: tortoise.commands, canvasSize: tortoise.canvasSize,
-                sourceKey: TortoiseChangeKey(tortoise))
-        )
+        self.init(tortoise, player: nil)
+    }
+
+    /// Creates a canvas view whose playback is controlled by `player`.
+    ///
+    /// The player provides pause/resume, single-step, seek, and a viewer-side
+    /// speed override, and exposes the current playback position for
+    /// observation. See ``TortoisePlayer``.
+    @MainActor
+    public init(_ tortoise: Tortoise, player: TortoisePlayer) {
+        self.init(tortoise, player: Optional(player))
     }
 
     /// Creates a canvas view by configuring a new ``Tortoise`` inside the closure.
@@ -49,7 +55,13 @@ public struct TortoiseCanvas: View {
     public init(_ draw: @MainActor (Tortoise) -> Void) {
         let tortoise = Tortoise()
         draw(tortoise)
+        self.init(tortoise, player: nil)
+    }
+
+    @MainActor
+    private init(_ tortoise: Tortoise, player: TortoisePlayer?) {
         self.tortoise = tortoise
+        self.player = player
         self._model = State(
             wrappedValue: CanvasModel(
                 commands: tortoise.commands, canvasSize: tortoise.canvasSize,
@@ -58,9 +70,11 @@ public struct TortoiseCanvas: View {
     }
 
     public var body: some View {
-        // Pause the schedule once playback finishes so the view stops redrawing
-        // at display refresh rate; replacing the model (via task(id:)) resumes it.
-        TimelineView(.animation(paused: model.isFinished)) { timeline in
+        // Pause the schedule once playback finishes (or while the player is
+        // paused) so the view stops redrawing at display refresh rate;
+        // replacing the model (via task(id:)) or resuming the player restarts it.
+        TimelineView(.animation(paused: model.isFinished || (player?.isPaused ?? false))) {
+            timeline in
             Canvas { ctx, size in
                 let t = viewportMode.transform(
                     canvasSize: model.canvasSize, viewSize: size,
@@ -71,7 +85,7 @@ public struct TortoiseCanvas: View {
                 drawTortoise(&ctx, transform: t, scale: s)
             }
             .onChange(of: timeline.date) { _, date in
-                model.tick(date: date)
+                model.tick(date: date, speedOverride: player?.speedOverride)
             }
         }
         .task(id: TortoiseChangeKey(tortoise)) {
@@ -79,10 +93,13 @@ public struct TortoiseCanvas: View {
             // only recreate when the tortoise has been mutated since
             // (commands appended, or reset() — even if commands.count is back
             // to the same value afterwards) or swapped for another instance.
-            guard TortoiseChangeKey(tortoise) != model.sourceKey else { return }
-            model = CanvasModel(
-                commands: tortoise.commands, canvasSize: tortoise.canvasSize,
-                sourceKey: TortoiseChangeKey(tortoise))
+            if TortoiseChangeKey(tortoise) != model.sourceKey {
+                model = CanvasModel(
+                    commands: tortoise.commands, canvasSize: tortoise.canvasSize,
+                    sourceKey: TortoiseChangeKey(tortoise))
+            }
+            // (Re)attach the player to the model that is actually on screen.
+            player?.model = model
         }
     }
 

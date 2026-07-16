@@ -43,6 +43,30 @@ Playback speed is set per-program via `Tortoise.speed` (or the
 the entire program in the model's `init`, so instant-mode programs are
 visible even in static Xcode Previews.
 
+### Playback control
+
+Pass a ``TortoisePlayer`` to ``TortoiseCanvas/init(_:player:)`` to pause,
+resume, single-step, seek, and override the playback speed from your own UI:
+
+```swift
+@State private var player = TortoisePlayer()
+
+var body: some View {
+    TortoiseCanvas(🐢, player: player)
+    Toggle("Pause", systemImage: "pause.fill", isOn: $player.isPaused)
+    Button("Step", systemImage: "forward.frame.fill") { player.step() }
+}
+```
+
+``TortoisePlayer/currentCommandIndex`` and ``TortoisePlayer/isFinished`` are
+observable, so UI such as a "currently executing command" highlight can bind
+to them directly.
+
+Speed has two layers: `.speed()` commands in the stream are the *author's*
+tempo (part of the drawing), while ``TortoisePlayer/speedOverride`` is the
+*viewer's* control — while non-nil it takes precedence over every `.speed()`
+command, and changing it never rewinds playback.
+
 ### Viewport modes
 
 ``ViewportMode`` controls how the logical canvas maps to the view's bounds:
@@ -57,6 +81,10 @@ visible even in static Xcode Previews.
 ### Views
 
 - ``TortoiseCanvas``
+
+### Playback Control
+
+- ``TortoisePlayer``
 
 ### Viewport
 
