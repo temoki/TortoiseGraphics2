@@ -11,7 +11,7 @@ import TortoiseCore
 struct CanvasModelTests {
     @Test("empty command stream is finished at init")
     func emptyStreamIsFinished() {
-        let model = CanvasModel(commands: [], canvasSize: .defaultCanvas)
+        let model = CanvasModel(commands: [], canvasSize: .defaultCanvas, sourceKey: nil)
         #expect(model.isFinished)
     }
 
@@ -20,7 +20,8 @@ struct CanvasModelTests {
         let tortoise = Tortoise()
         tortoise.speed = 0
         tortoise.forward(100)
-        let model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        let model = CanvasModel(
+            commands: tortoise.commands, canvasSize: tortoise.canvasSize, sourceKey: nil)
         #expect(model.isFinished)
         #expect(model.elements.count == 1)
     }
@@ -31,7 +32,8 @@ struct CanvasModelTests {
         tortoise.forward(100)
         tortoise.right(90)
         tortoise.forward(100)
-        let model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        let model = CanvasModel(
+            commands: tortoise.commands, canvasSize: tortoise.canvasSize, sourceKey: nil)
         #expect(!model.isFinished)
 
         // Default speed 5 → 0.1 s per step; 3 commands ≈ 0.3 s of animation.
@@ -62,7 +64,8 @@ struct CanvasModelTests {
         tortoise.right(120)
         tortoise.forward(60)
         tortoise.endFill()
-        let model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        let model = CanvasModel(
+            commands: tortoise.commands, canvasSize: tortoise.canvasSize, sourceKey: nil)
 
         // Expected order: pre-fill stroke, then the fill polygon below its
         // own outline strokes — not below the unrelated earlier stroke.
@@ -78,12 +81,48 @@ struct CanvasModelTests {
         }
     }
 
+    @Test("change key detects reset + same-length reinjection")
+    func changeKeyDetectsResetReinjection() {
+        let tortoise = Tortoise()
+        tortoise.forward(50)
+        tortoise.right(90)
+        let model = CanvasModel(
+            commands: tortoise.commands, canvasSize: tortoise.canvasSize,
+            sourceKey: TortoiseChangeKey(tortoise))
+
+        tortoise.reset()
+        tortoise.forward(80)
+        tortoise.right(120)
+
+        // A count-based key sees no change here — this is exactly the case
+        // the TortoiseCanvas rebuild guard must catch via mutationCount.
+        #expect(tortoise.commands.count == model.frames.count)
+        #expect(TortoiseChangeKey(tortoise) != model.sourceKey)
+    }
+
+    @Test("change key detects swapping in a different Tortoise instance")
+    func changeKeyDetectsInstanceSwap() {
+        let original = Tortoise()
+        original.forward(50)
+        let model = CanvasModel(
+            commands: original.commands, canvasSize: original.canvasSize,
+            sourceKey: TortoiseChangeKey(original))
+
+        // Same program, same mutationCount — only the instance differs.
+        // A mutation-count-only key would miss this swap.
+        let replacement = Tortoise()
+        replacement.forward(50)
+        #expect(replacement.mutationCount == original.mutationCount)
+        #expect(TortoiseChangeKey(replacement) != model.sourceKey)
+    }
+
     @Test("ticking a finished model changes nothing")
     func tickAfterFinishedIsNoOp() {
         let tortoise = Tortoise()
         tortoise.speed = 0
         tortoise.forward(100)
-        let model = CanvasModel(commands: tortoise.commands, canvasSize: tortoise.canvasSize)
+        let model = CanvasModel(
+            commands: tortoise.commands, canvasSize: tortoise.canvasSize, sourceKey: nil)
         #expect(model.isFinished)
 
         let indexBefore = model.currentFrameIndex

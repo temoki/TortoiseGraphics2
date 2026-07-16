@@ -120,6 +120,64 @@ struct TortoiseAPITests {
         #expect(!t.isFilling)
     }
 
+    @Test("reset discards commands and restores the initial state")
+    func resetRestoresInitialState() {
+        let t = Tortoise(canvasSize: Size(width: 300, height: 200))
+        t.penColor = .red
+        t.penWidth = 4
+        t.fillColor = .cyan
+        t.speed = 9
+        t.backgroundColor = .black
+        t.penUp()
+        t.hideTortoise()
+        t.forward(100)
+        t.right(90)
+        t.reset()
+        #expect(t.commands.isEmpty)
+        #expect(t.position == .zero)
+        #expect(t.heading == 0)
+        #expect(t.isPenDown)
+        #expect(t.penColor == .black)
+        #expect(t.penWidth == 1)
+        #expect(t.fillColor == .black)
+        #expect(t.isVisible)
+        #expect(t.speed == 5)
+        #expect(t.backgroundColor == .white)
+        #expect(t.canvasSize == Size(width: 300, height: 200))
+    }
+
+    @Test("reset during fill discards the fill like clear")
+    func resetDuringFillDiscardsFill() {
+        let t = Tortoise()
+        t.beginFill()
+        t.forward(50)
+        t.right(120)
+        t.forward(50)
+        t.reset()
+        #expect(!t.isFilling)
+        t.endFill()  // Stray endFill with no beginFill in the stream.
+        let frames = CommandPlayer.play(commands: t.commands)
+        #expect(frames.allSatisfy { $0.completedFill == nil })
+    }
+
+    @Test("mutationCount increases on every record and on reset")
+    func mutationCountIsMonotonic() {
+        let t = Tortoise()
+        #expect(t.mutationCount == 0)
+        t.forward(10)
+        t.right(90)
+        #expect(t.mutationCount == 2)
+        t.reset()
+        #expect(t.mutationCount == 3)
+        // Re-recording a same-length program must not revisit an earlier
+        // value: TortoiseCanvas watches this key, so reset + same-count
+        // reinjection still triggers a rebuild (commands.count would miss it).
+        t.forward(10)
+        t.right(90)
+        #expect(t.mutationCount == 5)
+        #expect(t.commands.count == 2)
+    }
+
     @Test("home appends .home")
     func homeCommand() {
         let t = Tortoise()

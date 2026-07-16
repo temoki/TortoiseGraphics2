@@ -2,6 +2,22 @@ import Foundation
 import Observation
 import TortoiseCore
 
+/// Identifies a `Tortoise`'s content at a point in time: which instance it
+/// is, and how many mutations it had recorded. A composite key, so that both
+/// mutating the tortoise (append or `reset()`) *and* swapping in a different
+/// instance — even one whose `mutationCount` happens to be equal — register
+/// as changes.
+struct TortoiseChangeKey: Hashable {
+    private let tortoiseID: ObjectIdentifier
+    private let mutation: Int
+
+    @MainActor
+    init(_ tortoise: Tortoise) {
+        self.tortoiseID = ObjectIdentifier(tortoise)
+        self.mutation = tortoise.mutationCount
+    }
+}
+
 /// Drives incremental playback of a ``TortoiseCommand`` stream for animation.
 ///
 /// Call ``tick(date:)`` on every `TimelineView` update. The model advances
@@ -11,6 +27,13 @@ import TortoiseCore
 final class CanvasModel {
     let frames: [PlaybackFrame]
     let canvasSize: Size
+    /// The change key of the `Tortoise` this model was built from (`nil` when
+    /// built from a raw command stream, as in tests). `TortoiseCanvas`
+    /// compares it against the live tortoise to decide whether to rebuild —
+    /// unlike `commands.count`, it changes when `reset()` is followed by
+    /// re-recording the same number of commands, and when the tortoise
+    /// instance itself is swapped.
+    let sourceKey: TortoiseChangeKey?
 
     private(set) var currentFrameIndex: Int = -1
     /// Drawing elements in command-execution order.
@@ -48,9 +71,10 @@ final class CanvasModel {
             : TortoiseState.default.speed
     }
 
-    init(commands: [TortoiseCommand], canvasSize: Size) {
+    init(commands: [TortoiseCommand], canvasSize: Size, sourceKey: TortoiseChangeKey?) {
         self.frames = CommandPlayer.play(commands: commands)
         self.canvasSize = canvasSize
+        self.sourceKey = sourceKey
         if let first = frames.first {
             self.backgroundColor = first.backgroundColor
         }

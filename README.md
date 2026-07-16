@@ -193,6 +193,7 @@ try svg.write(to: URL(filePath: "square.svg"), atomically: true, encoding: .utf8
 |---|---|
 | `backgroundColor: Color` | Canvas background color |
 | `clear()` | Erase all drawings (tortoise state is preserved) |
+| `reset()` | Discard all commands and restore the initial state (`canvasSize` is kept) |
 | `speed: Double` | Animation speed: 1 (slowest) … 10 (fastest), 0 = instant |
 | `canvasSize: Size` | Logical canvas dimensions |
 
