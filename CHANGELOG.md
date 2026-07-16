@@ -4,6 +4,7 @@
 
 ### Added
 - `Tortoise.reset()` — discards the command stream and restores the initial state (position, heading, pen, fill, visibility, speed, and background; `canvasSize` is kept), matching Python turtle's `reset()`. Unlike `clear()`, which appends a command, `reset()` empties the stream, so replay cost no longer accumulates when a program is re-run repeatedly. `TortoiseCanvas` now detects changes through a composite key (tortoise instance identity + a monotonic internal mutation counter) instead of `commands.count`, so a `reset()` followed by re-recording the same number of commands still redraws — and so does swapping in a different `Tortoise` instance that happens to have the same command count ([#24](https://github.com/temoki/TortoiseGraphics2/issues/24))
+- `Codable` conformance for `TortoiseCommand`, `Color`, `Point`, and `Size`, with hand-written coding keys so the JSON wire format is decoupled from Swift identifier names and frozen for the 2.x series — command streams can now be persisted as app documents, test fixtures, or golden files. The format and its stability guarantee are documented in the new "Command Serialization" DocC article ([#25](https://github.com/temoki/TortoiseGraphics2/issues/25))
 
 ## 2.0.0-beta7
 
