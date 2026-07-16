@@ -84,6 +84,26 @@ struct CodableTests {
         }
     }
 
+    @Test("an unknown key alongside a known command key fails to decode")
+    func mixedKnownAndUnknownKeysFail() {
+        // The raw key count must be checked with a key type that accepts any
+        // key: a CodingKeys-keyed container only reports the keys it knows,
+        // which would let this object silently decode as .home.
+        let json = #"{"home":{},"jump":{}}"#
+        #expect(throws: DecodingError.self) {
+            try JSONDecoder().decode(TortoiseCommand.self, from: Data(json.utf8))
+        }
+    }
+
+    @Test("unrecognized fields inside a payload are ignored")
+    func extraPayloadFieldsAreIgnored() throws {
+        // Frozen contract: payloads may gain fields in later versions, so
+        // decoders must tolerate fields they don't know.
+        let json = #"{"forward":{"distance":100,"note":"added in some future version"}}"#
+        let decoded = try JSONDecoder().decode(TortoiseCommand.self, from: Data(json.utf8))
+        #expect(decoded == .forward(100))
+    }
+
     // MARK: - Value types
 
     @Test("Point encodes with x/y keys and round-trips")

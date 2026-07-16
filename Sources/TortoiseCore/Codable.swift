@@ -89,6 +89,12 @@ extension Color: Codable {
 extension TortoiseCommand: Codable {
     /// Wire-format command names. One key per case; the key string — not the
     /// Swift case name — is what serialized data depends on.
+    ///
+    /// When adding a command case: add a `CodingKeys` case, handle it in both
+    /// switches below, add a fixture to `CodableTests.commandFixtures`, and
+    /// add a row to the table in `CommandSerialization.md`. Only the first
+    /// two are enforced by the compiler — do not skip the other two; they
+    /// are the frozen-format contract.
     private enum CodingKeys: String, CodingKey {
         case forward
         case rotate
@@ -122,17 +128,30 @@ extension TortoiseCommand: Codable {
         case size
     }
 
+    /// Accepts any key. Used to count the raw keys of a command object:
+    /// a container keyed by `CodingKeys` only reports the keys it knows, so
+    /// it cannot see an unknown key riding along next to a known one.
+    private struct RawCodingKey: CodingKey {
+        let stringValue: String
+        let intValue: Int? = nil
+        init(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+    }
+
     public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        guard container.allKeys.count == 1, let key = container.allKeys.first
+        let rawKeys = try decoder.container(keyedBy: RawCodingKey.self).allKeys
+        guard rawKeys.count == 1, let rawKey = rawKeys.first,
+            let key = CodingKeys(stringValue: rawKey.stringValue)
         else {
+            let found = rawKeys.map(\.stringValue).sorted().joined(separator: ", ")
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
-                    codingPath: container.codingPath,
+                    codingPath: decoder.codingPath,
                     debugDescription:
-                        "Expected exactly one known command key, found \(container.allKeys.count)"
+                        "Expected an object with exactly one known command key, found: [\(found)]"
                 ))
         }
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
         func payload() throws -> KeyedDecodingContainer<PayloadKeys> {
             try container.nestedContainer(keyedBy: PayloadKeys.self, forKey: key)

@@ -49,6 +49,13 @@ A command encodes as a JSON object with exactly one key, the command name:
 | `circle(radius: -50, extent: 180)` | `{"arc":{"radius":-50,"extent":180}}` |
 | `dot(8)` | `{"dot":{"size":8}}` |
 
+On decode, a command object must contain **exactly one key, and it must be
+a known command name** — anything else (no keys, several keys, an unknown
+key, or an unknown key alongside a known one) fails with
+`DecodingError.dataCorrupted`. Unrecognized fields *inside* a command's
+payload are ignored, which is what lets later library versions extend a
+payload without breaking older data.
+
 Value types encode as plain objects:
 
 - ``Point`` — `{"x":10,"y":20}`
