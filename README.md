@@ -114,6 +114,27 @@ struct ContentView: View {
 `speed` ranges from 1 (slowest) to 10 (fastest). Set it to `0` for instant
 rendering — useful for static previews.
 
+#### Playback control
+
+Pass a `TortoisePlayer` to pause, resume, single-step, seek, and override
+the playback speed from your own UI. `currentCommandIndex` and `isFinished`
+are observable — bind a "currently executing command" highlight directly:
+
+```swift
+@State private var player = TortoisePlayer()
+
+var body: some View {
+    TortoiseCanvas(🐢, player: player)
+    Toggle("Pause", systemImage: "pause.fill", isOn: $player.isPaused)
+    Button("Step", systemImage: "forward.frame.fill") { player.step() }
+}
+```
+
+`player.speedOverride` is the viewer's speed control (like a video player's
+speed button): while non-nil it takes precedence over the stream's `speed`,
+and changing it never rewinds playback. Set it back to `nil` to follow the
+program's own `speed` again.
+
 ### SVG export
 
 ```swift

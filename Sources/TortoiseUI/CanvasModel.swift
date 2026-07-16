@@ -88,7 +88,12 @@ final class CanvasModel {
         }
     }
 
-    func tick(date: Date) {
+    /// Advances playback based on elapsed wall-clock time.
+    ///
+    /// A non-nil `speedOverride` takes precedence over the stream's `.speed()`
+    /// commands (viewer-side control); it only affects pacing, so changing it
+    /// between ticks never rewinds the playback position.
+    func tick(date: Date, speedOverride: Double? = nil) {
         guard !isFinished else { return }
         guard let last = lastTickDate else {
             lastTickDate = date
@@ -97,27 +102,61 @@ final class CanvasModel {
         let elapsed = date.timeIntervalSince(last)
         lastTickDate = date
 
+        func effectiveSpeed() -> Double { speedOverride ?? committedSpeed }
+
         // Instant mode: flush all consecutive instant frames and bail out.
-        if committedSpeed <= 0 {
-            while !isFinished && committedSpeed <= 0 { advance() }
+        if effectiveSpeed() <= 0 {
+            while !isFinished && effectiveSpeed() <= 0 { advance() }
             animationProgress = 0
             return
         }
 
-        let stepDur = Self.stepDuration(speed: committedSpeed)
+        let stepDur = Self.stepDuration(speed: effectiveSpeed())
         animationProgress += elapsed / stepDur
 
         while animationProgress >= 1.0 && !isFinished {
             animationProgress -= 1.0
             advance()
             // After committing, flush any trailing instant frames.
-            while !isFinished && committedSpeed <= 0 { advance() }
+            while !isFinished && effectiveSpeed() <= 0 { advance() }
             if isFinished {
                 animationProgress = 0
                 break
             }
         }
         animationProgress = min(animationProgress, 1.0)
+    }
+
+    /// Commits exactly one command instantly (no walk animation).
+    /// Used by `TortoisePlayer.step()`, typically while paused.
+    func step() {
+        guard !isFinished else { return }
+        advance()
+        animationProgress = 0
+        lastTickDate = nil
+    }
+
+    /// Jumps playback to just after the command at `targetIndex` (clamped to
+    /// `-1...frames.count - 1`; -1 = before the first command), rebuilding
+    /// `elements` for that position. Forward and backward both replay from
+    /// the start — frames are precomputed, so this is a cheap linear pass.
+    func seek(to targetIndex: Int) {
+        let target = max(-1, min(targetIndex, frames.count - 1))
+        elements.removeAll()
+        fillInsertionIndex = nil
+        currentFrameIndex = -1
+        backgroundColor = frames.first?.backgroundColor ?? .clear
+        tortoiseState = .default
+        animationProgress = 0
+        lastTickDate = nil
+        while currentFrameIndex < target { advance() }
+    }
+
+    /// Forgets the last tick timestamp so the next tick only re-establishes
+    /// the baseline. Called when resuming from pause, so the wall-clock time
+    /// spent paused is not replayed as one giant animation jump.
+    func resetTickBaseline() {
+        lastTickDate = nil
     }
 
     // MARK: - Private helpers
