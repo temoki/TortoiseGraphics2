@@ -1,7 +1,9 @@
 /// A single instruction produced by the ``Tortoise`` API.
 ///
 /// Commands are `Sendable` value types — the same stream is consumed
-/// by SwiftUI canvas rendering, SVG export, and tests.
+/// by SwiftUI canvas rendering, SVG export, and tests. They are also
+/// `Codable` with a frozen wire format suitable for long-term storage;
+/// see <doc:CommandSerialization>.
 ///
 /// Heading convention throughout: 0 = north (up), clockwise positive.
 public enum TortoiseCommand: Sendable, Equatable {

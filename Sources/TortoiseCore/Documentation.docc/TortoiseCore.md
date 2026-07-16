@@ -65,3 +65,7 @@ to produce output.
 - ``Point``
 - ``Size``
 - ``TortoiseState``
+
+### Serialization
+
+- <doc:CommandSerialization>
