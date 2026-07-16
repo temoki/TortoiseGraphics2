@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- `Tortoise.reset()` — discards the command stream and restores the initial state (position, heading, pen, fill, visibility, speed, and background; `canvasSize` is kept), matching Python turtle's `reset()`. Unlike `clear()`, which appends a command, `reset()` empties the stream, so replay cost no longer accumulates when a program is re-run repeatedly. `TortoiseCanvas` now detects changes through a monotonic internal mutation counter instead of `commands.count`, so a `reset()` followed by re-recording the same number of commands still redraws ([#24](https://github.com/temoki/TortoiseGraphics2/issues/24))
+- `Tortoise.reset()` — discards the command stream and restores the initial state (position, heading, pen, fill, visibility, speed, and background; `canvasSize` is kept), matching Python turtle's `reset()`. Unlike `clear()`, which appends a command, `reset()` empties the stream, so replay cost no longer accumulates when a program is re-run repeatedly. `TortoiseCanvas` now detects changes through a composite key (tortoise instance identity + a monotonic internal mutation counter) instead of `commands.count`, so a `reset()` followed by re-recording the same number of commands still redraws — and so does swapping in a different `Tortoise` instance that happens to have the same command count ([#24](https://github.com/temoki/TortoiseGraphics2/issues/24))
 
 ## 2.0.0-beta7
 

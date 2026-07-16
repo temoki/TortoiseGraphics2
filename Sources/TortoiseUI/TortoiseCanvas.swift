@@ -37,7 +37,7 @@ public struct TortoiseCanvas: View {
         self._model = State(
             wrappedValue: CanvasModel(
                 commands: tortoise.commands, canvasSize: tortoise.canvasSize,
-                sourceMutationCount: tortoise.mutationCount)
+                sourceKey: TortoiseChangeKey(tortoise))
         )
     }
 
@@ -53,7 +53,7 @@ public struct TortoiseCanvas: View {
         self._model = State(
             wrappedValue: CanvasModel(
                 commands: tortoise.commands, canvasSize: tortoise.canvasSize,
-                sourceMutationCount: tortoise.mutationCount)
+                sourceKey: TortoiseChangeKey(tortoise))
         )
     }
 
@@ -74,15 +74,15 @@ public struct TortoiseCanvas: View {
                 model.tick(date: date)
             }
         }
-        .task(id: tortoise.mutationCount) {
-            // Guard: init already created a model for the current mutation;
+        .task(id: TortoiseChangeKey(tortoise)) {
+            // Guard: init already created a model for the current content;
             // only recreate when the tortoise has been mutated since
             // (commands appended, or reset() — even if commands.count is back
-            // to the same value afterwards).
-            guard tortoise.mutationCount != model.sourceMutationCount else { return }
+            // to the same value afterwards) or swapped for another instance.
+            guard TortoiseChangeKey(tortoise) != model.sourceKey else { return }
             model = CanvasModel(
                 commands: tortoise.commands, canvasSize: tortoise.canvasSize,
-                sourceMutationCount: tortoise.mutationCount)
+                sourceKey: TortoiseChangeKey(tortoise))
         }
     }
 
