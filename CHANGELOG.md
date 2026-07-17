@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Xcode Previews in the `Examples` gallery stopped with `DebugDylibNotEnabled` (newer Xcode versions refuse to preview executable targets unless `ENABLE_DEBUG_DYLIB` is set, and SwiftPM offers no way to set it) — the example drawings now live in a library target (`ExamplesGallery`), which Xcode previews without that setting; the file layout, README links, and `swift run Examples` are unchanged ([#31](https://github.com/temoki/TortoiseGraphics2/issues/31))
+
 ## 2.0.0-beta8
 
 ### Added

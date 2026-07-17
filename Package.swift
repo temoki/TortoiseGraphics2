@@ -50,12 +50,21 @@ var targets: [Target] = [
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ]
         ),
-        // Gallery of single-file examples with SwiftUI #Previews; running it
-        // (`swift run Examples`) regenerates docs/examples/*.svg for the README.
+        // Gallery of single-file examples with SwiftUI #Previews. The drawings
+        // live in a library target because Xcode refuses to preview executable
+        // targets without the ENABLE_DEBUG_DYLIB build setting, which SwiftPM
+        // cannot set (#31). The thin `Examples` executable (`swift run
+        // Examples`) regenerates docs/examples/*.svg for the README.
+        .target(
+            name: "ExamplesGallery",
+            dependencies: ["TortoiseUI"],
+            path: "Examples",
+            exclude: ["Runner"]
+        ),
         .executableTarget(
             name: "Examples",
-            dependencies: ["TortoiseUI", "TortoiseSVG"],
-            path: "Examples"
+            dependencies: ["ExamplesGallery", "TortoiseSVG"],
+            path: "Examples/Runner"
         ),
     ]
 #endif
