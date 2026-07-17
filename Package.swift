@@ -36,7 +36,11 @@ var targets: [Target] = [
 // (e.g. the CI container) omit the UI product and targets entirely,
 // letting plain `swift build` / `swift test` succeed there.
 #if !os(Linux)
-    products.append(.library(name: "TortoiseUI", targets: ["TortoiseUI"]))
+    products += [
+        .library(name: "TortoiseUI", targets: ["TortoiseUI"]),
+        .library(name: "ExamplesGallery", targets: ["ExamplesGallery"]),
+        .executable(name: "ExamplesRunner", targets: ["ExamplesRunner"]),
+    ]
     targets += [
         .target(
             name: "TortoiseUI",
@@ -50,12 +54,21 @@ var targets: [Target] = [
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ]
         ),
-        // Gallery of single-file examples with SwiftUI #Previews; running it
-        // (`swift run Examples`) regenerates docs/examples/*.svg for the README.
+        // Single-file example drawings with SwiftUI #Previews, plus a runner
+        // (`swift run ExamplesRunner`) that regenerates docs/examples/*.svg.
+        // This layout is load-bearing for Xcode previews (#31): the drawings must
+        // be a library target (executable targets need ENABLE_DEBUG_DYLIB, which
+        // SwiftPM cannot set), placed under Sources/, and both targets must be
+        // exposed as products.
+        .target(
+            name: "ExamplesGallery",
+            dependencies: ["TortoiseUI"],
+            path: "Sources/Examples/Gallery",
+        ),
         .executableTarget(
-            name: "Examples",
-            dependencies: ["TortoiseUI", "TortoiseSVG"],
-            path: "Examples"
+            name: "ExamplesRunner",
+            dependencies: ["ExamplesGallery", "TortoiseSVG"],
+            path: "Sources/Examples/Runner",
         ),
     ]
 #endif

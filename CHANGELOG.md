@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Xcode Previews in the examples gallery stopped with `DebugDylibNotEnabled` (newer Xcode versions refuse to preview executable targets unless `ENABLE_DEBUG_DYLIB` is set, and SwiftPM offers no way to set it) — the example drawings moved from the `Examples` executable into an `ExamplesGallery` library target under `Sources/Examples/Gallery/`, which Xcode previews without that setting; on Xcode 26.6 this also requires the code to live under `Sources/` and both new targets to be package products. The SVG regeneration command is now `swift run ExamplesRunner` (was `swift run Examples`) ([#31](https://github.com/temoki/TortoiseGraphics2/issues/31))
+
 ## 2.0.0-beta8
 
 ### Added
