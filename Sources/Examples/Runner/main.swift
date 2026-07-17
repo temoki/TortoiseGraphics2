@@ -3,16 +3,17 @@ import Foundation
 import TortoiseSVG
 
 // Regenerates docs/examples/*.svg — the README gallery images — from the
-// example drawings in the parent directory:
+// example drawings in the sibling Gallery directory:
 //
-//     swift run Examples
+//     swift run ExamplesRunner
 //
 // Each example is a single file with a SwiftUI #Preview; open this package
 // in Xcode to watch any of them draw themselves.
 
 let outputDirectory = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent()  // Examples/Runner/
-    .deletingLastPathComponent()  // Examples/
+    .deletingLastPathComponent()  // Sources/Examples/Runner/
+    .deletingLastPathComponent()  // Sources/Examples/
+    .deletingLastPathComponent()  // Sources/
     .deletingLastPathComponent()  // repository root
     .appending(path: "docs/examples")
 try FileManager.default.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
