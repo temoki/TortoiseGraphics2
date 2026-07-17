@@ -36,7 +36,11 @@ var targets: [Target] = [
 // (e.g. the CI container) omit the UI product and targets entirely,
 // letting plain `swift build` / `swift test` succeed there.
 #if !os(Linux)
-    products.append(.library(name: "TortoiseUI", targets: ["TortoiseUI"]))
+    products += [
+        .library(name: "TortoiseUI", targets: ["TortoiseUI"]),
+        .library(name: "ExamplesGallery", targets: ["ExamplesGallery"]),
+        .executable(name: "ExamplesRunner", targets: ["ExamplesRunner"]),
+    ]
     targets += [
         .target(
             name: "TortoiseUI",
@@ -58,13 +62,12 @@ var targets: [Target] = [
         .target(
             name: "ExamplesGallery",
             dependencies: ["TortoiseUI"],
-            path: "Examples",
-            exclude: ["Runner"]
+            path: "Sources/Examples/Gallery",
         ),
         .executableTarget(
-            name: "Examples",
+            name: "ExamplesRunner",
             dependencies: ["ExamplesGallery", "TortoiseSVG"],
-            path: "Examples/Runner"
+            path: "Sources/Examples/Runner",
         ),
     ]
 #endif
