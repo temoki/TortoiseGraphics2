@@ -38,6 +38,21 @@ itself. `swift run ExamplesRunner` regenerates the images below.
 | <a href="Sources/Examples/Gallery/CircleRosette.swift"><img src="docs/examples/circle-rosette.svg" width="230" alt="Circle Rosette"></a> | <a href="Sources/Examples/Gallery/FilledStar.swift"><img src="docs/examples/filled-star.svg" width="230" alt="Filled Star"></a> | <a href="Sources/Examples/Gallery/Waves.swift"><img src="docs/examples/waves.svg" width="230" alt="Waves"></a> |
 | [Circle Rosette](Sources/Examples/Gallery/CircleRosette.swift) | [Filled Star](Sources/Examples/Gallery/FilledStar.swift) | [Waves](Sources/Examples/Gallery/Waves.swift) |
 
+## Showcase
+
+Apps built with TortoiseGraphics2:
+
+### [TortoiseBlocks](https://github.com/temoki/TortoiseBlocks)
+
+A visual programming app for kids — snap blocks together, press Run, and
+watch the tortoise draw. Blocks expand into a Tortoise command stream
+played by `TortoiseCanvas` with a `TortoisePlayer` (pause, single-step,
+seek, and speed control, with the executing block highlighted), a code
+pane shows the equivalent Swift program, and drawings export as SVG
+straight from the library.
+
+<a href="https://github.com/temoki/TortoiseBlocks"><img src="https://raw.githubusercontent.com/temoki/TortoiseBlocks/main/docs/demo.gif" width="640" alt="TortoiseBlocks on iPad — running a block program that draws and fills a square"></a>
+
 ## Modules
 
 | Module | Description |
