@@ -132,12 +132,14 @@ public struct TortoiseCanvas: View {
                 path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
                 path.addLine(to: CGPoint(x: stroke.to.x, y: stroke.to.y).applying(t))
                 ctx.stroke(
-                    path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
+                    path, with: .color(SwiftUI.Color(stroke.color)),
+                    style: strokeStyle(width: stroke.width * s))
 
             case .arcStroke(let arc):
                 ctx.stroke(
                     arcPath(arc, sweep: arc.sweep, transform: t),
-                    with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+                    with: .color(SwiftUI.Color(arc.color)),
+                    style: strokeStyle(width: arc.width * s))
 
             case .dot(let dot):
                 let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
@@ -159,14 +161,24 @@ public struct TortoiseCanvas: View {
                 path.move(to: from)
                 path.addLine(to: partialTo)
                 ctx.stroke(
-                    path, with: .color(SwiftUI.Color(stroke.color)), lineWidth: stroke.width * s)
+                    path, with: .color(SwiftUI.Color(stroke.color)),
+                    style: strokeStyle(width: stroke.width * s))
             }
             if let arc = next.newArcStroke {
                 ctx.stroke(
                     arcPath(arc, sweep: arc.sweep * p, transform: t),
-                    with: .color(SwiftUI.Color(arc.color)), lineWidth: arc.width * s)
+                    with: .color(SwiftUI.Color(arc.color)),
+                    style: strokeStyle(width: arc.width * s))
             }
         }
+    }
+
+    /// Strokes are drawn one per command, so consecutive segments are
+    /// independent paths. Round caps overlap at the shared endpoint, making
+    /// joints look connected — matching the SVG renderer's
+    /// `stroke-linecap="round"`.
+    private func strokeStyle(width: Double) -> StrokeStyle {
+        StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
     }
 
     /// Builds a polyline approximating an arc (1 segment per 3°).
