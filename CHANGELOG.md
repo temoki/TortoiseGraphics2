@@ -6,6 +6,7 @@
 - README: Showcase section listing apps built with this library, starting with [TortoiseBlocks](https://github.com/temoki/TortoiseBlocks) — a block-programming app for kids whose playback UI is driven by `TortoiseCanvas` + `TortoisePlayer`
 
 ### Fixed
+- `TortoiseCanvas` drew each line segment with SwiftUI's default butt line caps, leaving visible notches at the joints between consecutive segments (each command is an independent stroke) — most obvious at corners with a thick `penWidth`. Strokes and arcs now use round caps and joins, so joints look connected, matching the SVG renderer's existing `stroke-linecap="round"`
 - Xcode Previews in the examples gallery stopped with `DebugDylibNotEnabled` (newer Xcode versions refuse to preview executable targets unless `ENABLE_DEBUG_DYLIB` is set, and SwiftPM offers no way to set it) — the example drawings moved from the `Examples` executable into an `ExamplesGallery` library target under `Sources/Examples/Gallery/`, which Xcode previews without that setting; on Xcode 26.6 this also requires the code to live under `Sources/` and both new targets to be package products. The SVG regeneration command is now `swift run ExamplesRunner` (was `swift run Examples`) ([#31](https://github.com/temoki/TortoiseGraphics2/issues/31))
 
 ## 2.0.0-beta8
