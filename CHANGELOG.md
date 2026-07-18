@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-beta9
 
 ### Added
 - README: Showcase section listing apps built with this library, starting with [TortoiseBlocks](https://github.com/temoki/TortoiseBlocks) — a block-programming app for kids whose playback UI is driven by `TortoiseCanvas` + `TortoisePlayer`
