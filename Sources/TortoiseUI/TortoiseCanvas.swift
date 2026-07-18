@@ -25,7 +25,6 @@ public struct TortoiseCanvas: View {
     private let player: TortoisePlayer?
 
     @State private var model: CanvasModel
-    @Environment(\.tortoiseViewport) private var viewportMode
 
     /// Creates a canvas view for the given tortoise.
     ///
@@ -70,23 +69,15 @@ public struct TortoiseCanvas: View {
     }
 
     public var body: some View {
-        // Pause the schedule once playback finishes (or while the player is
-        // paused) so the view stops redrawing at display refresh rate;
-        // replacing the model (via task(id:)) or resuming the player restarts it.
-        TimelineView(.animation(paused: model.isFinished || (player?.isPaused ?? false))) {
-            timeline in
-            Canvas { ctx, size in
-                let t = viewportMode.transform(
-                    canvasSize: model.canvasSize, viewSize: size,
-                    drawingBounds: model.drawingBounds)
-                let s = (t.a * t.a + t.b * t.b).squareRoot()
-                drawBackground(&ctx, size: size)
-                drawElements(&ctx, transform: t, scale: s)
-                drawTortoise(&ctx, transform: t, scale: s)
-            }
-            .onChange(of: timeline.date) { _, date in
-                model.tick(date: date, speedOverride: player?.speedOverride)
-            }
+        // Two stacked Canvases so committed output doesn't re-render at
+        // display refresh rate (#35): rebuilding every element's Path each
+        // frame is O(elements) and visibly stutters at a few hundred
+        // commands. Both layers must agree on the viewport transform — the
+        // ZStack proposes the same size to each, and the transform is a pure
+        // function of (canvasSize, viewSize, drawingBounds).
+        ZStack {
+            CommittedLayer(model: model)
+            AnimationLayer(model: model, player: player)
         }
         .task(id: TortoiseChangeKey(tortoise)) {
             // Guard: init already created a model for the current content;
@@ -102,151 +93,70 @@ public struct TortoiseCanvas: View {
             player?.model = model
         }
     }
+}
 
-    // MARK: - Drawing
+// MARK: - Layers
 
-    private func drawBackground(_ ctx: inout GraphicsContext, size: CGSize) {
-        guard model.backgroundColor.alpha > 0 else { return }
-        ctx.fill(
-            Path(CGRect(origin: .zero, size: size)),
-            with: .color(SwiftUI.Color(model.backgroundColor)))
+/// Background + all committed drawing elements. Lives outside the
+/// `TimelineView` so it re-renders only when a frame commits, not on every
+/// animation tick.
+private struct CommittedLayer: View {
+    let model: CanvasModel
+    @Environment(\.tortoiseViewport) private var viewportMode
+
+    var body: some View {
+        // Snapshot the committed properties during body evaluation: these
+        // reads register observation at the body level, so the layer
+        // invalidates exactly when a frame commits (or step/seek/clear
+        // rebuilds elements) — without relying on tracking inside the
+        // Canvas rendering closure.
+        let elements = model.elements
+        let background = model.backgroundColor
+        Canvas { ctx, size in
+            let t = viewportMode.transform(
+                canvasSize: model.canvasSize, viewSize: size,
+                drawingBounds: model.drawingBounds)
+            let s = (t.a * t.a + t.b * t.b).squareRoot()
+            CanvasRenderer.drawBackground(&ctx, size: size, color: background)
+            CanvasRenderer.drawElements(&ctx, elements: elements, transform: t, scale: s)
+        }
     }
+}
 
-    private func drawElements(
-        _ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale s: Double
-    ) {
-        for element in model.elements {
-            switch element {
-            case .fill(let fill):
-                guard fill.points.count >= 3, let first = fill.points.first else { continue }
-                var path = Path()
-                path.move(to: CGPoint(x: first.x, y: first.y).applying(t))
-                for pt in fill.points.dropFirst() {
-                    path.addLine(to: CGPoint(x: pt.x, y: pt.y).applying(t))
+/// The stroke/arc currently being animated and the tortoise sprite — the
+/// only content that changes every display frame. Hosts the `TimelineView`
+/// that drives playback ticks.
+private struct AnimationLayer: View {
+    let model: CanvasModel
+    let player: TortoisePlayer?
+    @Environment(\.tortoiseViewport) private var viewportMode
+
+    var body: some View {
+        // Pause the schedule once playback finishes (or while the player is
+        // paused) so the view stops redrawing at display refresh rate;
+        // replacing the model (via task(id:)) or resuming the player restarts it.
+        TimelineView(.animation(paused: model.isFinished || (player?.isPaused ?? false))) {
+            timeline in
+            Canvas { ctx, size in
+                let t = viewportMode.transform(
+                    canvasSize: model.canvasSize, viewSize: size,
+                    drawingBounds: model.drawingBounds)
+                let s = (t.a * t.a + t.b * t.b).squareRoot()
+                if let next = model.inProgressFrame, model.animationProgress > 0 {
+                    CanvasRenderer.drawInProgress(
+                        &ctx, frame: next, progress: model.animationProgress,
+                        transform: t, scale: s)
                 }
-                path.closeSubpath()
-                ctx.fill(path, with: .color(SwiftUI.Color(fill.color)))
-
-            case .stroke(let stroke):
-                var path = Path()
-                path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
-                path.addLine(to: CGPoint(x: stroke.to.x, y: stroke.to.y).applying(t))
-                ctx.stroke(
-                    path, with: .color(SwiftUI.Color(stroke.color)),
-                    style: strokeStyle(width: stroke.width * s))
-
-            case .arcStroke(let arc):
-                ctx.stroke(
-                    arcPath(arc, sweep: arc.sweep, transform: t),
-                    with: .color(SwiftUI.Color(arc.color)),
-                    style: strokeStyle(width: arc.width * s))
-
-            case .dot(let dot):
-                let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
-                let r = dot.size / 2 * s
-                let rect = CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2)
-                ctx.fill(Path(ellipseIn: rect), with: .color(SwiftUI.Color(dot.color)))
+                CanvasRenderer.drawTortoise(
+                    &ctx, state: model.tortoiseState,
+                    interpolatingTo: model.inProgressFrame?.tortoiseState,
+                    progress: model.animationProgress,
+                    transform: t, scale: s)
+            }
+            .onChange(of: timeline.date) { _, date in
+                model.tick(date: date, speedOverride: player?.speedOverride)
             }
         }
-
-        if let next = model.inProgressFrame, model.animationProgress > 0 {
-            let p = model.animationProgress
-            if let stroke = next.newStroke {
-                var path = Path()
-                let from = CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t)
-                let partialTo = CGPoint(
-                    x: stroke.from.x + p * (stroke.to.x - stroke.from.x),
-                    y: stroke.from.y + p * (stroke.to.y - stroke.from.y)
-                ).applying(t)
-                path.move(to: from)
-                path.addLine(to: partialTo)
-                ctx.stroke(
-                    path, with: .color(SwiftUI.Color(stroke.color)),
-                    style: strokeStyle(width: stroke.width * s))
-            }
-            if let arc = next.newArcStroke {
-                ctx.stroke(
-                    arcPath(arc, sweep: arc.sweep * p, transform: t),
-                    with: .color(SwiftUI.Color(arc.color)),
-                    style: strokeStyle(width: arc.width * s))
-            }
-        }
-    }
-
-    /// Strokes are drawn one per command, so consecutive segments are
-    /// independent paths. Round caps overlap at the shared endpoint, making
-    /// joints look connected — matching the SVG renderer's
-    /// `stroke-linecap="round"`.
-    private func strokeStyle(width: Double) -> StrokeStyle {
-        StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
-    }
-
-    /// Builds a polyline approximating an arc (1 segment per 3°).
-    private func arcPath(_ arc: ArcStroke, sweep: Double, transform t: CGAffineTransform) -> Path {
-        guard abs(sweep) > 0 else { return Path() }
-        let steps = max(1, Int(abs(sweep) / 3.0))
-        let stepAngle = sweep / Double(steps)
-        var path = Path()
-        for i in 0...steps {
-            let angleRad = (arc.startAngle + Double(i) * stepAngle) * (.pi / 180)
-            let pt = CGPoint(
-                x: arc.center.x + arc.radius * cos(angleRad),
-                y: arc.center.y + arc.radius * sin(angleRad)
-            ).applying(t)
-            if i == 0 {
-                path.move(to: pt)
-            }
-            else {
-                path.addLine(to: pt)
-            }
-        }
-        return path
-    }
-
-    private func drawTortoise(
-        _ ctx: inout GraphicsContext, transform t: CGAffineTransform, scale rawScale: Double
-    ) {
-        guard model.tortoiseState.isVisible else { return }
-
-        let pos: Point
-        let heading: Double
-        if let next = model.inProgressFrame, model.animationProgress > 0 {
-            let p = model.animationProgress
-            let from = model.tortoiseState
-            let to = next.tortoiseState
-            pos = Point(
-                x: from.position.x + p * (to.position.x - from.position.x),
-                y: from.position.y + p * (to.position.y - from.position.y)
-            )
-            // Normalize heading delta to [-180, 180] so rotation takes the short arc.
-            var delta = to.heading - from.heading
-            while delta > 180 { delta -= 360 }
-            while delta < -180 { delta += 360 }
-            heading = from.heading + p * delta
-        }
-        else {
-            pos = model.tortoiseState.position
-            heading = model.tortoiseState.heading
-        }
-
-        let s = min(max(rawScale, tortoiseScaleMin), tortoiseScaleMax)
-        let tortoiseSize = tortoiseBaseSize * s
-
-        // Triangle pointing north (tip at -Y in screen space = up on screen).
-        var path = Path()
-        path.move(to: CGPoint(x: 0, y: -tortoiseSize))
-        path.addLine(to: CGPoint(x: -tortoiseSize * 0.6, y: tortoiseSize * 0.5))
-        path.addLine(to: CGPoint(x: tortoiseSize * 0.6, y: tortoiseSize * 0.5))
-        path.closeSubpath()
-
-        let position = CGPoint(x: pos.x, y: pos.y).applying(t)
-        var tortoiseCtx = ctx
-        tortoiseCtx.translateBy(x: position.x, y: position.y)
-        // heading 0 = north (tip already points up), heading 90 = east (CW 90°).
-        // SwiftUI rotate(by:) is CW-positive in Y-down space, matching tortoise heading.
-        tortoiseCtx.rotate(by: .degrees(heading))
-        tortoiseCtx.fill(path, with: .color(.green.opacity(0.7)))
-        tortoiseCtx.stroke(path, with: .color(.green), lineWidth: 1.5)
     }
 }
 
