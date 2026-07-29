@@ -18,9 +18,13 @@ enum CanvasRenderer {
         _ ctx: inout GraphicsContext, elements: [DrawElement],
         transform t: CGAffineTransform, scale s: Double
     ) {
-        for element in elements {
-            switch element {
+        // Index loop rather than `for element in elements` so a run of
+        // strokes can be consumed in one step (see the `.stroke` case).
+        var i = elements.startIndex
+        while i < elements.endIndex {
+            switch elements[i] {
             case .fill(let fill):
+                i += 1
                 guard fill.points.count >= 3, let first = fill.points.first else { continue }
                 var path = Path()
                 path.move(to: CGPoint(x: first.x, y: first.y).applying(t))
@@ -30,21 +34,40 @@ enum CanvasRenderer {
                 path.closeSubpath()
                 ctx.fill(path, with: .color(SwiftUI.Color(fill.color)))
 
-            case .stroke(let stroke):
+            case .stroke(let first):
+                // Merge the maximal run of same-color, same-width strokes into
+                // one multi-subpath `Path` and stroke it once. Round caps are
+                // applied per subpath, so the drawing is unchanged, but the
+                // per-element `Path` allocation + `ctx.stroke` call — the
+                // dominant cost at thousands of elements — is paid once per run.
+                // Translucent strokes are excluded: overlapping segments must
+                // blend once per stroke to match the SVG renderer, which emits
+                // one `<line>` per stroke.
+                let batchable = first.color.alpha >= 1
                 var path = Path()
-                path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
-                path.addLine(to: CGPoint(x: stroke.to.x, y: stroke.to.y).applying(t))
+                var j = i
+                while j < elements.endIndex, case .stroke(let next) = elements[j],
+                    next.color == first.color, next.width == first.width
+                {
+                    path.move(to: CGPoint(x: next.from.x, y: next.from.y).applying(t))
+                    path.addLine(to: CGPoint(x: next.to.x, y: next.to.y).applying(t))
+                    j += 1
+                    if !batchable { break }
+                }
                 ctx.stroke(
-                    path, with: .color(SwiftUI.Color(stroke.color)),
-                    style: strokeStyle(width: stroke.width * s))
+                    path, with: .color(SwiftUI.Color(first.color)),
+                    style: strokeStyle(width: first.width * s))
+                i = j
 
             case .arcStroke(let arc):
+                i += 1
                 ctx.stroke(
                     arcPath(arc, sweep: arc.sweep, transform: t),
                     with: .color(SwiftUI.Color(arc.color)),
                     style: strokeStyle(width: arc.width * s))
 
             case .dot(let dot):
+                i += 1
                 let center = CGPoint(x: dot.center.x, y: dot.center.y).applying(t)
                 let r = dot.size / 2 * s
                 let rect = CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2)
@@ -129,10 +152,11 @@ enum CanvasRenderer {
 
     // MARK: - Private helpers
 
-    /// Strokes are drawn one per command, so consecutive segments are
-    /// independent paths. Round caps overlap at the shared endpoint, making
+    /// Strokes are recorded one per command, so consecutive segments are
+    /// separate subpaths. Round caps overlap at the shared endpoint, making
     /// joints look connected — matching the SVG renderer's
-    /// `stroke-linecap="round"`.
+    /// `stroke-linecap="round"`. Caps are applied per subpath, so this holds
+    /// whether segments are stroked individually or batched into one `Path`.
     private static func strokeStyle(width: Double) -> StrokeStyle {
         StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
     }

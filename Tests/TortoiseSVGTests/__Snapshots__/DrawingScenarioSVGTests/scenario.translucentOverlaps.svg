@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="145.51 50 142.66 300" width="142.66" height="300">
+  <line x1="200" y1="200" x2="200" y2="50" stroke="rgba(0,0,255,0.4)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="200" y1="50" x2="288.17" y2="171.35" stroke="rgba(0,0,255,0.4)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="288.17" y1="171.35" x2="145.51" y2="125" stroke="rgba(0,0,255,0.4)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="145.51" y1="125" x2="288.17" y2="78.65" stroke="rgba(0,0,255,0.4)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="288.17" y1="78.65" x2="200" y2="200" stroke="rgba(0,0,255,0.4)" stroke-width="10" stroke-linecap="round"/>
+  <polygon points="160,350 160,270 240,270 240,350 160,350" fill="rgba(255,0,0,0.35)"/>
+  <line x1="160" y1="350" x2="160" y2="270" stroke="rgba(0,128,0,0.5)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="160" y1="270" x2="240" y2="270" stroke="rgba(0,128,0,0.5)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="240" y1="270" x2="240" y2="350" stroke="rgba(0,128,0,0.5)" stroke-width="10" stroke-linecap="round"/>
+  <line x1="240" y1="350" x2="160" y2="350" stroke="rgba(0,128,0,0.5)" stroke-width="10" stroke-linecap="round"/>
+</svg>
