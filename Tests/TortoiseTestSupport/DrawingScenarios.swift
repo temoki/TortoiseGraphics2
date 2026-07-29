@@ -17,6 +17,7 @@ extension DrawingScenario {
         hiddenTortoise,
         showAfterHide,
         speedChanges,
+        translucentOverlaps,
         showcase,
     ]
 
@@ -228,6 +229,31 @@ extension DrawingScenario {
         t.forward(100)
         t.right(90)
         t.forward(100)
+    }
+
+    /// Covers translucent pen and fill colors. Where two translucent strokes
+    /// overlap — at every round-cap joint and every self-crossing of the star —
+    /// each must blend separately, matching the SVG renderer's one `<line>`
+    /// per stroke. Guards `CanvasRenderer` against batching them into a single
+    /// path, which would blend the overlap only once.
+    public static let translucentOverlaps = DrawingScenario("translucentOverlaps") { t in
+        t.penWidth = 10
+        t.penColor = Color(red: 0, green: 0, blue: 1, alpha: 0.4)
+        for _ in 0..<5 {
+            t.forward(150)
+            t.right(144)
+        }
+        t.penUp()
+        t.setPosition(x: -40, y: -150)
+        t.penDown()
+        t.penColor = Color(red: 0, green: 0.502, blue: 0, alpha: 0.5)
+        t.fillColor = Color(red: 1, green: 0, blue: 0, alpha: 0.35)
+        t.beginFill()
+        for _ in 0..<4 {
+            t.forward(80)
+            t.right(90)
+        }
+        t.endFill()
     }
 
     /// Kitchen-sink regression scene combining fills, arcs, dots, and teleports.

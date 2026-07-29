@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- `TortoiseCanvas` built one `Path` and issued one `ctx.stroke` call per committed line segment, so redrawing the committed layer cost ~0.37µs per element no matter how much of it was on screen — 4.2ms for a 10,000-stroke drawing, half of a 120 Hz frame budget, paid again on every command commit. (The dominant cost is per-element CPU overhead, not rasterization: overdraw and off-screen strokes barely move the number, so `ViewportMode` is not a performance lever.) Consecutive strokes sharing a pen color and width now merge into a single multi-subpath `Path` drawn with one `ctx.stroke` call; round caps apply per subpath, so the drawing is unchanged. A 10,000-stroke redraw drops from 4.17ms to 0.64ms (6.5×), 4,000 from 1.68ms to 0.36ms. Translucent pen colors (`alpha < 1`) are excluded from the merge, since overlapping segments must blend once per stroke to match the SVG renderer's one `<line>` per stroke ([#37](https://github.com/temoki/TortoiseGraphics2/issues/37))
+
 ## 2.0.0-beta9
 
 ### Added

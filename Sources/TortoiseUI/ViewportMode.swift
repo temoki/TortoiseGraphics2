@@ -6,11 +6,11 @@ import TortoiseCore
 /// Conformances are declared explicitly so that adding an associated value
 /// to a case later cannot silently drop the implicit ones.
 public enum ViewportMode: Sendable, Equatable {
-    /// Scale the logical canvas to fill the view, preserving aspect ratio (letterboxed). Default.
+    /// Scale the logical canvas to fill the view, preserving aspect ratio (letterboxed).
     case scaleToFit
     /// 1 tortoise unit = 1 point, origin at view center. Wider views show more canvas.
     case original
-    /// Scale and translate so the actual drawing bounding box fills the view.
+    /// Scale and translate so the actual drawing bounding box fills the view. Default.
     ///
     /// Use SwiftUI's `.padding()` modifier to add space around the view.
     /// Falls back to `.scaleToFit` when the command stream produces no visible output.
