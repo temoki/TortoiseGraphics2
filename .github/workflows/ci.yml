@@ -25,7 +25,7 @@ jobs:
         uses: ./.github/actions/select-xcode
 
       - name: Cache SwiftPM build directory
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .build
           key: spm-debug-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
@@ -62,7 +62,7 @@ jobs:
         uses: ./.github/actions/select-xcode
 
       - name: Cache SwiftPM build directory
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .build
           key: spm-release-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Cache SwiftPM build directory
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .build
           key: spm-linux-${{ hashFiles('Package.resolved') }}
