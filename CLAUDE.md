@@ -11,6 +11,9 @@ swift test --filter TortoiseCore                 # run one test suite
 swift test --filter "forward with pen down"      # run one test by name
 swift package generate-documentation             # build DocC
 swift run ExamplesRunner                         # regenerate docs/examples/*.svg (README gallery)
+
+xcrun swift-format lint --recursive --strict Sources Tests    # what CI enforces
+xcrun swift-format format --in-place --recursive Sources Tests
 ```
 
 ## Architecture
@@ -27,6 +30,8 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 **Module dependency rule:** `TortoiseCore` has no platform dependencies (Foundation only). `TortoiseUI` and `TortoiseSVG` both depend on `TortoiseCore` and never on each other.
 
 **Linux support:** `TortoiseCore` and `TortoiseSVG` build and pass all tests on Linux — do not introduce Apple-only APIs into them (the CI `linux` job enforces this). `Package.swift` omits the SwiftUI-based `TortoiseUI` product and targets on Linux via `#if !os(Linux)` (a manifest `#if os()` evaluates on the build host), so plain `swift build` / `swift test` work there.
+
+**Examples target layout is load-bearing (#31).** The gallery drawings live in the `ExamplesGallery` *library* target at `Sources/Examples/Gallery/`, with `ExamplesRunner` (executable, `Sources/Examples/Runner/`) regenerating `docs/examples/*.svg` from the same code. Do not fold the drawings back into the executable or move them out of `Sources/`: Xcode refuses to preview executable targets without `ENABLE_DEBUG_DYLIB`, which SwiftPM cannot set, and both targets must stay exposed as products for previews to work. `Gallery.drawings` lists the examples in README order — add new examples there too, or the runner won't emit their SVG.
 
 ## Key Design Decisions
 
@@ -50,7 +55,9 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **`[DrawElement]` + `fillInsertionIndex` in `CanvasModel`.** Drawing elements are stored as a single ordered `[DrawElement]` list (not separate arrays per type) to preserve command-execution order. Strokes/dots emitted while `isFillActive` are appended immediately (so they animate live during the fill); `fillInsertionIndex` records the `elements.count` at the moment the fill became active, and on `endFill` the fill polygon is `insert`ed at that index — so it renders below its outline strokes regardless of command order, without delaying those strokes' own appearance.
 
-**`DrawingBounds` computed at init.** `CanvasModel.drawingBounds` is an axis-aligned bounding box of all visible output across all frames, computed once in `init` (not per-tick). Arcs use the full-circle bounding box (center ± radius) — conservative but always correct, and avoids trigonometry over partial arc segments. `ViewportMode.autoFit` consumes this to scale and center the view; it falls back to `.scaleToFit` when `drawingBounds` is `nil` (no visible output). The `transform()` method signature takes `drawingBounds: DrawingBounds?` as a parameter so `TortoiseCanvas` passes the model's precomputed value.
+**`DrawingBounds` computed at init.** `CanvasModel.drawingBounds` is an axis-aligned bounding box of all visible output across all frames, computed once in `init` (not per-tick). Arcs use the full-circle bounding box (center ± radius) — conservative but always correct, and avoids trigonometry over partial arc segments. `ViewportMode.autoFit` consumes this to scale and center the view; it falls back to `.scaleToFit` when `drawingBounds` is `nil` (no visible output). The `transform()` method signature takes `drawingBounds: DrawingBounds?` as a parameter so `TortoiseCanvas` passes the model's precomputed value. `DrawingBounds` lives in `TortoiseCore` (not `TortoiseUI`) because `TortoiseSVG` consumes the same computation for `render(_:fit:)` / `svg(fit:)`, which crop the `viewBox` to the drawing (default `fit: true`); `fit: false` keeps the full logical `canvasSize`.
+
+**Hand-written `Codable` with a frozen wire format.** `Codable.swift` implements every conformance manually with explicit coding keys — do not replace it with synthesized conformances, and do not rename a key to match a refactored Swift identifier. The JSON format is **frozen for the 2.x series** (documented in `Sources/TortoiseCore/Documentation.docc/CommandSerialization.md`, which must be updated alongside any format change), because command streams are meant to be persisted as app documents and golden files. A command encodes as an object with exactly one key, the command name; decoding rejects zero keys, several keys, or an unknown key, while unknown fields *inside* a payload are ignored so payloads can grow compatibly. Adding a new `TortoiseCommand` case is backward compatible (old data still decodes); changing or removing an existing key is not.
 
 **`@_exported import TortoiseCore` in `TortoiseUI` and `TortoiseSVG`.** Users only write `import TortoiseUI` / `import TortoiseSVG` and still see all Core types. The underscored attribute has no stability guarantee from Swift; if a future toolchain breaks it, the fallback is to drop the re-export and require users to add `import TortoiseCore` themselves — a breaking change to document in the CHANGELOG, not something to work around with tricks.
 
@@ -70,6 +77,8 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 ## Testing
 
 Tests live in `Tests/TortoiseCoreTests/`, `Tests/TortoiseSVGTests/`, and `Tests/TortoiseUITests/`. Tests use swift-testing (`@Suite`, `@Test`, `#expect`). `Tortoise` is `@MainActor` so test suites that use it are marked `@MainActor`.
+
+`CodableTests.swift` pins the JSON wire format with literal expected strings — a failure there means the persisted format changed, which is a breaking change, not a test to re-baseline.
 
 SVG tests avoid raw string literals (`#"..."#`) when the expected string contains `"#` (e.g. hex colors) — use regular strings with escaped quotes instead: `"fill=\"#ff0000\""`.
 

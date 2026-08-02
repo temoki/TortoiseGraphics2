@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- README: the viewport section told readers to use the `.tortoiseViewport(_:)` modifier but its code sample omitted the modifier entirely; it now shows the actual call, and notes that `.autoFit` spacing comes from SwiftUI's `.padding()`
+- README: documented two shipped features that had never been mentioned — the `fit:` parameter on `TortoiseSVG.render(_:)` / `Tortoise.svg()` (viewBox cropping, added in 2.0.0-beta3) and `Codable` command-stream serialization (added in 2.0.0-beta8), the latter as a new "Command serialization" section linking to the DocC article. Also noted that `TortoiseUI` / `TortoiseSVG` re-export `TortoiseCore`
+
 ## 2.0.0-beta10
 
 ### Fixed

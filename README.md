@@ -57,7 +57,7 @@ straight from the library.
 
 | Module | Description |
 |--------|-------------|
-| **TortoiseCore** | Tortoise API + command stream. Foundation-only; no platform dependencies. |
+| **TortoiseCore** | Tortoise API + command stream (`Codable`). Foundation-only; no platform dependencies. |
 | **TortoiseUI** | SwiftUI animated canvas view (`TimelineView` + `Canvas`). |
 | **TortoiseSVG** | Tortoise → static SVG string. No platform dependencies. |
 
@@ -102,7 +102,9 @@ targets: [
 > 2.0.0 release automatically once it ships.
 
 Import only what you need — `TortoiseCore` alone is sufficient if you're
-writing your own renderer.
+writing your own renderer. `TortoiseUI` and `TortoiseSVG` re-export
+`TortoiseCore`, so importing either one already gives you `Tortoise` and the
+rest of the core types.
 
 ## Usage
 
@@ -170,6 +172,27 @@ let svg = 🐢.svg()
 // Write to a file using Swift's built-in String method
 try svg.write(to: URL(filePath: "square.svg"), atomically: true, encoding: .utf8)
 ```
+
+By default the `viewBox` is cropped to the drawing's bounding box. Pass
+`fit: false` (`🐢.svg(fit: false)`) to keep the full logical `canvasSize`
+as the `viewBox` instead.
+
+### Command serialization
+
+`TortoiseCommand`, `Color`, `Point`, and `Size` conform to `Codable`, so a
+recorded drawing can be saved as JSON and replayed later by any renderer:
+
+```swift
+let data = try JSONEncoder().encode(🐢.commands)
+
+let commands = try JSONDecoder().decode([TortoiseCommand].self, from: data)
+let frames = CommandPlayer.play(commands: commands)
+```
+
+The coding keys are hand-written and frozen for the 2.x series, so the format
+is safe for app documents and golden files — see the
+[Command Serialization](https://temoki.github.io/TortoiseGraphics2/documentation/tortoisecore/commandserialization)
+article for the wire format and its stability guarantee.
 
 ### Tortoise API quick reference
 
@@ -240,6 +263,7 @@ Use the `.tortoiseViewport(_:)` modifier to control how the drawing maps onto th
 
 ```swift
 TortoiseCanvas(🐢)
+    .tortoiseViewport(.original)
 ```
 
 | `ViewportMode` | Description |
@@ -247,6 +271,8 @@ TortoiseCanvas(🐢)
 | `.scaleToFit` | Scale logical canvas to fill the view, letterboxed. |
 | `.original` | 1 tortoise unit = 1 point, origin at view center |
 | `.autoFit` | Scale and center to fit the actual drawing bounding box. **Default.** |
+
+With `.autoFit`, use SwiftUI's `.padding()` to add space around the drawing.
 
 ## Architecture
 
