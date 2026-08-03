@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `TortoiseSprite` (TortoiseUI) and the `.tortoiseSprite(_:)` environment modifier — the tortoise can now be drawn as your own image instead of the built-in green triangle: `.tortoiseSprite(.image(Image("Turtle"), size: CGSize(width: 40, height: 40)))`. The image is centered on the tortoise's position and rotated so its top edge faces the heading (supply artwork that points up), with transparency preserved. `size` is a bounding box in points at viewport scale 1 — the image is scaled to fit inside it with its aspect ratio preserved, then scales with the viewport exactly like the triangle (clamped to 0.5×–2×). `ViewportMode.autoFit` now insets the drawing by the sprite's half-diagonal instead of a triangle-sized constant, so a large sprite never clips at the view edge. The default remains `.triangle`, and its rendering is unchanged
+
 ### Changed
 - CI: `actions/cache` 4 → 6 and `codecov/codecov-action` 5 → 7 ([#40](https://github.com/temoki/TortoiseGraphics2/pull/40), [#39](https://github.com/temoki/TortoiseGraphics2/pull/39))
 - Test dependency: `swift-snapshot-testing` 1.19.3 → 1.19.4. It is only used by the test targets, so packages depending on TortoiseGraphics2 are unaffected ([#41](https://github.com/temoki/TortoiseGraphics2/pull/41))

@@ -20,9 +20,14 @@ public enum ViewportMode: Sendable, Equatable {
 extension ViewportMode {
     /// Returns a transform mapping tortoise coordinates (center origin, Y up)
     /// to SwiftUI Canvas coordinates (top-left origin, Y down).
-    func transform(canvasSize: Size, viewSize: CGSize, drawingBounds: DrawingBounds?)
-        -> CGAffineTransform
-    {
+    ///
+    /// `spriteHalfExtent` is the tortoise sprite's half-diagonal at scale 1
+    /// (``TortoiseSprite/halfExtent``); `.autoFit` insets the drawing by it so
+    /// the sprite never clips at the view edge.
+    func transform(
+        canvasSize: Size, viewSize: CGSize, drawingBounds: DrawingBounds?,
+        spriteHalfExtent: Double
+    ) -> CGAffineTransform {
         let tx = viewSize.width / 2
         let ty = viewSize.height / 2
         switch self {
@@ -41,7 +46,7 @@ extension ViewportMode {
                 return CGAffineTransform(a: scale, b: 0, c: 0, d: -scale, tx: tx, ty: ty)
             }
             // Inset = max rendered tortoise half-size, so the sprite never clips at the edge.
-            let inset = tortoiseBaseSize * tortoiseScaleMax
+            let inset = spriteHalfExtent * tortoiseScaleMax
             let pw = bb.width + 2 * inset
             let ph = bb.height + 2 * inset
             // Protect against a degenerate bounding box (single point or horizontal/vertical line).

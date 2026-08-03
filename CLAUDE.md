@@ -63,6 +63,8 @@ Tortoise API → [TortoiseCommand] → CommandPlayer.play() → [PlaybackFrame]
 
 **`backgroundColor` defaults to `.clear`.** `TortoiseCanvas` skips the background fill when `alpha == 0`, letting SwiftUI's `.background()` modifier control the canvas background. The SVG renderer likewise omits the `<rect>` element when the background is transparent.
 
+**`TortoiseSprite` is a TortoiseUI-only concept.** The sprite (built-in triangle or a user `Image`) is chosen through the `\.tortoiseSprite` environment value, like `\.tortoiseViewport` — it is *not* a `TortoiseCommand`, so it never enters the serialized stream and `TortoiseSVG` is unaffected (SVG output has never drawn the tortoise). Both canvas layers read the environment value even though only `AnimationLayer` draws the sprite: `ViewportMode.autoFit`'s edge inset is `TortoiseSprite.halfExtent * tortoiseScaleMax`, and the two layers must derive the identical transform. `halfExtent` is the sprite's half-*diagonal* so the inset holds at every heading. Image sprites are aspect-fitted into `size` (`ctx.resolve` gives the intrinsic size; a `ResolvedImage` is bound to its context, so this cannot be hoisted out of the per-frame draw).
+
 ## Coordinate System
 
 - **Tortoise space**: center origin, Y-up, heading 0 = north, clockwise positive. Arc angles: 0 = east, CCW positive (standard math).

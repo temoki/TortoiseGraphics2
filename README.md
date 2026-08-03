@@ -274,6 +274,23 @@ TortoiseCanvas(🐢)
 
 With `.autoFit`, use SwiftUI's `.padding()` to add space around the drawing.
 
+#### Tortoise sprite (TortoiseCanvas)
+
+By default the tortoise is drawn as a green triangle. Use the
+`.tortoiseSprite(_:)` modifier to draw your own image instead:
+
+```swift
+TortoiseCanvas(🐢)
+    .tortoiseSprite(.image(Image("Turtle"), size: CGSize(width: 40, height: 40)))
+```
+
+The image is centered on the tortoise's position and rotated so its **top
+edge** faces the heading — so supply artwork that points up. Transparency is
+preserved, and `size` acts as a bounding box: the image is scaled to fit
+inside it without distorting its aspect ratio, then scales with the viewport
+just like the built-in triangle (clamped to 0.5×–2×). Use `Image(uiImage:)` /
+`Image(nsImage:)` for an image you already have in memory.
+
 ## Architecture
 
 ```
