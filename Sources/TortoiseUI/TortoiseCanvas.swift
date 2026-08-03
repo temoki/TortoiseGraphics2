@@ -5,7 +5,9 @@ import TortoiseCore
 ///
 /// Pass a ``Tortoise`` instance, or describe the drawing inline with a closure.
 /// The view plays back the command stream using `TimelineView` and `Canvas`.
-/// Use `.tortoiseViewport(_:)` to control how the drawing maps onto the view.
+/// Use `.tortoiseViewport(_:)` to control how the drawing maps onto the view,
+/// and `.tortoiseSprite(_:)` to draw the tortoise as your own image instead of
+/// the built-in triangle.
 ///
 /// ```swift
 /// // Existing-instance form
@@ -103,6 +105,9 @@ public struct TortoiseCanvas: View {
 private struct CommittedLayer: View {
     let model: CanvasModel
     @Environment(\.tortoiseViewport) private var viewportMode
+    // Only for the autoFit sprite inset — this layer never draws the sprite,
+    // but both layers must derive the same transform.
+    @Environment(\.tortoiseSprite) private var sprite
 
     var body: some View {
         // Snapshot the committed properties during body evaluation: these
@@ -115,7 +120,7 @@ private struct CommittedLayer: View {
         Canvas { ctx, size in
             let t = viewportMode.transform(
                 canvasSize: model.canvasSize, viewSize: size,
-                drawingBounds: model.drawingBounds)
+                drawingBounds: model.drawingBounds, spriteHalfExtent: sprite.halfExtent)
             let s = (t.a * t.a + t.b * t.b).squareRoot()
             CanvasRenderer.drawBackground(&ctx, size: size, color: background)
             CanvasRenderer.drawElements(&ctx, elements: elements, transform: t, scale: s)
@@ -130,6 +135,7 @@ private struct AnimationLayer: View {
     let model: CanvasModel
     let player: TortoisePlayer?
     @Environment(\.tortoiseViewport) private var viewportMode
+    @Environment(\.tortoiseSprite) private var sprite
 
     var body: some View {
         // Pause the schedule once playback finishes (or while the player is
@@ -140,7 +146,7 @@ private struct AnimationLayer: View {
             Canvas { ctx, size in
                 let t = viewportMode.transform(
                     canvasSize: model.canvasSize, viewSize: size,
-                    drawingBounds: model.drawingBounds)
+                    drawingBounds: model.drawingBounds, spriteHalfExtent: sprite.halfExtent)
                 let s = (t.a * t.a + t.b * t.b).squareRoot()
                 if let next = model.inProgressFrame, model.animationProgress > 0 {
                     CanvasRenderer.drawInProgress(
@@ -150,7 +156,7 @@ private struct AnimationLayer: View {
                 CanvasRenderer.drawTortoise(
                     &ctx, state: model.tortoiseState,
                     interpolatingTo: model.inProgressFrame?.tortoiseState,
-                    progress: model.animationProgress,
+                    progress: model.animationProgress, sprite: sprite,
                     transform: t, scale: s)
             }
             .onChange(of: timeline.date) { _, date in
@@ -164,12 +170,24 @@ private struct AnimationLayer: View {
 
 extension EnvironmentValues {
     @Entry var tortoiseViewport: ViewportMode = .autoFit
+    @Entry var tortoiseSprite: TortoiseSprite = .triangle
 }
 
 extension View {
     /// Sets the viewport mode for any ``TortoiseCanvas`` in the view hierarchy.
     public func tortoiseViewport(_ mode: ViewportMode) -> some View {
         environment(\.tortoiseViewport, mode)
+    }
+
+    /// Sets how the tortoise itself is drawn by any ``TortoiseCanvas`` in the
+    /// view hierarchy. The default is ``TortoiseSprite/triangle``.
+    ///
+    /// ```swift
+    /// TortoiseCanvas(🐢)
+    ///     .tortoiseSprite(.image(Image("Turtle"), size: CGSize(width: 40, height: 40)))
+    /// ```
+    public func tortoiseSprite(_ sprite: TortoiseSprite) -> some View {
+        environment(\.tortoiseSprite, sprite)
     }
 }
 
@@ -184,6 +202,19 @@ extension View {
             🐢.right(170)
         }
     }
+}
+
+#Preview("Custom Sprite") {
+    TortoiseCanvas { 🐢 in
+        🐢.speed = 0
+        🐢.penColor = .green
+        for _ in 1...6 {
+            🐢.forward(80)
+            🐢.right(60)
+        }
+    }
+    .tortoiseSprite(
+        .image(Image(systemName: "tortoise.fill"), size: CGSize(width: 40, height: 40)))
 }
 
 #Preview("Animated Square") {

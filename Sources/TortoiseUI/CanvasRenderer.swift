@@ -108,6 +108,7 @@ enum CanvasRenderer {
     static func drawTortoise(
         _ ctx: inout GraphicsContext, state: TortoiseState,
         interpolatingTo next: TortoiseState?, progress: Double,
+        sprite: TortoiseSprite,
         transform t: CGAffineTransform, scale rawScale: Double
     ) {
         guard state.isVisible else { return }
@@ -131,26 +132,58 @@ enum CanvasRenderer {
         }
 
         let s = min(max(rawScale, tortoiseScaleMin), tortoiseScaleMax)
-        let tortoiseSize = tortoiseBaseSize * s
-
-        // Triangle pointing north (tip at -Y in screen space = up on screen).
-        var path = Path()
-        path.move(to: CGPoint(x: 0, y: -tortoiseSize))
-        path.addLine(to: CGPoint(x: -tortoiseSize * 0.6, y: tortoiseSize * 0.5))
-        path.addLine(to: CGPoint(x: tortoiseSize * 0.6, y: tortoiseSize * 0.5))
-        path.closeSubpath()
 
         let position = CGPoint(x: pos.x, y: pos.y).applying(t)
         var tortoiseCtx = ctx
         tortoiseCtx.translateBy(x: position.x, y: position.y)
-        // heading 0 = north (tip already points up), heading 90 = east (CW 90°).
-        // SwiftUI rotate(by:) is CW-positive in Y-down space, matching tortoise heading.
+        // heading 0 = north (the sprite is authored pointing up), heading 90 =
+        // east (CW 90°). SwiftUI rotate(by:) is CW-positive in Y-down space,
+        // matching tortoise heading.
         tortoiseCtx.rotate(by: .degrees(heading))
-        tortoiseCtx.fill(path, with: .color(.green.opacity(0.7)))
-        tortoiseCtx.stroke(path, with: .color(.green), lineWidth: 1.5)
+        switch sprite {
+        case .triangle:
+            drawTriangleSprite(&tortoiseCtx, size: tortoiseBaseSize * s)
+        case .image(let image, let size):
+            drawImageSprite(&tortoiseCtx, image: image, size: size, scale: s)
+        }
     }
 
     // MARK: - Private helpers
+
+    /// Draws the built-in triangle, centered on the (already translated and
+    /// rotated) context's origin and pointing north — tip at -Y in screen
+    /// space, which is up on screen.
+    private static func drawTriangleSprite(_ ctx: inout GraphicsContext, size: Double) {
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: -size))
+        path.addLine(to: CGPoint(x: -size * 0.6, y: size * 0.5))
+        path.addLine(to: CGPoint(x: size * 0.6, y: size * 0.5))
+        path.closeSubpath()
+        ctx.fill(path, with: .color(.green.opacity(0.7)))
+        ctx.stroke(path, with: .color(.green), lineWidth: 1.5)
+    }
+
+    /// Draws a custom sprite image centered on the (already translated and
+    /// rotated) context's origin, scaled to fit inside `size` × `scale`
+    /// without distorting its aspect ratio.
+    private static func drawImageSprite(
+        _ ctx: inout GraphicsContext, image: Image, size: CGSize, scale s: Double
+    ) {
+        let box = CGSize(width: size.width * s, height: size.height * s)
+        guard box.width > 0, box.height > 0 else { return }
+        // Resolving is what exposes the image's intrinsic size, which the
+        // aspect fit needs. A `ResolvedImage` belongs to the context that
+        // produced it, so this cannot be hoisted out of the per-frame draw.
+        let resolved = ctx.resolve(image)
+        let intrinsic = resolved.size
+        guard intrinsic.width > 0, intrinsic.height > 0 else { return }
+        let fit = min(box.width / intrinsic.width, box.height / intrinsic.height)
+        let width = intrinsic.width * fit
+        let height = intrinsic.height * fit
+        ctx.draw(
+            resolved,
+            in: CGRect(x: -width / 2, y: -height / 2, width: width, height: height))
+    }
 
     /// Strokes are recorded one per command, so consecutive segments are
     /// separate subpaths. Round caps overlap at the shared endpoint, making

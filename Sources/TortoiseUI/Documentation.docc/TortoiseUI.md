@@ -25,7 +25,8 @@ TortoiseCanvas(🐢)
 
 Use the `.tortoiseViewport(_:)` modifier to change how the drawing maps onto
 the view. The default is ``ViewportMode/autoFit``, which scales and centers
-to fit the actual drawing bounding box.
+to fit the actual drawing bounding box. Use `.tortoiseSprite(_:)` to draw the
+tortoise as your own image instead of the built-in triangle.
 
 ### Speed
 
@@ -76,6 +77,24 @@ command, and changing it never rewinds playback.
 - **`.scaleToFit`** — fits the full logical canvas inside the view, letterboxed.
 - **`.original`** — 1 tortoise unit = 1 point, origin at view center.
 
+### Tortoise sprite
+
+``TortoiseSprite`` controls how the tortoise itself is drawn. The default is
+``TortoiseSprite/triangle``; pass ``TortoiseSprite/image(_:size:)`` to use
+your own artwork:
+
+```swift
+TortoiseCanvas(🐢)
+    .tortoiseSprite(.image(Image("Turtle"), size: CGSize(width: 40, height: 40)))
+```
+
+The image is centered on the tortoise's position and rotated so its top edge
+faces the heading, so supply artwork that points up. `size` is a bounding box
+in points at viewport scale 1: the image is scaled to fit inside it with its
+aspect ratio preserved, and — like the triangle — scales with the viewport,
+clamped to 0.5×–2×. ``ViewportMode/autoFit`` insets the drawing by the
+sprite's half-diagonal, so a large sprite never clips at the view edge.
+
 ## Topics
 
 ### Views
@@ -89,3 +108,7 @@ command, and changing it never rewinds playback.
 ### Viewport
 
 - ``ViewportMode``
+
+### Appearance
+
+- ``TortoiseSprite``
