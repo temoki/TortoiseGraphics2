@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 import SwiftUI
 import Testing
 import TortoiseCore
@@ -66,25 +67,51 @@ extension CGSize {
     @Suite("Tortoise sprite canvas snapshots")
     @MainActor
     struct TortoiseSpriteCanvasTests {
-        /// An asymmetric, up-pointing sprite built in code (no test resource):
-        /// a red top half over a blue bottom half, so a golden image shows both
-        /// that the artwork is drawn and which way it is rotated.
-        private static func spriteImage(width: Double, height: Double) -> Image? {
-            let content = VStack(spacing: 0) {
-                Rectangle().fill(Color.red)
-                Rectangle().fill(Color.blue)
+        /// An asymmetric, up-pointing sprite: a red top half over a blue bottom
+        /// half, so a golden image shows both that the artwork is drawn and
+        /// which way it is rotated.
+        ///
+        /// The pixels are written out explicitly in sRGB rather than rendered
+        /// from a SwiftUI view. `ImageRenderer` was used at first and made the
+        /// goldens machine-dependent: `Color.red` / `Color.blue` are semantic
+        /// colors whose components depend on the display gamut and appearance,
+        /// and `ImageRenderer.nsImage` hands back a bitmap tagged with the
+        /// host's display profile — so the goldens recorded on a P3 Mac failed
+        /// on CI with a pure color shift (perceptual precision 0.956).
+        private static func spriteImage(pixelWidth: Int, pixelHeight: Int) -> Image? {
+            let bytesPerPixel = 4
+            var pixels = [UInt8](repeating: 0, count: pixelWidth * pixelHeight * bytesPerPixel)
+            for y in 0..<pixelHeight {
+                let isTopHalf = y < pixelHeight / 2
+                for x in 0..<pixelWidth {
+                    let i = (y * pixelWidth + x) * bytesPerPixel
+                    pixels[i + 0] = isTopHalf ? 220 : 30  // R
+                    pixels[i + 1] = 30  // G
+                    pixels[i + 2] = isTopHalf ? 30 : 220  // B
+                    pixels[i + 3] = 255  // A
+                }
             }
-            .frame(width: width, height: height)
-            let renderer = ImageRenderer(content: content)
-            renderer.scale = 2
-            guard let nsImage = renderer.nsImage else { return nil }
-            return Image(nsImage: nsImage)
+            guard let provider = CGDataProvider(data: Data(pixels) as CFData),
+                let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+                let cgImage = CGImage(
+                    width: pixelWidth, height: pixelHeight,
+                    bitsPerComponent: 8, bitsPerPixel: 8 * bytesPerPixel,
+                    bytesPerRow: pixelWidth * bytesPerPixel,
+                    space: colorSpace,
+                    bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+                    provider: provider, decode: nil, shouldInterpolate: false,
+                    intent: .defaultIntent)
+            else { return nil }
+            // scale 2 → the CGImage's pixels map to half as many points.
+            return Image(decorative: cgImage, scale: 2)
         }
 
         @Test("image sprite replaces the triangle and rotates with the heading")
         func imageSprite() {
-            guard let sprite = Self.spriteImage(width: 40, height: 40) else {
-                Issue.record("ImageRenderer produced no sprite image")
+            // 80 x 80 px at scale 2 = 40 x 40 pt, drawn into a 40 x 40 box at
+            // viewport scale 1: an exact 1:1 pixel mapping, so no resampling.
+            guard let sprite = Self.spriteImage(pixelWidth: 80, pixelHeight: 80) else {
+                Issue.record("could not build the sprite image")
                 return
             }
             assertCanvasSnapshot(sprite: .image(sprite, size: CGSize(width: 40, height: 40)))
@@ -92,16 +119,21 @@ extension CGSize {
 
         @Test("a non-square image is fitted inside the sprite size, not stretched")
         func imageSpriteAspectRatio() {
-            guard let sprite = Self.spriteImage(width: 80, height: 40) else {
-                Issue.record("ImageRenderer produced no sprite image")
+            // 160 x 80 px at scale 2 = 80 x 40 pt. In an 80 x 80 box it renders
+            // 80 x 40 (aspect preserved), not 80 x 80 — again 1:1.
+            guard let sprite = Self.spriteImage(pixelWidth: 160, pixelHeight: 80) else {
+                Issue.record("could not build the sprite image")
                 return
             }
-            // A 2:1 image in a square box renders 40 x 20, not 40 x 40.
-            assertCanvasSnapshot(sprite: .image(sprite, size: CGSize(width: 40, height: 40)))
+            assertCanvasSnapshot(sprite: .image(sprite, size: CGSize(width: 80, height: 80)))
         }
 
         /// Renders a two-segment drawing that ends heading east (90°), so a
         /// correctly rotated sprite shows its red half on the east side.
+        ///
+        /// `.original` fixes the viewport scale at 1 so the sprite bitmap lands
+        /// on the device pixel grid without resampling, keeping the golden
+        /// reproducible across machines.
         private func assertCanvasSnapshot(
             sprite: TortoiseSprite, fileID: StaticString = #fileID,
             filePath: StaticString = #filePath,
@@ -114,6 +146,7 @@ extension CGSize {
                 tortoise.forward(100)
             }
             .tortoiseSprite(sprite)
+            .tortoiseViewport(.original)
             .frame(width: 400, height: 400)
             .background(Color.white)
             .environment(\.colorScheme, .light)
