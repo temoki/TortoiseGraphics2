@@ -8,7 +8,7 @@ public enum CommandPlayer {
     public static func play(
         commands: [TortoiseCommand],
         initialState: TortoiseState = .default,
-        initialBackgroundColor: Color = .clear
+        initialBackgroundColor: Color = .defaultBackground
     ) -> [PlaybackFrame] {
         var frames: [PlaybackFrame] = []
         frames.reserveCapacity(commands.count)

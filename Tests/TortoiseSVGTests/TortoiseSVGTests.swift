@@ -35,9 +35,16 @@ struct TortoiseSVGTests {
 
     // MARK: Background
 
-    @Test("default background is transparent (no rect element)")
+    @Test("default background is white, matching a fresh Tortoise (#44)")
     func defaultBackground() {
         let out = svg()
+        #expect(out.contains("<rect"))
+        #expect(out.contains("fill=\"#ffffff\""))
+    }
+
+    @Test("an explicitly transparent background emits no rect element")
+    func clearBackground() {
+        let out = svg(.backgroundColor(.clear))
         #expect(!out.contains("<rect"))
     }
 

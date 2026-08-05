@@ -103,6 +103,14 @@ struct TortoiseAPITests {
         #expect(t.backgroundColor == .cyan)
     }
 
+    // The value renderers replay from when no .backgroundColor command is
+    // issued, so the tortoise and its drawing agree on the paper color (#44).
+    @Test("a fresh tortoise starts at the shared default background")
+    func initialBackgroundIsTheSharedDefault() {
+        #expect(Tortoise().backgroundColor == .defaultBackground)
+        #expect(Tortoise().commands.isEmpty)
+    }
+
     @Test("beginFill / endFill append correct commands")
     func fillCommands() {
         let t = Tortoise()
@@ -439,6 +447,32 @@ struct CommandPlayerTests {
     func backgroundColorUpdates() {
         let frames = CommandPlayer.play(commands: [.backgroundColor(.cyan)])
         #expect(frames[0].backgroundColor == .cyan)
+    }
+
+    // A stream that never sets a background must replay from the same color a
+    // fresh Tortoise reports, or renderers paint nothing while the tortoise
+    // claims white (#44).
+    @Test("replay defaults to the Tortoise's own initial background")
+    func defaultBackgroundMatchesTortoise() {
+        #expect(Color.defaultBackground == .white)
+        let frames = CommandPlayer.play(commands: [.forward(40)])
+        #expect(frames[0].backgroundColor == .defaultBackground)
+    }
+
+    // The frames before a later .backgroundColor command must keep the initial
+    // color: the change belongs to the command that made it, not to frame 0.
+    @Test("a later backgroundColor command is not back-dated to earlier frames")
+    func backgroundChangeIsNotBackDated() {
+        let frames = CommandPlayer.play(commands: [.forward(40), .backgroundColor(.cyan)])
+        #expect(frames[0].backgroundColor == .defaultBackground)
+        #expect(frames[1].backgroundColor == .cyan)
+    }
+
+    @Test("an explicit clear background stays transparent")
+    func explicitClearBackground() {
+        let frames = CommandPlayer.play(commands: [.backgroundColor(.clear)])
+        #expect(frames[0].backgroundColor == .clear)
+        #expect(frames[0].backgroundColor.alpha == 0)
     }
 
     @Test("speed clamped to non-negative")

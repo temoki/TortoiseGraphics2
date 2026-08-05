@@ -251,7 +251,7 @@ article for the wire format and its stability guarantee.
 
 | Method / Property | Description |
 |---|---|
-| `backgroundColor: Color` | Canvas background color |
+| `backgroundColor: Color` | Canvas background color. Defaults to white; set `.clear` for a transparent canvas (then SwiftUI's `.background()` or the host page shows through) |
 | `clear()` | Erase all drawings (tortoise state is preserved) |
 | `reset()` | Discard all commands and restore the initial state (`canvasSize` is kept) |
 | `speed: Double` | Animation speed: 1 (slowest) … 10 (fastest), 0 = instant |
