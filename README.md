@@ -51,7 +51,7 @@ seek, and speed control, with the executing block highlighted), a code
 pane shows the equivalent Swift program, and drawings export as SVG
 straight from the library.
 
-<a href="https://github.com/temoki/TortoiseBlocks"><img src="https://raw.githubusercontent.com/temoki/TortoiseBlocks/main/docs/demo.gif" width="640" alt="TortoiseBlocks on iPad — running a block program that draws and fills a square"></a>
+<a href="https://github.com/temoki/TortoiseBlocks"><img src="https://raw.githubusercontent.com/temoki/TortoiseBlocks/main/docs/Screenshot.png" width="640" alt="TortoiseBlocks on macOS"></a>
 
 ## Modules
 
