@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-beta12
 
 ### Fixed
 - A program that never set a background color rendered with **no background at all**, even though `Tortoise.backgroundColor` reports white from the moment it is created — so an empty tortoise claimed white but drew nothing. On a dark host the default black pen was nearly invisible, `ImageRenderer` exports came out as fully transparent PNGs, and the SVG carried no background `<rect>`. `CommandPlayer.play`'s `initialBackgroundColor` defaulted to `.clear` while `Tortoise` starts at white, and `CanvasModel` / `TortoiseSVG` each fell back to `.clear` of their own for an empty stream. All four now share one constant, the new `Color.defaultBackground` (white) ([#44](https://github.com/temoki/TortoiseGraphics2/issues/44))
