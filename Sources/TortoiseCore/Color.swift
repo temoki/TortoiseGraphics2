@@ -31,6 +31,16 @@ extension Color {
     public static let cyan = Color(red: 0, green: 1, blue: 1)
     public static let magenta = Color(red: 1, green: 0, blue: 1)
     public static let clear = Color(red: 0, green: 0, blue: 0, alpha: 0)
+
+    /// The background every ``Tortoise`` starts with, and the value
+    /// ``CommandPlayer`` replays from when a stream sets no background of its
+    /// own — the single source of truth for "no `.backgroundColor` command
+    /// was issued". Renderers must not substitute their own fallback, or the
+    /// tortoise and the drawing disagree about the color of the paper (#44).
+    ///
+    /// Pass `Color.clear` explicitly (`tortoise.backgroundColor = .clear`) for
+    /// a transparent canvas.
+    public static let defaultBackground = white
 }
 
 extension Double {

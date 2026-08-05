@@ -62,7 +62,7 @@ private struct SVGBuilder {
 
     func build() -> String {
         var elements: [SVGElement] = []
-        var bgColor: Color = .clear
+        var bgColor: Color = .defaultBackground
         // Strokes/arcs drawn while isFillActive are held here until endFill,
         // then flushed AFTER the fill polygon so the polygon renders below its outline.
         var pendingFillStrokes: [SVGElement] = []

@@ -38,7 +38,7 @@ public final class Tortoise {
     public let canvasSize: Size
 
     private var state: TortoiseState = .default
-    private var _backgroundColor: Color = .white
+    private var _backgroundColor: Color = .defaultBackground
     private var _isFilling: Bool = false
 
     public init(canvasSize: Size = .defaultCanvas) {
@@ -255,7 +255,7 @@ public final class Tortoise {
     public func reset() {
         commands = []
         state = .default
-        _backgroundColor = .white
+        _backgroundColor = .defaultBackground
         _isFilling = false
         mutationCount += 1
     }

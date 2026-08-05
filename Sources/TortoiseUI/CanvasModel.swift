@@ -39,7 +39,7 @@ final class CanvasModel {
     /// Drawing elements in command-execution order.
     /// Fill polygons are inserted before their outline strokes so they render below them.
     private(set) var elements: [DrawElement] = []
-    private(set) var backgroundColor: TortoiseCore.Color = .clear
+    private(set) var backgroundColor: TortoiseCore.Color = .defaultBackground
     private(set) var tortoiseState: TortoiseState = .default
 
     /// Progress (0 → 1) through the animation of the next frame.
@@ -145,7 +145,7 @@ final class CanvasModel {
         elements.removeAll()
         fillInsertionIndex = nil
         currentFrameIndex = -1
-        backgroundColor = frames.first?.backgroundColor ?? .clear
+        backgroundColor = frames.first?.backgroundColor ?? .defaultBackground
         tortoiseState = .default
         animationProgress = 0
         lastTickDate = nil
