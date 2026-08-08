@@ -1,5 +1,47 @@
 # Changelog
 
+## 2.0.0
+
+First stable release of the 2.x series — a from-scratch rewrite of
+[TortoiseGraphics](https://github.com/temoki/TortoiseGraphics) for Swift 6
+strict concurrency and SwiftUI. There are no code changes since
+2.0.0-beta12; the beta sections below record how the release was built up.
+
+### Highlights
+
+- **Event-sourcing core.** `Tortoise` accumulates an immutable
+  `[TortoiseCommand]` stream, and every renderer consumes that same stream
+  through the pure `CommandPlayer.play(commands:)`. `TortoiseState.applying(_:)`
+  is the single state-transition reducer shared by recording and replay
+- **`TortoiseUI`.** `TortoiseCanvas` animates the drawing on `TimelineView` +
+  `Canvas` with sub-frame interpolation, so the tortoise visibly walks as it
+  draws. `TortoisePlayer` adds pause, single-step, seek, and a viewer-side
+  speed override; `.tortoiseViewport(_:)` and `.tortoiseSprite(_:)` configure
+  scaling and the tortoise's own artwork
+- **`TortoiseSVG`.** Export any drawing as an SVG string or file, with the
+  `viewBox` cropped to the drawing by default (`fit: false` keeps the full
+  `canvasSize`)
+- **Serialization.** `TortoiseCommand`, `Color`, `Point`, and `Size` are
+  `Codable` with a hand-written JSON wire format that is **frozen for the 2.x
+  series**, so recorded drawings can be persisted as app documents or golden
+  files
+- **Linux.** `TortoiseCore` and `TortoiseSVG` build and pass their tests on
+  Linux; `TortoiseUI` requires SwiftUI and is omitted there
+
+### Installation
+
+A plain `from: "2.0.0"` requirement now resolves — the `from: "2.0.0-beta1"`
+prerelease lower bound the README asked for during the beta is no longer
+needed.
+
+### Breaking changes from 1.x
+
+- Renamed: `Vec2D` → `Point`, `Size2D` → `Size`, `Turtle`/`turtle` →
+  `Tortoise`/`tortoise` throughout
+- Removed: Python-style shorthand aliases (`fd`, `bk`, `rt`, `lt`, `pu`,
+  `pd`, etc.)
+- Requires Swift 6.2+ / Xcode 26+ / iOS 26+ · macOS 26+ · visionOS 26+
+
 ## 2.0.0-beta12
 
 ### Fixed

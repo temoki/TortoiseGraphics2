@@ -99,13 +99,13 @@ the GitHub web UI.
 
 1. Make sure the release commit is on `main` with CI green.
 2. In `CHANGELOG.md`, rename the `## Unreleased` heading to the new version
-   (e.g. `## 2.0.0-beta6` — the heading must match the tag exactly), commit,
+   (e.g. `## 2.1.0` — the heading must match the tag exactly), commit,
    and push.
 3. Tag that commit and push the tag:
 
    ```bash
-   git tag 2.0.0-beta6
-   git push origin 2.0.0-beta6
+   git tag 2.1.0
+   git push origin 2.1.0
    ```
 
 4. The tag push triggers two workflows:
@@ -115,8 +115,9 @@ the GitHub web UI.
    - **docs.yml** rebuilds the DocC site and deploys it to GitHub Pages.
 
 Version tags follow [SemVer](https://semver.org). Note that a plain
-`from: "2.0.0"` SwiftPM requirement never resolves prerelease tags — see the
-README's installation note while 2.x is in beta.
+`from: "<version>"` SwiftPM requirement never resolves prerelease tags, so a
+prerelease needs a matching prerelease lower bound in the README's
+installation snippet.
 
 Don't push throwaway tags matching `X.Y.Z*` to test workflows: any such tag
 deploys the docs site and creates a public release.
