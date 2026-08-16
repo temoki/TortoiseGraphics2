@@ -64,6 +64,18 @@ final class CanvasModel {
         return frames[currentFrameIndex + 1]
     }
 
+    /// Where the tortoise actually *is*: the committed state blended toward
+    /// the frame being animated toward, which is where the sprite is drawn.
+    ///
+    /// The one place that blend happens. `CanvasRenderer.drawTortoise` and
+    /// `TortoisePlayer.currentTortoiseState` both read it, so a cursor drawn
+    /// by someone else cannot drift a fraction of a command away from the
+    /// built-in sprite.
+    var liveTortoiseState: TortoiseState {
+        guard let next = inProgressFrame, animationProgress > 0 else { return tortoiseState }
+        return tortoiseState.interpolated(toward: next.tortoiseState, progress: animationProgress)
+    }
+
     /// Playback speed of the last committed frame (governs animation timing).
     private var committedSpeed: Double {
         currentFrameIndex >= 0

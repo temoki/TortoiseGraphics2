@@ -95,6 +95,47 @@ aspect ratio preserved, and — like the triangle — scales with the viewport,
 clamped to 0.5×–2×. ``ViewportMode/autoFit`` insets the drawing by the
 sprite's half-diagonal, so a large sprite never clips at the view edge.
 
+### Drawing the tortoise yourself
+
+Sometimes the tortoise has to be something a `Canvas` cannot draw: a SwiftUI
+view above the canvas, a sprite in another engine, a 3-D model standing on a
+real table in an immersive space. Three pieces make that possible, and they
+are meant to be used together.
+
+```swift
+TortoiseCanvas(🐢, player: player)
+    .tortoiseSprite(.hidden)          // the canvas draws no cursor
+
+// …and somewhere that already runs once per frame:
+if let state = player.currentTortoiseState, state.isVisible {
+    let t = ViewportMode.autoFit.transform(
+        canvasSize: 🐢.canvasSize, viewSize: viewSize,
+        drawingBounds: DrawingBounds.compute(
+            from: CommandPlayer.play(commands: 🐢.commands)),
+        spriteHalfExtent: TortoiseSprite.hidden.halfExtent)
+    let point = CGPoint(x: state.position.x, y: state.position.y).applying(t)
+    // …draw your own tortoise at `point`, rotated by `state.heading`.
+}
+```
+
+- ``TortoiseSprite/hidden`` stops the canvas drawing its own cursor. It is a
+  property of one view, unlike `hideTortoise()`, which records a command and
+  so travels with the drawing into every renderer and every saved stream.
+- ``TortoisePlayer/currentTortoiseState`` is where the tortoise is *right
+  now*, interpolated between commands — so a cursor of your own walks with
+  the line instead of jumping a command at a time. It changes on every
+  display frame, which is why it wants to be read from a per-frame context
+  rather than observed from a SwiftUI `body`.
+- ``ViewportMode/transform(canvasSize:viewSize:drawingBounds:spriteHalfExtent:)``
+  maps tortoise coordinates onto the view, so the cursor lands exactly where
+  the built-in sprite would have. Reimplementing that mapping is the thing
+  worth avoiding: it agrees on the day it is written, and drifts silently
+  afterwards.
+
+With ``TortoiseSprite/hidden`` the `.autoFit` inset becomes zero — there is no
+sprite to keep clear of the edge — so the drawing runs edge to edge and any
+margin is yours to add.
+
 ## Topics
 
 ### Views

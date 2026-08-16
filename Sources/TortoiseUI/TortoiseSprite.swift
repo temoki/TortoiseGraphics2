@@ -30,6 +30,26 @@ public enum TortoiseSprite: Sendable, Equatable {
     /// Use `Image(uiImage:)` / `Image(nsImage:)` to pass an image you already
     /// have in memory.
     case image(Image, size: CGSize)
+
+    /// Draw no tortoise at all — for when you are drawing your own.
+    ///
+    /// The drawing itself animates exactly as before; only the sprite is
+    /// omitted. Pair it with ``TortoisePlayer/currentTortoiseState`` and
+    /// ``ViewportMode/transform(canvasSize:viewSize:drawingBounds:spriteHalfExtent:)``
+    /// to put a cursor of your own — a SwiftUI overlay, a RealityKit entity,
+    /// a sprite in another engine — exactly where the canvas would have drawn
+    /// the triangle.
+    ///
+    /// This is **not** `Tortoise.hideTortoise()`. That records a command: it
+    /// travels with the drawing into every renderer and every serialized
+    /// stream, and it is part of what the program says. This is a property of
+    /// one view, and changing it cannot change the drawing.
+    ///
+    /// ``ViewportMode/autoFit`` then insets the drawing by nothing, there
+    /// being no sprite to keep clear of the edge, so the drawing runs edge to
+    /// edge and any margin is yours to add (SwiftUI's `.padding()`, or a
+    /// smaller frame).
+    case hidden
 }
 
 extension TortoiseSprite {
@@ -37,13 +57,20 @@ extension TortoiseSprite {
     /// sprite at scale 1 — the half-diagonal, so it holds at every heading.
     /// ``ViewportMode/autoFit`` insets the drawing by this much (times
     /// `tortoiseScaleMax`) so the sprite never clips at the view edge.
-    var halfExtent: Double {
+    ///
+    /// Public so that a renderer drawing its own tortoise can hand the same
+    /// value to
+    /// ``ViewportMode/transform(canvasSize:viewSize:drawingBounds:spriteHalfExtent:)``
+    /// that the canvas uses, and so land its cursor in the same place.
+    public var halfExtent: Double {
         switch self {
         case .triangle:
             // The triangle's farthest point is its tip, at `tortoiseBaseSize`.
             return tortoiseBaseSize
         case .image(_, let size):
             return (size.width * size.width + size.height * size.height).squareRoot() / 2
+        case .hidden:
+            return 0
         }
     }
 }

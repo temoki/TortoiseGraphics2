@@ -1,5 +1,46 @@
 # Changelog
 
+## 2.1.0
+
+### Added
+- **Draw the tortoise yourself.** Three additions that only make sense
+  together, for renderers that have to put the tortoise somewhere a `Canvas`
+  cannot reach — a SwiftUI overlay, a sprite in another engine, a 3-D model
+  standing on a real table in an immersive space:
+  - `TortoiseSprite.hidden` (TortoiseUI) — the canvas animates the drawing
+    exactly as before and draws no cursor. It is a property of one *view*,
+    unlike `hideTortoise()`, which records a command and so travels with the
+    drawing into every renderer and every serialized stream. With it,
+    `ViewportMode.autoFit` insets by nothing — there is no sprite to keep
+    clear of the edge — so the drawing runs edge to edge and any margin is the
+    caller's to add
+  - `TortoisePlayer.currentTortoiseState` (TortoiseUI) — where the tortoise
+    is *right now*, position and heading interpolated between commands, so a
+    cursor of your own walks with the line instead of jumping a command at a
+    time. `nil` until the player is attached to a canvas. It changes on every
+    display frame, so read it from somewhere already running once per frame
+    rather than observing it from a SwiftUI `body`
+  - `ViewportMode.transform(canvasSize:viewSize:drawingBounds:spriteHalfExtent:)`
+    and `TortoiseSprite.halfExtent` are now public — the mapping from tortoise
+    coordinates onto the view, so a custom cursor lands exactly where the
+    built-in sprite would have. Reimplementing that mapping is the failure
+    worth avoiding: it agrees on the day it is written and drifts silently
+    afterwards
+- `TortoiseState.interpolated(toward:progress:)` (TortoiseCore) — the state
+  part-way through a command. Only position and heading move; pen state,
+  colors, visibility and speed come from the state being interpolated *from*,
+  because those change at a command rather than across one. The heading takes
+  the short way round (350° → 10° sweeps 20° forward), and `progress` is
+  clamped to 0...1. This is now the single implementation of that blend:
+  `CanvasRenderer` and `TortoisePlayer.currentTortoiseState` both go through
+  it, so a custom cursor cannot drift a fraction of a command away from the
+  built-in sprite
+
+### Changed
+- No behavior changes. `TortoiseSprite` gains a case, so an exhaustive
+  `switch` over it in your own code needs one more arm — the only source-level
+  effect of this release
+
 ## 2.0.0
 
 First stable release of the 2.x series — a from-scratch rewrite of

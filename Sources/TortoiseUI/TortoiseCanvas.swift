@@ -154,9 +154,7 @@ private struct AnimationLayer: View {
                         transform: t, scale: s)
                 }
                 CanvasRenderer.drawTortoise(
-                    &ctx, state: model.tortoiseState,
-                    interpolatingTo: model.inProgressFrame?.tortoiseState,
-                    progress: model.animationProgress, sprite: sprite,
+                    &ctx, state: model.liveTortoiseState, sprite: sprite,
                     transform: t, scale: s)
             }
             .onChange(of: timeline.date) { _, date in

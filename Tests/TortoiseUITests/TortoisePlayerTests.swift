@@ -179,10 +179,56 @@ struct TortoisePlayerTests {
         let player = TortoisePlayer()
         #expect(player.currentCommandIndex == -1)
         #expect(!player.isFinished)
+        #expect(player.currentTortoiseState == nil)
         player.step()
         player.seek(to: 3)
         player.isPaused = true
         player.isPaused = false
+    }
+
+    // MARK: - currentTortoiseState
+
+    @Test("currentTortoiseState is mid-command, not the last committed one")
+    func currentStateIsInterpolated() {
+        let model = makeSquareModel()
+        let player = TortoisePlayer()
+        player.model = model
+
+        // Speed 5 is 0.1 s per command, so 0.05 s is halfway through the
+        // first `forward(100)`: the tortoise stands at y = 50 with nothing
+        // committed yet. A cursor driven by `currentCommandIndex` alone would
+        // still be at the origin, and would jump the whole 100 at once.
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+        model.tick(date: t0)
+        model.tick(date: t0.addingTimeInterval(0.05))
+
+        #expect(player.currentCommandIndex == -1)
+        guard let state = player.currentTortoiseState else {
+            Issue.record("an attached player should report a state")
+            return
+        }
+        #expect(abs(state.position.y - 50) < 0.001)
+        #expect(abs(state.position.x) < 0.001)
+    }
+
+    @Test("it is exactly the state the canvas draws its sprite at")
+    func currentStateMatchesTheCanvas() {
+        let model = makeSquareModel()
+        let player = TortoisePlayer()
+        player.model = model
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+        model.tick(date: t0)
+        model.tick(date: t0.addingTimeInterval(0.05))
+        #expect(player.currentTortoiseState == model.liveTortoiseState)
+    }
+
+    @Test("with nothing in flight it is the committed state itself")
+    func currentStateAtRest() {
+        let model = makeSquareModel()
+        let player = TortoisePlayer()
+        player.model = model
+        player.step()  // Commits instantly, so progress is back to 0.
+        #expect(player.currentTortoiseState == model.tortoiseState)
     }
 
     @Test("attached player mirrors and controls the model")
