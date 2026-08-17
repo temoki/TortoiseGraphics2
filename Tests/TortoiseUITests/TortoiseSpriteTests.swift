@@ -43,10 +43,28 @@ struct TortoiseSpriteTests {
         #expect(abs(scale(image) - 400.0 / (200 + 2 * 28.284271 * tortoiseScaleMax)) < 0.0001)
     }
 
+    @Test("a hidden sprite has no extent, so autoFit keeps no room for it")
+    func hiddenHalfExtent() {
+        #expect(TortoiseSprite.hidden.halfExtent == 0)
+
+        var builder = DrawingBounds.Builder()
+        builder.expand(to: Point(x: -100, y: -100))
+        builder.expand(to: Point(x: 100, y: 100))
+        let transform = ViewportMode.autoFit.transform(
+            canvasSize: .defaultCanvas, viewSize: CGSize(width: 400, height: 400),
+            drawingBounds: builder.build(), spriteHalfExtent: TortoiseSprite.hidden.halfExtent)
+        // The 200 x 200 drawing fills all 400 points, where the triangle would
+        // have cost it 40. Any margin is the caller's to add.
+        #expect(abs(transform.a - 2.0) < 0.0001)
+    }
+
     @Test("equality distinguishes the built-in triangle from an image")
     func equality() {
         let image = Image(systemName: "tortoise")
         #expect(TortoiseSprite.triangle == .triangle)
+        #expect(TortoiseSprite.hidden == .hidden)
+        #expect(TortoiseSprite.hidden != .triangle)
+        #expect(TortoiseSprite.hidden != .image(image, size: .init(40, 40)))
         #expect(TortoiseSprite.triangle != .image(image, size: .init(40, 40)))
         #expect(
             TortoiseSprite.image(image, size: .init(40, 40)) == .image(image, size: .init(40, 40)))
@@ -115,6 +133,11 @@ extension CGSize {
                 return
             }
             assertCanvasSnapshot(sprite: .image(sprite, size: CGSize(width: 40, height: 40)))
+        }
+
+        @Test("a hidden sprite leaves the drawing and draws no cursor")
+        func hiddenSprite() {
+            assertCanvasSnapshot(sprite: .hidden)
         }
 
         @Test("a non-square image is fitted inside the sprite size, not stretched")

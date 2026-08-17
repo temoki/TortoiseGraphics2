@@ -614,6 +614,74 @@ struct ColorTests {
     }
 }
 
+// MARK: - Interpolation between commands
+
+@Suite("TortoiseState interpolation")
+struct TortoiseStateInterpolationTests {
+    private let north = TortoiseState.default
+
+    @Test("halfway along a move is halfway between the endpoints")
+    func positionHalfway() {
+        let next = north.applying(.forward(100))
+        let mid = north.interpolated(toward: next, progress: 0.5)
+        #expect(isClose(mid.position, Point(x: 0, y: 50)))
+    }
+
+    @Test("the ends are exactly the states themselves")
+    func endpointsAreExact() {
+        let next = north.applying(.forward(100))
+        #expect(north.interpolated(toward: next, progress: 0) == north)
+        #expect(north.interpolated(toward: next, progress: 1) == next)
+    }
+
+    @Test("progress outside 0...1 is clamped, so an overrunning timer cannot overshoot")
+    func progressClamped() {
+        let next = north.applying(.forward(100))
+        #expect(north.interpolated(toward: next, progress: 2.5) == next)
+        #expect(north.interpolated(toward: next, progress: -1) == north)
+    }
+
+    @Test("a turn takes the short way round, even across 0°")
+    func headingTakesShortArc() {
+        var from = TortoiseState.default
+        from.heading = 350
+        var to = TortoiseState.default
+        to.heading = 10
+        // 350° → 10° is 20° forward, not 340° back.
+        #expect(isClose(from.interpolated(toward: to, progress: 0.5).heading, 0))
+        #expect(isClose(to.interpolated(toward: from, progress: 0.5).heading, 0))
+    }
+
+    @Test("the interpolated heading is normalized to [0, 360)")
+    func headingNormalized() {
+        var from = TortoiseState.default
+        from.heading = 350
+        var to = TortoiseState.default
+        to.heading = 10
+        let heading = from.interpolated(toward: to, progress: 0.9).heading
+        #expect(heading >= 0 && heading < 360)
+        #expect(isClose(heading, 8))
+    }
+
+    @Test("only position and heading move — a pen is never half down")
+    func onlyPoseInterpolates() {
+        var from = TortoiseState.default
+        from.isPenDown = false
+        from.isVisible = false
+        from.penWidth = 1
+        var to = from.applying(.forward(100))
+        to = to.applying(.penDown)
+        to = to.applying(.showTortoise)
+        to = to.applying(.penWidth(9))
+
+        let mid = from.interpolated(toward: to, progress: 0.5)
+        #expect(isClose(mid.position, Point(x: 0, y: 50)))
+        #expect(mid.isPenDown == false)
+        #expect(mid.isVisible == false)
+        #expect(isClose(mid.penWidth, 1))
+    }
+}
+
 // MARK: - Point
 
 @Suite("Point")

@@ -32,6 +32,38 @@ extension TortoiseState {
         return remainder < 0 ? remainder + 360 : remainder
     }
 
+    /// This state with its position and heading moved `progress` of the way
+    /// toward `next` — the tortoise part-way through a command.
+    ///
+    /// A command stream is discrete, but the tortoise is *drawn* walking:
+    /// this is the state between two frames, and it is what ``TortoiseUI``'s
+    /// canvas draws its sprite at. Renderers that draw the tortoise
+    /// themselves want it for the same reason — without it a custom cursor
+    /// jumps a whole command at a time while the line it is supposedly
+    /// drawing grows smoothly underneath it.
+    ///
+    /// **Only position and heading move.** Everything else — pen state,
+    /// colors, visibility, speed — is taken from `self`, because those change
+    /// *at* a command rather than across one: a pen goes down at a moment,
+    /// not gradually. The heading takes the short way round, so a turn from
+    /// 350° to 10° sweeps 20° forward rather than 340° back.
+    ///
+    /// `progress` is clamped to 0...1, so a value from a timer that has
+    /// overrun cannot carry the tortoise past its destination.
+    public func interpolated(toward next: TortoiseState, progress: Double) -> TortoiseState {
+        let t = min(max(progress, 0), 1)
+        var state = self
+        state.position = Point(
+            x: position.x + t * (next.position.x - position.x),
+            y: position.y + t * (next.position.y - position.y)
+        )
+        var delta = next.heading - heading
+        while delta > 180 { delta -= 360 }
+        while delta < -180 { delta += 360 }
+        state.heading = Self.normalizedHeading(heading + t * delta)
+        return state
+    }
+
     /// Returns the state after applying a single command.
     ///
     /// This is the single source of truth for tortoise state transitions:

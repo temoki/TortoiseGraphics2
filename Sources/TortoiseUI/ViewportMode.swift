@@ -24,7 +24,16 @@ extension ViewportMode {
     /// `spriteHalfExtent` is the tortoise sprite's half-diagonal at scale 1
     /// (``TortoiseSprite/halfExtent``); `.autoFit` insets the drawing by it so
     /// the sprite never clips at the view edge.
-    func transform(
+    ///
+    /// Public so that a caller drawing its own tortoise
+    /// (``TortoisePlayer/currentTortoiseState``) can put it where the canvas
+    /// would have. The three drawing arguments all come off one canvas:
+    /// `canvasSize` from ``Tortoise/canvasSize``, `drawingBounds` from
+    /// `DrawingBounds.compute(from: CommandPlayer.play(commands:))`, and
+    /// `viewSize` the size the view was actually laid out at. Reimplementing
+    /// this instead is the failure worth avoiding: it agrees on the day it is
+    /// written, and drifts silently.
+    public func transform(
         canvasSize: Size, viewSize: CGSize, drawingBounds: DrawingBounds?,
         spriteHalfExtent: Double
     ) -> CGAffineTransform {

@@ -103,48 +103,34 @@ enum CanvasRenderer {
         }
     }
 
-    /// Draws the tortoise sprite at `state`, or interpolated toward `next`
-    /// when a frame is mid-animation (`progress` > 0).
+    /// Draws the tortoise sprite at `state` — already interpolated, so this
+    /// takes the state the tortoise is *at*, not the pair to blend.
+    ///
+    /// `CanvasModel.liveTortoiseState` does the blending, and hands the same
+    /// value to `TortoisePlayer.currentTortoiseState`, so a caller drawing its
+    /// own tortoise is drawing at the same place as this.
     static func drawTortoise(
-        _ ctx: inout GraphicsContext, state: TortoiseState,
-        interpolatingTo next: TortoiseState?, progress: Double,
-        sprite: TortoiseSprite,
+        _ ctx: inout GraphicsContext, state: TortoiseState, sprite: TortoiseSprite,
         transform t: CGAffineTransform, scale rawScale: Double
     ) {
-        guard state.isVisible else { return }
-
-        let pos: Point
-        let heading: Double
-        if let next, progress > 0 {
-            pos = Point(
-                x: state.position.x + progress * (next.position.x - state.position.x),
-                y: state.position.y + progress * (next.position.y - state.position.y)
-            )
-            // Normalize heading delta to [-180, 180] so rotation takes the short arc.
-            var delta = next.heading - state.heading
-            while delta > 180 { delta -= 360 }
-            while delta < -180 { delta += 360 }
-            heading = state.heading + progress * delta
-        }
-        else {
-            pos = state.position
-            heading = state.heading
-        }
+        guard state.isVisible, sprite != .hidden else { return }
 
         let s = min(max(rawScale, tortoiseScaleMin), tortoiseScaleMax)
 
-        let position = CGPoint(x: pos.x, y: pos.y).applying(t)
+        let position = CGPoint(x: state.position.x, y: state.position.y).applying(t)
         var tortoiseCtx = ctx
         tortoiseCtx.translateBy(x: position.x, y: position.y)
         // heading 0 = north (the sprite is authored pointing up), heading 90 =
         // east (CW 90°). SwiftUI rotate(by:) is CW-positive in Y-down space,
         // matching tortoise heading.
-        tortoiseCtx.rotate(by: .degrees(heading))
+        tortoiseCtx.rotate(by: .degrees(state.heading))
         switch sprite {
         case .triangle:
             drawTriangleSprite(&tortoiseCtx, size: tortoiseBaseSize * s)
         case .image(let image, let size):
             drawImageSprite(&tortoiseCtx, image: image, size: size, scale: s)
+        case .hidden:
+            break
         }
     }
 

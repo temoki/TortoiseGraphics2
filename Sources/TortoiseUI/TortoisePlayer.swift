@@ -53,6 +53,33 @@ public final class TortoisePlayer {
     /// `false` until the player is attached to a ``TortoiseCanvas``.
     public var isFinished: Bool { model?.isFinished ?? false }
 
+    /// The tortoise exactly as the canvas is drawing it right now — position
+    /// and heading **interpolated between commands**, so this moves with the
+    /// line instead of jumping a command at a time. `nil` until the player is
+    /// attached to a ``TortoiseCanvas``.
+    ///
+    /// It is for drawing the tortoise *yourself*, somewhere the canvas cannot
+    /// reach: an overlay above the view, a sprite in another engine, a 3-D
+    /// model standing on a real table in an immersive space. Set
+    /// ``TortoiseSprite/hidden`` so the canvas leaves the cursor to you, and
+    /// map the position through
+    /// ``ViewportMode/transform(canvasSize:viewSize:drawingBounds:spriteHalfExtent:)``
+    /// to land where the built-in sprite would have been.
+    ///
+    /// It changes on every display frame while a drawing plays, which is what
+    /// makes the motion smooth — and also what makes it the wrong thing to
+    /// read from a SwiftUI `body`, since a view that observes it re-evaluates
+    /// at the display refresh rate. Read it from somewhere that already runs
+    /// once per frame (a RealityKit scene-update subscription, a
+    /// `TimelineView` closure, a `CADisplayLink`), and leave
+    /// ``currentCommandIndex`` — which changes once per command — to drive the
+    /// interface.
+    ///
+    /// ``TortoiseState/isVisible`` follows the stream's `showTortoise` /
+    /// `hideTortoise` commands, so a cursor of your own should honor it the
+    /// way the sprite does.
+    public var currentTortoiseState: TortoiseState? { model?.liveTortoiseState }
+
     // MARK: - Control
 
     /// Suspends playback while `true`; the canvas stops advancing and stops
