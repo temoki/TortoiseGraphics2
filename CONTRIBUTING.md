@@ -78,7 +78,8 @@ The PNG goldens depend on OS-level rendering. The current set was recorded on
 byte-wise tolerance (`precision: 0.995`, defined once as `.canvasGolden` in
 `Tests/TortoiseUITests/CanvasGoldenSnapshotting.swift`) absorbing
 antialiasing drift between OS versions. Don't add `perceptualPrecision`: that
-comparison crashes the test process on macOS 27. If a PR bumps the CI runner image
+comparison crashes the test process on macOS 27
+([#49](https://github.com/temoki/TortoiseGraphics2/issues/49)). If a PR bumps the CI runner image
 (`runs-on:`) or you re-record on a different macOS version, confirm
 the PNG golden tests still pass in CI — and if they don't, re-record both
 golden sets and visually inspect them as described above.

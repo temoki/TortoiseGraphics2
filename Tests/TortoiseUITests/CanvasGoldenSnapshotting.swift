@@ -12,6 +12,9 @@
         /// exception — crashing the whole test process rather than failing one
         /// test. An exact match never reaches that path, which is why the goldens
         /// still pass on the macOS they were recorded on.
+        ///
+        /// Seen on macOS 27 / Xcode 27 betas; whether the release fixes it, and so
+        /// whether `perceptualPrecision` can come back, is tracked in #49.
         static var canvasGolden: Snapshotting {
             .image(precision: 0.995)
         }
