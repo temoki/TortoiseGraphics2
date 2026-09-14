@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-test:
     name: Build & Test
-    runs-on: macos-15
+    runs-on: xcode-27
     permissions:
       contents: read
       id-token: write  # Codecov upload via GitHub OIDC (no static token)
@@ -54,7 +54,7 @@ jobs:
   # parallel job, so the test job doesn't build everything twice.
   release-build:
     name: Release Build
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
 
@@ -76,7 +76,9 @@ jobs:
   linux:
     name: Linux (Core + SVG)
     runs-on: ubuntu-latest
-    container: swift:6.2
+    # TODO: switch to the official `swift:6.4` image once it is published;
+    # until then, the 6.4 release-branch nightly is the only 6.4 toolchain.
+    container: swiftlang/swift:nightly-6.4.x-noble
     steps:
       - uses: actions/checkout@v7
 
@@ -92,7 +94,7 @@ jobs:
 
   format-lint:
     name: swift-format lint
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
 

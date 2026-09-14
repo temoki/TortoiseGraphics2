@@ -2,7 +2,7 @@
 
 # TortoiseGraphics2
 
-[![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
+[![Swift](https://img.shields.io/badge/Swift-6.4-orange.svg)](https://swift.org)
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://swift.org/package-manager)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![codecov](https://codecov.io/gh/temoki/TortoiseGraphics2/graph/badge.svg)](https://codecov.io/gh/temoki/TortoiseGraphics2)
@@ -68,8 +68,8 @@ and testing all share a single source of truth.
 
 ## Requirements
 
-- **Swift** 6.2+
-- **Xcode** 26+ (Apple platforms)
+- **Swift** 6.4+
+- **Xcode** 27+ (Apple platforms)
 - **Platforms** iOS 26+ · macOS 26+ · visionOS 26+ · Linux (`TortoiseCore` / `TortoiseSVG` only — `TortoiseUI` requires SwiftUI)
 
 ## Installation
