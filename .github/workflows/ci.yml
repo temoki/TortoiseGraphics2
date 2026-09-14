@@ -34,13 +34,19 @@ jobs:
       - name: Test
         run: swift test --enable-code-coverage
 
+      # SwiftPM builds one .xctest bundle per test target (not a single
+      # <Package>PackageTests.xctest), so pass every bundle's binary to llvm-cov.
       - name: Export coverage (lcov)
         run: |
           BIN_PATH=$(swift build --show-bin-path)
+          objects=()
+          for bundle in "$BIN_PATH"/*.xctest; do
+            objects+=(-object "$bundle/Contents/MacOS/$(basename "$bundle" .xctest)")
+          done
           xcrun llvm-cov export -format=lcov \
             -instr-profile "$BIN_PATH/codecov/default.profdata" \
             -ignore-filename-regex="\.build|Tests" \
-            "$BIN_PATH/TortoiseGraphicsPackageTests.xctest/Contents/MacOS/TortoiseGraphicsPackageTests" \
+            "${objects[@]}" \
             > coverage.lcov
 
       - name: Upload coverage to Codecov
