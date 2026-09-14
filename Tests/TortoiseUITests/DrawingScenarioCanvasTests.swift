@@ -30,7 +30,7 @@
             }
             assertSnapshot(
                 of: image,
-                as: .image(precision: 0.995, perceptualPrecision: 0.98),
+                as: .canvasGolden,
                 named: scenario.name,
                 testName: "scenario"
             )
