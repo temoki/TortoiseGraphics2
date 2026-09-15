@@ -290,6 +290,137 @@ struct TortoiseAPITests {
     }
 }
 
+// MARK: - Pen-width taper
+
+@Suite("Pen-width taper")
+@MainActor
+struct PenWidthTaperTests {
+    /// The widths of the strokes a command stream produces, in order.
+    private func strokeWidths(_ t: Tortoise) -> [Double] {
+        CommandPlayer.play(commands: t.commands).compactMap { $0.newStroke?.width }
+    }
+
+    @Test("no width change records a single plain forward")
+    func noWidthChangeIsFree() {
+        let t = Tortoise()
+        t.penWidth = 3
+        t.forward(100, widthTo: 3)
+        #expect(t.commands == [.penWidth(3), .forward(100)])
+    }
+
+    @Test("taper ends at exactly the requested width")
+    func endsAtRequestedWidth() {
+        let t = Tortoise()
+        t.forward(100, widthTo: 5)
+        #expect(t.penWidth == 5)
+        #expect(t.commands.last == .penWidth(5))
+    }
+
+    @Test("taper travels the full distance")
+    func travelsFullDistance() {
+        let t = Tortoise()
+        t.forward(100, widthTo: 9)
+        #expect(isClose(t.position, Point(x: 0, y: 100)))
+    }
+
+    @Test("step count scales with the width delta, not the distance")
+    func stepCountScalesWithWidthDelta() {
+        let gentle = Tortoise()
+        gentle.forward(500, widthTo: 2)  // delta 1 -> ceil(1 / 0.25) = 4
+        #expect(gentle.commands.filter { $0 == .forward(125) }.count == 4)
+
+        let steep = Tortoise()
+        steep.forward(10, widthTo: 5)  // delta 4 -> ceil(4 / 0.25) = 16
+        #expect(strokeWidths(steep).count == 16)
+    }
+
+    @Test("automatic step count is capped")
+    func stepCountIsCapped() {
+        let t = Tortoise()
+        t.forward(100, widthTo: 1000)
+        #expect(strokeWidths(t).count == Tortoise.maxTaperSteps)
+    }
+
+    @Test("explicit steps override the automatic count")
+    func explicitSteps() {
+        let t = Tortoise()
+        t.forward(100, widthTo: 5, steps: 4)
+        let widths = strokeWidths(t)
+        #expect(widths.count == 4)
+        // Midpoint sampling across 1 -> 5: 1.5, 2.5, 3.5, 4.5.
+        #expect(zip(widths, [1.5, 2.5, 3.5, 4.5]).allSatisfy(isClose))
+    }
+
+    @Test("widths increase monotonically and stay inside the requested range")
+    func widthsAreMonotonicAndBounded() {
+        let t = Tortoise()
+        t.penWidth = 2
+        t.forward(100, widthTo: 8)
+        let widths = strokeWidths(t)
+        #expect(widths == widths.sorted())
+        #expect(widths.allSatisfy { $0 > 2 && $0 < 8 })
+    }
+
+    @Test("a shrinking taper is monotonically decreasing")
+    func shrinkingTaper() {
+        let t = Tortoise()
+        t.penWidth = 8
+        t.forward(100, widthTo: 1)
+        let widths = strokeWidths(t)
+        #expect(widths == widths.sorted(by: >))
+        #expect(t.penWidth == 1)
+    }
+
+    @Test("negative end width is clamped to zero")
+    func negativeEndWidthClamped() {
+        let t = Tortoise()
+        t.forward(100, widthTo: -4)
+        #expect(t.penWidth == 0)
+        #expect(strokeWidths(t).allSatisfy { $0 >= 0 })
+    }
+
+    @Test("backward taper mirrors forward")
+    func backwardTaper() {
+        let t = Tortoise()
+        t.backward(100, widthTo: 4)
+        #expect(isClose(t.position, Point(x: 0, y: -100)))
+        #expect(t.penWidth == 4)
+    }
+
+    @Test("tapered arc lands where an undivided arc would")
+    func taperedArcEndsInTheSamePlace() {
+        let plain = Tortoise()
+        plain.circle(radius: 50, extent: 135)
+
+        let tapered = Tortoise()
+        tapered.circle(radius: 50, extent: 135, widthTo: 6)
+
+        #expect(isClose(tapered.position, plain.position))
+        #expect(isClose(tapered.heading, plain.heading))
+        #expect(tapered.penWidth == 6)
+    }
+
+    @Test("tapered arc emits one arc stroke per step")
+    func taperedArcStepCount() {
+        let t = Tortoise()
+        t.circle(radius: 50, extent: 180, widthTo: 3, steps: 6)
+        let frames = CommandPlayer.play(commands: t.commands)
+        let arcs = frames.compactMap(\.newArcStroke)
+        #expect(arcs.count == 6)
+        #expect(arcs.allSatisfy { isClose($0.sweep, 30) })
+    }
+
+    @Test("taper with the pen up draws nothing but still moves and sets width")
+    func taperWithPenUp() {
+        let t = Tortoise()
+        t.penUp()
+        t.forward(100, widthTo: 6)
+        #expect(strokeWidths(t).isEmpty)
+        #expect(isClose(t.position, Point(x: 0, y: 100)))
+        #expect(t.penWidth == 6)
+    }
+}
+
 // MARK: - CommandPlayer
 
 @Suite("CommandPlayer")

@@ -115,6 +115,32 @@ public final class Tortoise {
         forward(-distance)
     }
 
+    /// Move forward by `distance` pixels while ramping the pen width from its
+    /// current value to `endWidth`.
+    ///
+    /// The taper is approximated by subdividing the move into sub-segments,
+    /// each drawn at a constant width — there is no variable-width stroke
+    /// primitive, so this is sugar over ``forward(_:)`` and
+    /// ``penWidth``. After the call ``penWidth`` is exactly `endWidth`.
+    ///
+    /// - Parameters:
+    ///   - distance: Distance to travel (negative = backward).
+    ///   - endWidth: Pen width at the end of the move. Clamped to `>= 0`.
+    ///   - steps: Number of sub-segments. Defaults to `nil`, which picks the
+    ///     fewest steps that keep the width change per sub-segment at or below
+    ///     ``taperWidthQuantum`` (capped at ``maxTaperSteps``). When the width
+    ///     does not change at all, a single plain ``forward(_:)`` is recorded.
+    public func forward(_ distance: Double, widthTo endWidth: Double, steps: Int? = nil) {
+        taper(to: endWidth, steps: steps) { self.record(.forward(distance * $0)) }
+    }
+
+    /// Move backward by `distance` pixels while ramping the pen width to `endWidth`.
+    ///
+    /// See ``forward(_:widthTo:steps:)`` for how the taper is approximated.
+    public func backward(_ distance: Double, widthTo endWidth: Double, steps: Int? = nil) {
+        forward(-distance, widthTo: endWidth, steps: steps)
+    }
+
     /// Rotate clockwise by `degrees`.
     public func right(_ degrees: Double) {
         record(.rotate(degrees))
@@ -196,6 +222,81 @@ public final class Tortoise {
     /// same `extent` bends the path the other way.
     public func circle(radius: Double, extent: Double = 360) {
         record(.arc(radius: radius, extent: extent))
+    }
+
+    /// Draw a circular arc while ramping the pen width from its current value
+    /// to `endWidth`.
+    ///
+    /// The arc is subdivided into sub-arcs of equal extent, each drawn at a
+    /// constant width; sub-arcs compose exactly, so the tortoise lands where an
+    /// undivided ``circle(radius:extent:)`` would. After the call ``penWidth``
+    /// is exactly `endWidth`.
+    ///
+    /// See ``forward(_:widthTo:steps:)`` for how `steps` is chosen.
+    public func circle(
+        radius: Double, extent: Double = 360, widthTo endWidth: Double, steps: Int? = nil
+    ) {
+        taper(to: endWidth, steps: steps) { self.record(.arc(radius: radius, extent: extent * $0)) }
+    }
+
+    // MARK: - Pen-width taper
+
+    /// Largest pen-width change (in logical units) allowed between consecutive
+    /// sub-segments when a taper picks its own step count.
+    ///
+    /// A quarter of a unit is below the visible threshold at normal scales, and
+    /// tying the step count to the *width* delta rather than to the distance is
+    /// what keeps a gentle taper cheap: `forward(500, widthTo: penWidth + 1)`
+    /// costs four sub-segments, not five hundred.
+    public static let taperWidthQuantum = 0.25
+
+    /// Upper bound on the sub-segments a taper will pick for itself.
+    ///
+    /// Each sub-segment is a distinct `Stroke` width, which defeats the
+    /// same-width stroke batching in `TortoiseUI` and emits its own `<line>` in
+    /// SVG, so an extreme width change buys fidelity with draw calls rather
+    /// than unbounded ones. Pass `steps:` explicitly to go past this.
+    public static let maxTaperSteps = 64
+
+    /// Records `segment` `n` times — each call drawing a `1/n` fraction of the
+    /// whole move — with the pen width stepped along the way.
+    ///
+    /// `segment` receives the fraction of the move to draw, so the same helper
+    /// serves straight moves and arcs.
+    private func taper(to rawEndWidth: Double, steps requested: Int?, segment: (Double) -> Void) {
+        let endWidth = max(0, rawEndWidth)
+        let startWidth = state.penWidth
+        let n = Self.taperSteps(from: startWidth, to: endWidth, requested: requested)
+
+        // No width change: a taper is then exactly a plain move, so a caller
+        // that happens to pass its current width pays nothing for the call —
+        // one command, one full-width stroke, still eligible for batching.
+        guard startWidth != endWidth else {
+            segment(1)
+            return
+        }
+
+        let fraction = 1.0 / Double(n)
+        for i in 0..<n {
+            // Sampled at the sub-segment's *midpoint*, so the width error is
+            // centered rather than accumulated on one side: half as many steps
+            // reach the fidelity that sampling at the leading edge would need.
+            let t = (Double(i) + 0.5) * fraction
+            record(.penWidth(startWidth + (endWidth - startWidth) * t))
+            segment(fraction)
+        }
+        // Midpoint sampling never emits the endpoint itself; land on it exactly
+        // so `penWidth` after the call is the width the caller asked for.
+        record(.penWidth(endWidth))
+    }
+
+    private static func taperSteps(from startWidth: Double, to endWidth: Double, requested: Int?)
+        -> Int
+    {
+        if let requested { return max(1, requested) }
+        let delta = abs(endWidth - startWidth)
+        guard delta > 0 else { return 1 }
+        return min(maxTaperSteps, max(1, Int((delta / taperWidthQuantum).rounded(.up))))
     }
 
     // MARK: - Pen

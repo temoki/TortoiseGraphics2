@@ -14,5 +14,6 @@ public enum Gallery {
         ("circle-rosette", CircleRosette.draw),
         ("filled-star", FilledStar.draw),
         ("waves", Waves.draw),
+        ("tapered-petals", TaperedPetals.draw),
     ]
 }
