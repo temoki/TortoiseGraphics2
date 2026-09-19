@@ -57,7 +57,7 @@ body:
     id: version
     attributes:
       label: TortoiseGraphics2 version
-      placeholder: "2.0.0-beta5"
+      placeholder: "2.0.0"
     validations:
       required: true
 
