@@ -82,9 +82,7 @@ jobs:
   linux:
     name: Linux (Core + SVG)
     runs-on: ubuntu-latest
-    # TODO: switch to the official `swift:6.4` image once it is published;
-    # until then, the 6.4 release-branch nightly is the only 6.4 toolchain.
-    container: swiftlang/swift:nightly-6.4.x-noble
+    container: swift:6.4
     steps:
       - uses: actions/checkout@v7
 
