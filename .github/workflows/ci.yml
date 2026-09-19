@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-test:
     name: Build & Test
-    runs-on: macos-15
+    runs-on: xcode-27
     permissions:
       contents: read
       id-token: write  # Codecov upload via GitHub OIDC (no static token)
@@ -34,13 +34,19 @@ jobs:
       - name: Test
         run: swift test --enable-code-coverage
 
+      # SwiftPM builds one .xctest bundle per test target (not a single
+      # <Package>PackageTests.xctest), so pass every bundle's binary to llvm-cov.
       - name: Export coverage (lcov)
         run: |
           BIN_PATH=$(swift build --show-bin-path)
+          objects=()
+          for bundle in "$BIN_PATH"/*.xctest; do
+            objects+=(-object "$bundle/Contents/MacOS/$(basename "$bundle" .xctest)")
+          done
           xcrun llvm-cov export -format=lcov \
             -instr-profile "$BIN_PATH/codecov/default.profdata" \
             -ignore-filename-regex="\.build|Tests" \
-            "$BIN_PATH/TortoiseGraphicsPackageTests.xctest/Contents/MacOS/TortoiseGraphicsPackageTests" \
+            "${objects[@]}" \
             > coverage.lcov
 
       - name: Upload coverage to Codecov
@@ -54,7 +60,7 @@ jobs:
   # parallel job, so the test job doesn't build everything twice.
   release-build:
     name: Release Build
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
 
@@ -76,7 +82,7 @@ jobs:
   linux:
     name: Linux (Core + SVG)
     runs-on: ubuntu-latest
-    container: swift:6.2
+    container: swift:6.4
     steps:
       - uses: actions/checkout@v7
 
@@ -92,7 +98,7 @@ jobs:
 
   format-lint:
     name: swift-format lint
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
 

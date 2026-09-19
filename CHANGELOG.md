@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Requires Swift 6.4+ / Xcode 27+ (was Swift 6.2+ / Xcode 26+) — the package
+  manifest now declares `swift-tools-version: 6.4`. No source changes were
+  needed: the package builds without warnings and passes all tests under
+  Swift 6.4. Platform requirements are unchanged (iOS 26+ · macOS 26+ ·
+  visionOS 26+ · Linux)
+
 ## 2.1.0
 
 ### Added

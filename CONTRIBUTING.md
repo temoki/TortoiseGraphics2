@@ -5,7 +5,7 @@ requests, documentation fixes, and pull requests are all welcome.
 
 ## Requirements
 
-- **Swift** 6.2+ / **Xcode** 26+
+- **Swift** 6.4+ / **Xcode** 27+
 - **macOS** to run the full test suite — the golden image tests in
   `TortoiseUITests` render a SwiftUI view and are macOS-only.
 
@@ -73,10 +73,14 @@ Rules:
   visible output — add or update a scenario so both renderers stay covered.
 
 The PNG goldens depend on OS-level rendering. The current set was recorded on
-**macOS 26** (Xcode 26); CI compares them on `macos-15` runners, with a small
-tolerance (`precision: 0.995`, `perceptualPrecision: 0.98`) absorbing
-antialiasing drift between OS versions. If a PR bumps the CI runner image
-(`runs-on: macos-XX`) or you re-record on a different macOS version, confirm
+**macOS 26** (Xcode 26); CI compares them on the `xcode-27` runner image
+(macOS 27), with a small
+byte-wise tolerance (`precision: 0.995`, defined once as `.canvasGolden` in
+`Tests/TortoiseUITests/CanvasGoldenSnapshotting.swift`) absorbing
+antialiasing drift between OS versions. Don't add `perceptualPrecision`: that
+comparison crashes the test process on macOS 27
+([#49](https://github.com/temoki/TortoiseGraphics2/issues/49)). If a PR bumps the CI runner image
+(`runs-on:`) or you re-record on a different macOS version, confirm
 the PNG golden tests still pass in CI — and if they don't, re-record both
 golden sets and visually inspect them as described above.
 

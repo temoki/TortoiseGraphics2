@@ -7,7 +7,7 @@ description: >
 inputs:
   xcode-major:
     description: Xcode major version to select
-    default: "26"
+    default: "27"
 
 runs:
   using: composite

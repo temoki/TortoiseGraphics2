@@ -183,7 +183,7 @@ extension CGSize {
                 return
             }
             assertSnapshot(
-                of: image, as: .image(precision: 0.995, perceptualPrecision: 0.98),
+                of: image, as: .canvasGolden,
                 fileID: fileID, file: filePath, testName: function, line: line, column: column)
         }
     }

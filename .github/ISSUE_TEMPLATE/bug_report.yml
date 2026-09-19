@@ -66,6 +66,6 @@ body:
     attributes:
       label: Environment
       description: OS and version, Xcode version.
-      placeholder: "macOS 26.1, Xcode 26.0"
+      placeholder: "macOS 27.0, Xcode 27.0"
     validations:
       required: true
