@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.0
 
 ### Changed
 - Requires Swift 6.4+ / Xcode 27+ (was Swift 6.2+ / Xcode 26+) — the package

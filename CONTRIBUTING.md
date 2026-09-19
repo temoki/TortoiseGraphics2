@@ -103,13 +103,13 @@ the GitHub web UI.
 
 1. Make sure the release commit is on `main` with CI green.
 2. In `CHANGELOG.md`, rename the `## Unreleased` heading to the new version
-   (e.g. `## 2.1.0` — the heading must match the tag exactly), commit,
+   (e.g. `## 2.3.0` — the heading must match the tag exactly), commit,
    and push.
 3. Tag that commit and push the tag:
 
    ```bash
-   git tag 2.1.0
-   git push origin 2.1.0
+   git tag 2.3.0
+   git push origin 2.3.0
    ```
 
 4. The tag push triggers two workflows:
