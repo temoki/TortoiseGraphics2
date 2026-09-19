@@ -13,8 +13,9 @@
         /// test. An exact match never reaches that path, which is why the goldens
         /// still pass on the macOS they were recorded on.
         ///
-        /// Seen on macOS 27 / Xcode 27 betas; whether the release fixes it, and so
-        /// whether `perceptualPrecision` can come back, is tracked in #49.
+        /// Still reproduces on Xcode 27.0 GA (27A266a); the CI runner's macOS 27 is
+        /// itself still a beta build, so whether `perceptualPrecision` can ever come
+        /// back is tracked in #49.
         static var canvasGolden: Snapshotting {
             .image(precision: 0.995)
         }
