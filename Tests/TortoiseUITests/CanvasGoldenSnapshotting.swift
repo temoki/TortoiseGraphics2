@@ -17,7 +17,9 @@
         /// itself still a beta build, so whether `perceptualPrecision` can ever come
         /// back is tracked in #49.
         static var canvasGolden: Snapshotting {
-            .image(precision: 0.995)
+            // TEMPORARY (#49): restored to check whether a GA macOS 27 runner image
+            // fixes the crash. Do not merge — byte-wise is what main carries.
+            .image(precision: 0.995, perceptualPrecision: 0.98)
         }
     }
 #endif
