@@ -78,6 +78,9 @@ extension TortoiseState {
         switch command {
         case .forward(let distance):
             state.position = position.moved(distance: distance, heading: heading)
+        case .taperedForward(let distance, let widthTo):
+            state.position = position.moved(distance: distance, heading: heading)
+            state.penWidth = max(0, widthTo)
         case .rotate(let degrees):
             state.heading = Self.normalizedHeading(heading + degrees)
         case .home:
@@ -108,6 +111,12 @@ extension TortoiseState {
                 position: position, heading: heading, radius: radius, extent: extent)
             state.position = end.position
             state.heading = Self.normalizedHeading(end.heading)
+        case .taperedArc(let radius, let extent, let widthTo):
+            let end = Tortoise.arcEndState(
+                position: position, heading: heading, radius: radius, extent: extent)
+            state.position = end.position
+            state.heading = Self.normalizedHeading(end.heading)
+            state.penWidth = max(0, widthTo)
         case .beginFill, .endFill, .backgroundColor, .clear, .dot:
             break
         }

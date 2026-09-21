@@ -115,6 +115,30 @@ public final class Tortoise {
         forward(-distance)
     }
 
+    /// Move forward by `distance` pixels while ramping the pen width from its
+    /// current value to `endWidth`.
+    ///
+    /// The stroke thickens or thins as the tortoise lays it down. This is a
+    /// single command, so it animates in the same time as a plain
+    /// ``forward(_:)`` of the same distance and serializes as one entry;
+    /// renderers fill the stroke's outline instead of stroking it at one width.
+    ///
+    /// After the call ``penWidth`` is `endWidth` (clamped to `>= 0`).
+    ///
+    /// - Parameters:
+    ///   - distance: Distance to travel (negative = backward).
+    ///   - endWidth: Pen width at the end of the move.
+    public func forward(_ distance: Double, widthTo endWidth: Double) {
+        record(.taperedForward(distance: distance, widthTo: endWidth))
+    }
+
+    /// Move backward by `distance` pixels while ramping the pen width to `endWidth`.
+    ///
+    /// See ``forward(_:widthTo:)``.
+    public func backward(_ distance: Double, widthTo endWidth: Double) {
+        forward(-distance, widthTo: endWidth)
+    }
+
     /// Rotate clockwise by `degrees`.
     public func right(_ degrees: Double) {
         record(.rotate(degrees))
@@ -196,6 +220,17 @@ public final class Tortoise {
     /// same `extent` bends the path the other way.
     public func circle(radius: Double, extent: Double = 360) {
         record(.arc(radius: radius, extent: extent))
+    }
+
+    /// Draw a circular arc while ramping the pen width from its current value
+    /// to `endWidth`.
+    ///
+    /// Geometry is identical to ``circle(radius:extent:)``; only the pen width
+    /// differs. Like ``forward(_:widthTo:)`` this is a single command.
+    ///
+    /// After the call ``penWidth`` is `endWidth` (clamped to `>= 0`).
+    public func circle(radius: Double, extent: Double = 360, widthTo endWidth: Double) {
+        record(.taperedArc(radius: radius, extent: extent, widthTo: endWidth))
     }
 
     // MARK: - Pen

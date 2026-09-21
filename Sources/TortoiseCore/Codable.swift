@@ -97,6 +97,7 @@ extension TortoiseCommand: Codable {
     /// are the frozen-format contract.
     private enum CodingKeys: String, CodingKey {
         case forward
+        case taperedForward
         case rotate
         case home
         case setPosition
@@ -114,6 +115,7 @@ extension TortoiseCommand: Codable {
         case backgroundColor
         case clear
         case arc
+        case taperedArc
         case dot
     }
 
@@ -126,6 +128,7 @@ extension TortoiseCommand: Codable {
         case radius
         case extent
         case size
+        case widthTo
     }
 
     /// Accepts any key. Used to count the raw keys of a command object:
@@ -160,6 +163,12 @@ extension TortoiseCommand: Codable {
         switch key {
         case .forward:
             self = .forward(try payload().decode(Double.self, forKey: .distance))
+        case .taperedForward:
+            let taperPayload = try payload()
+            self = .taperedForward(
+                distance: try taperPayload.decode(Double.self, forKey: .distance),
+                widthTo: try taperPayload.decode(Double.self, forKey: .widthTo)
+            )
         case .rotate:
             self = .rotate(try payload().decode(Double.self, forKey: .degrees))
         case .home:
@@ -198,6 +207,13 @@ extension TortoiseCommand: Codable {
                 radius: try arcPayload.decode(Double.self, forKey: .radius),
                 extent: try arcPayload.decode(Double.self, forKey: .extent)
             )
+        case .taperedArc:
+            let taperPayload = try payload()
+            self = .taperedArc(
+                radius: try taperPayload.decode(Double.self, forKey: .radius),
+                extent: try taperPayload.decode(Double.self, forKey: .extent),
+                widthTo: try taperPayload.decode(Double.self, forKey: .widthTo)
+            )
         case .dot:
             self = .dot(try payload().decode(Double.self, forKey: .size))
         }
@@ -217,6 +233,11 @@ extension TortoiseCommand: Codable {
         switch self {
         case .forward(let distance):
             try encodeScalar(distance, .distance, forKey: .forward)
+        case .taperedForward(let distance, let widthTo):
+            var payload = container.nestedContainer(
+                keyedBy: PayloadKeys.self, forKey: .taperedForward)
+            try payload.encode(distance, forKey: .distance)
+            try payload.encode(widthTo, forKey: .widthTo)
         case .rotate(let degrees):
             try encodeScalar(degrees, .degrees, forKey: .rotate)
         case .home:
@@ -253,6 +274,11 @@ extension TortoiseCommand: Codable {
             var payload = container.nestedContainer(keyedBy: PayloadKeys.self, forKey: .arc)
             try payload.encode(radius, forKey: .radius)
             try payload.encode(extent, forKey: .extent)
+        case .taperedArc(let radius, let extent, let widthTo):
+            var payload = container.nestedContainer(keyedBy: PayloadKeys.self, forKey: .taperedArc)
+            try payload.encode(radius, forKey: .radius)
+            try payload.encode(extent, forKey: .extent)
+            try payload.encode(widthTo, forKey: .widthTo)
         case .dot(let size):
             try encodeScalar(size, .size, forKey: .dot)
         }

@@ -34,6 +34,14 @@ enum CanvasRenderer {
                 path.closeSubpath()
                 ctx.fill(path, with: .color(SwiftUI.Color(fill.color)))
 
+            case .stroke(let first) where first.isTapered:
+                // No single stroke-width can express a taper, so fill the
+                // region the pen swept — the same polygon TortoiseSVG fills.
+                i += 1
+                ctx.fill(
+                    outlinePath(StrokeOutline.polygon(for: first), transform: t),
+                    with: .color(SwiftUI.Color(first.color)))
+
             case .stroke(let first):
                 // Merge the maximal run of same-color, same-width strokes into
                 // one multi-subpath `Path` and stroke it once. Round caps are
@@ -47,7 +55,7 @@ enum CanvasRenderer {
                 var path = Path()
                 var j = i
                 while j < elements.endIndex, case .stroke(let next) = elements[j],
-                    next.color == first.color, next.width == first.width
+                    !next.isTapered, next.color == first.color, next.width == first.width
                 {
                     path.move(to: CGPoint(x: next.from.x, y: next.from.y).applying(t))
                     path.addLine(to: CGPoint(x: next.to.x, y: next.to.y).applying(t))
@@ -58,6 +66,12 @@ enum CanvasRenderer {
                     path, with: .color(SwiftUI.Color(first.color)),
                     style: strokeStyle(width: first.width * s))
                 i = j
+
+            case .arcStroke(let arc) where arc.isTapered:
+                i += 1
+                ctx.fill(
+                    outlinePath(StrokeOutline.polygon(for: arc), transform: t),
+                    with: .color(SwiftUI.Color(arc.color)))
 
             case .arcStroke(let arc):
                 i += 1
@@ -83,23 +97,51 @@ enum CanvasRenderer {
         transform t: CGAffineTransform, scale s: Double
     ) {
         if let stroke = frame.newStroke {
-            var path = Path()
-            let from = CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t)
-            let partialTo = CGPoint(
+            let partial = Point(
                 x: stroke.from.x + p * (stroke.to.x - stroke.from.x),
-                y: stroke.from.y + p * (stroke.to.y - stroke.from.y)
-            ).applying(t)
-            path.move(to: from)
-            path.addLine(to: partialTo)
-            ctx.stroke(
-                path, with: .color(SwiftUI.Color(stroke.color)),
-                style: strokeStyle(width: stroke.width * s))
+                y: stroke.from.y + p * (stroke.to.y - stroke.from.y))
+            if stroke.isTapered {
+                // Truncate the width ramp along with the spine, so the pen is
+                // as thick where the tortoise stands as it will be when the
+                // stroke commits — the mark never changes width behind it.
+                ctx.fill(
+                    outlinePath(
+                        StrokeOutline.polygon(
+                            for: Stroke(
+                                from: stroke.from, to: partial, color: stroke.color,
+                                width: stroke.width,
+                                endWidth: stroke.width + p * (stroke.endWidth - stroke.width))),
+                        transform: t),
+                    with: .color(SwiftUI.Color(stroke.color)))
+            }
+            else {
+                var path = Path()
+                path.move(to: CGPoint(x: stroke.from.x, y: stroke.from.y).applying(t))
+                path.addLine(to: CGPoint(x: partial.x, y: partial.y).applying(t))
+                ctx.stroke(
+                    path, with: .color(SwiftUI.Color(stroke.color)),
+                    style: strokeStyle(width: stroke.width * s))
+            }
         }
         if let arc = frame.newArcStroke {
-            ctx.stroke(
-                arcPath(arc, sweep: arc.sweep * p, transform: t),
-                with: .color(SwiftUI.Color(arc.color)),
-                style: strokeStyle(width: arc.width * s))
+            if arc.isTapered {
+                ctx.fill(
+                    outlinePath(
+                        StrokeOutline.polygon(
+                            for: ArcStroke(
+                                center: arc.center, radius: arc.radius,
+                                startAngle: arc.startAngle, sweep: arc.sweep * p,
+                                color: arc.color, width: arc.width,
+                                endWidth: arc.width + p * (arc.endWidth - arc.width))),
+                        transform: t),
+                    with: .color(SwiftUI.Color(arc.color)))
+            }
+            else {
+                ctx.stroke(
+                    arcPath(arc, sweep: arc.sweep * p, transform: t),
+                    with: .color(SwiftUI.Color(arc.color)),
+                    style: strokeStyle(width: arc.width * s))
+            }
         }
     }
 
@@ -135,6 +177,20 @@ enum CanvasRenderer {
     }
 
     // MARK: - Private helpers
+
+    /// Converts an outline polygon from ``StrokeOutline`` into a closed path in
+    /// screen space. The polygon is in tortoise units, so `transform` supplies
+    /// the scale — unlike a stroked path, whose width has to be scaled by hand.
+    static func outlinePath(_ polygon: [Point], transform t: CGAffineTransform) -> Path {
+        var path = Path()
+        guard let first = polygon.first else { return path }
+        path.move(to: CGPoint(x: first.x, y: first.y).applying(t))
+        for pt in polygon.dropFirst() {
+            path.addLine(to: CGPoint(x: pt.x, y: pt.y).applying(t))
+        }
+        path.closeSubpath()
+        return path
+    }
 
     /// Draws the built-in triangle, centered on the (already translated and
     /// rotated) context's origin and pointing north — tip at -Y in screen

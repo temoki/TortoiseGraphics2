@@ -40,7 +40,20 @@ public enum CommandPlayer {
                 }
                 fillPoints?.append(tortoise.position)
 
-            case .arc(let radius, let extent):
+            case .taperedForward:
+                if before.isPenDown {
+                    // `endWidth` is read back from the post-command state rather
+                    // than from the payload, so the clamp in `applying(_:)` is
+                    // the only place a negative width is handled.
+                    newStroke = Stroke(
+                        from: before.position, to: tortoise.position,
+                        color: before.penColor, width: before.penWidth,
+                        endWidth: tortoise.penWidth
+                    )
+                }
+                fillPoints?.append(tortoise.position)
+
+            case .arc(let radius, let extent), .taperedArc(let radius, let extent, _):
                 if before.isPenDown {
                     let center = Tortoise.arcCenter(
                         position: before.position, heading: before.heading, radius: radius)
@@ -54,7 +67,8 @@ public enum CommandPlayer {
                         startAngle: atan2(dy, dx) * (180 / .pi),
                         sweep: radius < 0 ? -extent : extent,
                         color: before.penColor,
-                        width: before.penWidth
+                        width: before.penWidth,
+                        endWidth: tortoise.penWidth
                     )
                 }
                 fillPoints?.append(tortoise.position)

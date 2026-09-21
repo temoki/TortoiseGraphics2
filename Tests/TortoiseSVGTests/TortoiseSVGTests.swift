@@ -216,3 +216,111 @@ struct TortoiseSVGTests {
         #expect(out.contains("rgba(255,0,0,0.5)"))
     }
 }
+
+// MARK: - Tapered strokes
+
+@Suite("Tapered stroke SVG")
+@MainActor
+struct TaperedStrokeSVGTests {
+    @Test("a tapered stroke becomes a single filled polygon")
+    func taperedStrokeIsOnePolygon() {
+        let t = Tortoise()
+        t.penWidth = 1
+        t.forward(150, widthTo: 14)
+        let svg = t.svg()
+
+        #expect(svg.components(separatedBy: "<polygon").count - 1 == 1)
+        #expect(!svg.contains("<line"))
+    }
+
+    @Test("an untapered stroke is still a line")
+    func untaperedStrokeIsStillALine() {
+        let t = Tortoise()
+        t.penWidth = 4
+        t.forward(150)
+        let svg = t.svg()
+
+        #expect(svg.contains("<line"))
+        #expect(!svg.contains("<polygon"))
+        #expect(svg.contains("stroke-width=\"4\""))
+    }
+
+    @Test("a taper to the same width is still a line")
+    func sameWidthTaperIsStillALine() {
+        let t = Tortoise()
+        t.penWidth = 4
+        t.forward(150, widthTo: 4)
+        let svg = t.svg()
+
+        #expect(svg.contains("<line"))
+        #expect(!svg.contains("<polygon"))
+    }
+
+    /// The seam problem the expansion-based taper had: overlapping round caps
+    /// blended twice and darkened. One polygon has no interior seams at all.
+    @Test("a translucent taper is one polygon, so it cannot seam")
+    func translucentTaperHasNoSeams() {
+        let t = Tortoise()
+        t.penColor = Color(red: 0, green: 0.4, blue: 0.2, alpha: 0.35)
+        t.penWidth = 2
+        t.forward(200, widthTo: 24)
+        let svg = t.svg()
+
+        #expect(svg.components(separatedBy: "<polygon").count - 1 == 1)
+        #expect(svg.contains("rgba(0,102,51,0.35)"))
+    }
+
+    @Test("a tapered arc becomes a single filled polygon")
+    func taperedArcIsOnePolygon() {
+        let t = Tortoise()
+        t.penWidth = 2
+        t.circle(radius: 60, extent: 270, widthTo: 18)
+        let svg = t.svg()
+
+        #expect(svg.components(separatedBy: "<polygon").count - 1 == 1)
+        #expect(!svg.contains("<path"))
+    }
+
+    @Test("an untapered arc is still a stroked path")
+    func untaperedArcIsStillAPath() {
+        let t = Tortoise()
+        t.penWidth = 2
+        t.circle(radius: 60, extent: 270)
+        let svg = t.svg()
+
+        #expect(svg.contains("<path"))
+        #expect(!svg.contains("<polygon"))
+    }
+
+    /// A zero-extent arc has always drawn nothing; tapering must not change that.
+    @Test("a zero-extent tapered arc draws nothing")
+    func zeroExtentTaperedArcDrawsNothing() {
+        let t = Tortoise()
+        t.penWidth = 2
+        t.circle(radius: 60, extent: 0, widthTo: 18)
+        let svg = t.svg()
+
+        #expect(!svg.contains("<polygon"))
+        #expect(!svg.contains("<path"))
+    }
+
+    @Test("the polygon is filled with the pen colour and has no stroke")
+    func polygonUsesPenColour() {
+        let t = Tortoise()
+        t.penColor = Color(red: 1, green: 0, blue: 0)
+        t.penWidth = 1
+        t.forward(100, widthTo: 10)
+        let svg = t.svg()
+
+        #expect(svg.contains("fill=\"#ff0000\""))
+        #expect(!svg.contains("stroke-width"))
+    }
+
+    @Test("a taper with the pen up emits nothing")
+    func penUpTaperEmitsNothing() {
+        let t = Tortoise()
+        t.penUp()
+        t.forward(100, widthTo: 10)
+        #expect(!t.svg().contains("<polygon"))
+    }
+}

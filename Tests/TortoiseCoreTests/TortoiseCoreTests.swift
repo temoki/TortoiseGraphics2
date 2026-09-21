@@ -566,7 +566,7 @@ struct StateConsistencyTests {
 
         let t = Tortoise()
         for step in 0..<300 {
-            switch step % 10 {
+            switch step % 12 {
             case 0: t.forward(nextDouble(-150...150))
             case 1: t.right(nextDouble(-720...720))
             case 2: t.left(nextDouble(0...360))
@@ -582,6 +582,11 @@ struct StateConsistencyTests {
                     t.penDown()
                 }
             case 8: t.speed = nextDouble(-1...10)
+            case 9: t.forward(nextDouble(-150...150), widthTo: nextDouble(-2...9))
+            case 10:
+                t.circle(
+                    radius: nextDouble(-120...120), extent: nextDouble(-400...400),
+                    widthTo: nextDouble(-2...9))
             default: t.home()
             }
         }
@@ -694,5 +699,166 @@ struct PointTests {
     @Test("distance between two points")
     func distance() {
         #expect(isClose(Point(x: 0, y: 0).distance(to: Point(x: 3, y: 4)), 5))
+    }
+}
+
+// MARK: - Pen-width taper
+
+@Suite("Pen-width taper")
+@MainActor
+struct PenWidthTaperTests {
+    /// The property the whole design exists for: a taper costs one command,
+    /// so it occupies one playback frame and animates in the same time as the
+    /// equivalent untapered move.
+    @Test("a taper records exactly one command and one frame")
+    func singleCommandAndFrame() {
+        let t = Tortoise()
+        t.penWidth = 1
+        t.forward(200, widthTo: 12)
+
+        // penWidth setter + the taper itself.
+        #expect(t.commands.count == 2)
+        #expect(t.commands.last == .taperedForward(distance: 200, widthTo: 12))
+
+        let plain = Tortoise()
+        plain.penWidth = 1
+        plain.forward(200)
+        #expect(
+            CommandPlayer.play(commands: t.commands).count
+                == CommandPlayer.play(commands: plain.commands).count)
+    }
+
+    @Test("tapered arc records exactly one command")
+    func taperedArcIsOneCommand() {
+        let t = Tortoise()
+        t.circle(radius: 70, extent: 270, widthTo: 10)
+        #expect(t.commands == [.taperedArc(radius: 70, extent: 270, widthTo: 10)])
+    }
+
+    @Test("penWidth after a taper is the requested end width")
+    func penWidthLandsOnEndWidth() {
+        let t = Tortoise()
+        t.penWidth = 1
+        t.forward(100, widthTo: 7.5)
+        #expect(t.penWidth == 7.5)
+
+        t.circle(radius: 40, extent: 90, widthTo: 2)
+        #expect(t.penWidth == 2)
+    }
+
+    @Test("a negative end width clamps to zero")
+    func negativeEndWidthClamps() {
+        let t = Tortoise()
+        t.forward(50, widthTo: -4)
+        #expect(t.penWidth == 0)
+        #expect(CommandPlayer.play(commands: t.commands).last?.newStroke?.endWidth == 0)
+    }
+
+    @Test("a taper moves exactly as far as the untapered move")
+    func geometryMatchesUntapered() {
+        let tapered = Tortoise()
+        tapered.right(37)
+        tapered.forward(123, widthTo: 9)
+
+        let plain = Tortoise()
+        plain.right(37)
+        plain.forward(123)
+
+        #expect(isClose(tapered.position, plain.position))
+        #expect(isClose(tapered.heading, plain.heading))
+    }
+
+    @Test("a tapered arc lands where an untapered arc would")
+    func arcGeometryMatchesUntapered() {
+        let tapered = Tortoise()
+        tapered.circle(radius: -60, extent: 215, widthTo: 11)
+
+        let plain = Tortoise()
+        plain.circle(radius: -60, extent: 215)
+
+        #expect(isClose(tapered.position, plain.position))
+        #expect(isClose(tapered.heading, plain.heading))
+    }
+
+    @Test("backward taper mirrors forward taper")
+    func backwardMirrorsForward() {
+        let back = Tortoise()
+        back.backward(80, widthTo: 5)
+        #expect(back.commands == [.taperedForward(distance: -80, widthTo: 5)])
+        #expect(back.penWidth == 5)
+    }
+
+    @Test("the stroke carries start and end width")
+    func strokeCarriesBothWidths() {
+        let t = Tortoise()
+        t.penWidth = 2
+        t.forward(100, widthTo: 8)
+
+        let stroke = try! #require(CommandPlayer.play(commands: t.commands).last?.newStroke)
+        #expect(stroke.width == 2)
+        #expect(stroke.endWidth == 8)
+        #expect(stroke.isTapered)
+    }
+
+    @Test("the arc stroke carries start and end width")
+    func arcStrokeCarriesBothWidths() {
+        let t = Tortoise()
+        t.penWidth = 3
+        t.circle(radius: 50, extent: 120, widthTo: 9)
+
+        let arc = try! #require(CommandPlayer.play(commands: t.commands).last?.newArcStroke)
+        #expect(arc.width == 3)
+        #expect(arc.endWidth == 9)
+        #expect(arc.isTapered)
+    }
+
+    /// A caller passing its current width gets an ordinary stroke, so it stays
+    /// eligible for the same-width batching in the canvas renderer.
+    @Test("a taper to the current width produces an untapered stroke")
+    func noWidthChangeIsNotTapered() {
+        let t = Tortoise()
+        t.penWidth = 4
+        t.forward(100, widthTo: 4)
+
+        let stroke = try! #require(CommandPlayer.play(commands: t.commands).last?.newStroke)
+        #expect(!stroke.isTapered)
+        #expect(stroke.width == 4 && stroke.endWidth == 4)
+    }
+
+    @Test("an ordinary move is never tapered")
+    func ordinaryMoveIsNotTapered() {
+        let t = Tortoise()
+        t.penWidth = 5
+        t.forward(50)
+        let stroke = try! #require(CommandPlayer.play(commands: t.commands).last?.newStroke)
+        #expect(!stroke.isTapered)
+        #expect(stroke.endWidth == 5)
+    }
+
+    @Test("a taper with the pen up draws nothing but still sets the width")
+    func penUpDrawsNothingButSetsWidth() {
+        let t = Tortoise()
+        t.penUp()
+        t.forward(100, widthTo: 9)
+
+        let frame = try! #require(CommandPlayer.play(commands: t.commands).last)
+        #expect(frame.newStroke == nil)
+        #expect(t.penWidth == 9)
+        #expect(frame.tortoiseState.penWidth == 9)
+    }
+
+    @Test("tapered vertices participate in fills like ordinary moves")
+    func taperContributesFillVertices() {
+        let t = Tortoise()
+        t.beginFill()
+        t.forward(50, widthTo: 6)
+        t.right(120)
+        t.forward(50, widthTo: 1)
+        t.right(120)
+        t.forward(50)
+        t.endFill()
+
+        let fill = CommandPlayer.play(commands: t.commands).compactMap(\.completedFill).last
+        #expect(try! #require(fill).points.count == 4)
     }
 }

@@ -18,8 +18,63 @@ extension DrawingScenario {
         showAfterHide,
         speedChanges,
         translucentOverlaps,
+        taperedStrokes,
         showcase,
     ]
+
+    /// Covers `taperedForward` and `taperedArc`, including the two cases the
+    /// renderers special-case: a translucent taper (which must stay a single
+    /// blended region rather than seaming) and a taper whose end width equals
+    /// its start width (which must stay an ordinary, batchable stroke).
+    public static let taperedStrokes = DrawingScenario("taperedStrokes") { t in
+        t.penUp()
+        t.setPosition(x: -170, y: 150)
+        t.penDown()
+        t.heading = 90
+        t.penColor = .blue
+        t.penWidth = 1
+        t.forward(320, widthTo: 22)
+
+        t.penUp()
+        t.setPosition(x: -170, y: 90)
+        t.penDown()
+        t.penColor = .red
+        t.penWidth = 22
+        t.forward(320, widthTo: 1)
+
+        // Translucent: one filled region, so no seams to darken.
+        t.penUp()
+        t.setPosition(x: -170, y: 30)
+        t.penDown()
+        t.penColor = Color(red: 0, green: 0.5, blue: 0.25, alpha: 0.4)
+        t.penWidth = 2
+        t.forward(320, widthTo: 26)
+
+        // Equal widths: must remain an ordinary stroke.
+        t.penUp()
+        t.setPosition(x: -170, y: -20)
+        t.penDown()
+        t.penColor = .black
+        t.penWidth = 5
+        t.forward(320, widthTo: 5)
+
+        // Tapered arcs, both sweep directions.
+        t.penUp()
+        t.setPosition(x: -90, y: -80)
+        t.penDown()
+        t.penColor = .purple
+        t.penWidth = 2
+        t.heading = 90
+        t.circle(radius: 55, extent: 300, widthTo: 18)
+
+        t.penUp()
+        t.setPosition(x: 90, y: -80)
+        t.penDown()
+        t.penColor = .orange
+        t.penWidth = 16
+        t.heading = 90
+        t.circle(radius: -55, extent: 300, widthTo: 2)
+    }
 
     /// Covers `forward` and `rotate` (via forward/backward/right/left).
     public static let linesAndTurns = DrawingScenario("linesAndTurns") { t in

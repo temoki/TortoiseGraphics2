@@ -165,6 +165,12 @@ private struct SVGBuilder {
     }
 
     private func svgStroke(_ stroke: Stroke) -> String {
+        // A tapered stroke has no single stroke-width, so the region the pen
+        // sweeps is filled instead. The polygon comes from TortoiseCore, which
+        // is also what the canvas renderer fills — the two cannot drift.
+        if stroke.isTapered {
+            return svgOutline(StrokeOutline.polygon(for: stroke), color: stroke.color)
+        }
         let x1 = n(x(stroke.from.x))
         let y1 = n(y(stroke.from.y))
         let x2 = n(x(stroke.to.x))
@@ -173,9 +179,24 @@ private struct SVGBuilder {
             #"  <line x1="\#(x1)" y1="\#(y1)" x2="\#(x2)" y2="\#(y2)" stroke="\#(color(stroke.color))" stroke-width="\#(n(stroke.width))" stroke-linecap="round"/>"#
     }
 
+    /// Emits a filled outline polygon, used wherever a pen width varies along
+    /// the mark and a stroked path cannot express it.
+    private func svgOutline(_ polygon: [Point], color penColor: Color) -> String {
+        guard polygon.count >= 3 else { return "" }
+        let pts =
+            polygon
+            .map { "\(n(x($0.x))),\(n(y($0.y)))" }
+            .joined(separator: " ")
+        return #"  <polygon points="\#(pts)" fill="\#(color(penColor))"/>"#
+    }
+
     private func svgArc(_ arc: ArcStroke) -> String {
         let absSwep = abs(arc.sweep)
         guard absSwep > 0 else { return "" }
+
+        if arc.isTapered {
+            return svgOutline(StrokeOutline.polygon(for: arc), color: arc.color)
+        }
 
         let cx = x(arc.center.x)
         let cy = y(arc.center.y)
