@@ -16,8 +16,8 @@ public enum TortoiseCommand: Sendable, Equatable {
     /// One command, so it occupies a single playback frame and animates in the
     /// same time as a plain ``forward(_:)`` of the same distance. The ramp is a
     /// property of the resulting ``Stroke``, which renderers fill as an outline
-    /// rather than stroking at a single width. After this command ``penWidth``
-    /// is `widthTo`.
+    /// rather than stroking at a single width. After this command
+    /// ``Tortoise/penWidth`` is `widthTo`.
     case taperedForward(distance: Double, widthTo: Double)
     /// Rotate clockwise (positive) or counterclockwise (negative) by `degrees`.
     case rotate(Double)
@@ -63,7 +63,7 @@ public enum TortoiseCommand: Sendable, Equatable {
     ///
     /// Geometry matches ``arc(radius:extent:)`` exactly; only the pen width
     /// differs. Like ``taperedForward(distance:widthTo:)`` this is a single
-    /// command and a single frame. After it ``penWidth`` is `widthTo`.
+    /// command and a single frame. After it ``Tortoise/penWidth`` is `widthTo`.
     case taperedArc(radius: Double, extent: Double, widthTo: Double)
 
     // MARK: Dot

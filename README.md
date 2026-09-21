@@ -37,6 +37,8 @@ itself. `swift run ExamplesRunner` regenerates the images below.
 | [Square Spiral](Sources/Examples/Gallery/SquareSpiral.swift) | [Fractal Tree](Sources/Examples/Gallery/FractalTree.swift) | [Koch Snowflake](Sources/Examples/Gallery/KochSnowflake.swift) |
 | <a href="Sources/Examples/Gallery/CircleRosette.swift"><img src="docs/examples/circle-rosette.svg" width="230" alt="Circle Rosette"></a> | <a href="Sources/Examples/Gallery/FilledStar.swift"><img src="docs/examples/filled-star.svg" width="230" alt="Filled Star"></a> | <a href="Sources/Examples/Gallery/Waves.swift"><img src="docs/examples/waves.svg" width="230" alt="Waves"></a> |
 | [Circle Rosette](Sources/Examples/Gallery/CircleRosette.swift) | [Filled Star](Sources/Examples/Gallery/FilledStar.swift) | [Waves](Sources/Examples/Gallery/Waves.swift) |
+| <a href="Sources/Examples/Gallery/TaperedPetals.swift"><img src="docs/examples/tapered-petals.svg" width="230" alt="Tapered Petals"></a> | | |
+| [Tapered Petals](Sources/Examples/Gallery/TaperedPetals.swift) | | |
 
 ## Showcase
 
