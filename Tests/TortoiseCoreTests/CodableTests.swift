@@ -38,6 +38,14 @@ struct CodableTests {
         ),
         (.clear, #"{"clear":{}}"#),
         (.arc(radius: -50, extent: 180), #"{"arc":{"extent":180,"radius":-50}}"#),
+        (
+            .taperedForward(distance: 200, widthTo: 12),
+            #"{"taperedForward":{"distance":200,"widthTo":12}}"#
+        ),
+        (
+            .taperedArc(radius: 70, extent: 270, widthTo: 10),
+            #"{"taperedArc":{"extent":270,"radius":70,"widthTo":10}}"#
+        ),
         (.dot(8), #"{"dot":{"size":8}}"#),
     ]
 
@@ -142,5 +150,42 @@ struct CodableTests {
         let json = #"{"red":0.2,"green":0.4,"blue":0.6}"#
         let color = try JSONDecoder().decode(Color.self, from: Data(json.utf8))
         #expect(color == Color(red: 0.2, green: 0.4, blue: 0.6, alpha: 1))
+    }
+}
+
+// MARK: - Backward compatibility
+
+@Suite("Wire-format compatibility")
+struct WireFormatCompatibilityTests {
+    /// Adding a command case must not disturb existing data: a stream recorded
+    /// before the tapered cases existed still decodes unchanged.
+    @Test("a pre-taper stream still decodes")
+    func preTaperStreamDecodes() throws {
+        let json = """
+            [{"penWidth":{"width":1}},{"forward":{"distance":100}},\
+            {"arc":{"radius":50,"extent":90}},{"dot":{"size":8}}]
+            """
+        let decoded = try JSONDecoder().decode([TortoiseCommand].self, from: Data(json.utf8))
+        #expect(
+            decoded == [
+                .penWidth(1), .forward(100), .arc(radius: 50, extent: 90), .dot(8),
+            ])
+    }
+
+    /// Payloads may grow compatibly, so a reader that predates a future field
+    /// must ignore it rather than fail.
+    @Test("an unknown field inside a tapered payload is ignored")
+    func unknownPayloadFieldIgnored() throws {
+        let json = #"{"taperedForward":{"distance":200,"widthTo":12,"easing":"linear"}}"#
+        let decoded = try JSONDecoder().decode(TortoiseCommand.self, from: Data(json.utf8))
+        #expect(decoded == .taperedForward(distance: 200, widthTo: 12))
+    }
+
+    @Test("a tapered payload missing widthTo fails to decode")
+    func missingWidthToFails() {
+        let json = #"{"taperedForward":{"distance":200}}"#
+        #expect(throws: (any Error).self) {
+            try JSONDecoder().decode(TortoiseCommand.self, from: Data(json.utf8))
+        }
     }
 }

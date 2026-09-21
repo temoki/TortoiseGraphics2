@@ -10,6 +10,15 @@ public enum TortoiseCommand: Sendable, Equatable {
     // MARK: Movement
     /// Move forward (positive) or backward (negative) by `distance` pixels.
     case forward(Double)
+    /// Move forward by `distance` pixels while ramping the pen width from its
+    /// current value to `widthTo`.
+    ///
+    /// One command, so it occupies a single playback frame and animates in the
+    /// same time as a plain ``forward(_:)`` of the same distance. The ramp is a
+    /// property of the resulting ``Stroke``, which renderers fill as an outline
+    /// rather than stroking at a single width. After this command ``penWidth``
+    /// is `widthTo`.
+    case taperedForward(distance: Double, widthTo: Double)
     /// Rotate clockwise (positive) or counterclockwise (negative) by `degrees`.
     case rotate(Double)
     /// Move to the origin (0, 0) and reset heading to 0 (north).
@@ -50,6 +59,12 @@ public enum TortoiseCommand: Sendable, Equatable {
     /// A negative `radius` mirrors the arc (center on the tortoise's right,
     /// sweep directions flipped), matching Python turtle.
     case arc(radius: Double, extent: Double)
+    /// Draw a circular arc while ramping the pen width to `widthTo`.
+    ///
+    /// Geometry matches ``arc(radius:extent:)`` exactly; only the pen width
+    /// differs. Like ``taperedForward(distance:widthTo:)`` this is a single
+    /// command and a single frame. After it ``penWidth`` is `widthTo`.
+    case taperedArc(radius: Double, extent: Double, widthTo: Double)
 
     // MARK: Dot
     /// Draw a filled circle at the current position without moving the tortoise.

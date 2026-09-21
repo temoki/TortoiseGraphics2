@@ -33,6 +33,7 @@ A command encodes as a JSON object with exactly one key, the command name:
 | Command | JSON |
 | --- | --- |
 | `forward(100)` | `{"forward":{"distance":100}}` |
+| `forward(200, widthTo: 12)` | `{"taperedForward":{"distance":200,"widthTo":12}}` |
 | `rotate(-45.5)` | `{"rotate":{"degrees":-45.5}}` |
 | `home` | `{"home":{}}` |
 | `setPosition(Point(x: 10, y: 20))` | `{"setPosition":{"x":10,"y":20}}` |
@@ -47,6 +48,7 @@ A command encodes as a JSON object with exactly one key, the command name:
 | `backgroundColor(.black)` | `{"backgroundColor":{"red":0,"green":0,"blue":0,"alpha":1}}` |
 | `clear` | `{"clear":{}}` |
 | `circle(radius: -50, extent: 180)` | `{"arc":{"radius":-50,"extent":180}}` |
+| `circle(radius: 70, extent: 270, widthTo: 10)` | `{"taperedArc":{"radius":70,"extent":270,"widthTo":10}}` |
 | `dot(8)` | `{"dot":{"size":8}}` |
 
 On decode, a command object must contain **exactly one key, and it must be
