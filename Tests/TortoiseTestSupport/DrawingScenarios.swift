@@ -5,6 +5,7 @@ extension DrawingScenario {
     public static let all: [DrawingScenario] = [
         linesAndTurns,
         penStyles,
+        taperedStrokes,
         arcs,
         negativeRadiusArcs,
         filledShapes,
@@ -57,6 +58,41 @@ extension DrawingScenario {
             t.penUp()
             t.forward(15)
         }
+    }
+
+    /// Covers the pen-width taper sugar: growing and shrinking straight tapers,
+    /// a tapered arc, and an explicit low `steps:` count (visibly stepped by
+    /// design — it pins that the caller's override is honored).
+    public static let taperedStrokes = DrawingScenario("taperedStrokes") { t in
+        t.penUp()
+        t.setPosition(x: -150, y: 120)
+        t.penDown()
+
+        t.penColor = .blue
+        t.penWidth = 1
+        t.heading = 90
+        t.forward(280, widthTo: 12)
+
+        t.penUp()
+        t.setPosition(x: -150, y: 40)
+        t.penDown()
+        t.penColor = .red
+        t.forward(280, widthTo: 1)
+
+        t.penUp()
+        t.setPosition(x: -150, y: -30)
+        t.penDown()
+        t.penColor = .green
+        t.penWidth = 1
+        t.forward(280, widthTo: 12, steps: 5)
+
+        t.penUp()
+        t.setPosition(x: 0, y: -140)
+        t.penDown()
+        t.penColor = .purple
+        t.penWidth = 1
+        t.heading = 90
+        t.circle(radius: 70, extent: 270, widthTo: 10)
     }
 
     /// Covers `arc`: full circle, half circle (CCW), and negative extent (CW).
