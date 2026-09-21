@@ -5,19 +5,17 @@
     extension Snapshotting where Value == NSImage, Format == NSImage {
         /// The comparison every canvas PNG golden uses.
         ///
-        /// Byte-wise with a small tolerance, deliberately *without*
-        /// `perceptualPrecision`. swift-snapshot-testing's perceptual path passes a
+        /// `perceptualPrecision` absorbs the OS-level antialiasing drift that makes
+        /// byte-wise comparison of rendered text and curves brittle across machines.
+        ///
+        /// It was removed for a while: swift-snapshot-testing through 1.19.5 passed a
         /// bare `CGRect` as `CIAreaAverage`'s `inputExtent`, which Core Image on
         /// macOS 27 rejects with an uncaught `-[NSConcreteValue CGRectValue]`
-        /// exception — crashing the whole test process rather than failing one
-        /// test. An exact match never reaches that path, which is why the goldens
-        /// still pass on the macOS they were recorded on.
-        ///
-        /// Still reproduces on Xcode 27.0 GA (27A266a); the CI runner's macOS 27 is
-        /// itself still a beta build, so whether `perceptualPrecision` can ever come
-        /// back is tracked in #49.
+        /// exception — crashing the whole test process rather than failing one test.
+        /// Fixed upstream in 1.19.6 (pointfreeco/swift-snapshot-testing#1120), which
+        /// is why `Package.swift` floors the dependency there. See #49.
         static var canvasGolden: Snapshotting {
-            .image(precision: 0.995)
+            .image(precision: 0.995, perceptualPrecision: 0.98)
         }
     }
 #endif

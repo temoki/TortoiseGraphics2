@@ -83,7 +83,7 @@ let package = Package(
     products: products,
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.0"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.6"),
     ],
     targets: targets
 )
